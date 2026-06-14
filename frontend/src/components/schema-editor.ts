@@ -70,14 +70,21 @@ export class SchemaEditor extends LitElement {
   @state() private _livePreview = false;
 
   private _previewTimer?: number;
+  private _saveTimer?: number;
 
   protected override willUpdate(changed: PropertyValues): void {
     if (changed.has("schema") && this._draft?.id !== this.schema.id) {
+      this._flushSave(); // persist edits to the schema we're leaving
       this._draft = structuredClone(this.schema);
       this._selectedCell = null;
       this._selectedLight = null;
       void this._loadTimeline();
     }
+  }
+
+  override disconnectedCallback(): void {
+    this._flushSave();
+    super.disconnectedCallback();
   }
 
   private async _loadTimeline(): Promise<void> {
@@ -89,6 +96,24 @@ export class SchemaEditor extends LitElement {
   }
 
   // --- persistence ---------------------------------------------------------
+
+  /** Coalesce rapid edits: persist once the user pauses. */
+  private _scheduleSave(): void {
+    window.clearTimeout(this._saveTimer);
+    this._saveTimer = window.setTimeout(() => {
+      this._saveTimer = undefined;
+      void this._saveAndRefresh();
+    }, 400);
+  }
+
+  /** Persist any pending edit immediately (on schema switch / teardown). */
+  private _flushSave(): void {
+    if (this._saveTimer !== undefined) {
+      window.clearTimeout(this._saveTimer);
+      this._saveTimer = undefined;
+      void this._saveAndRefresh();
+    }
+  }
 
   private async _saveAndRefresh(): Promise<void> {
     try {
@@ -122,7 +147,7 @@ export class SchemaEditor extends LitElement {
       ...this._draft,
       lights: { ...this._draft.lights, [entityId]: next },
     };
-    void this._saveAndRefresh();
+    this._scheduleSave();
   }
 
   // --- render --------------------------------------------------------------
@@ -290,7 +315,7 @@ export class SchemaEditor extends LitElement {
 
   private _patchSchema(patch: Partial<Schema>): void {
     this._draft = { ...this._draft, ...patch };
-    void this._saveAndRefresh();
+    this._scheduleSave();
   }
 
   private _setCell(ref: CellRef, cell: HourCell): void {
