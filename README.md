@@ -1,5 +1,11 @@
 # HA Adapt — Adaptive Lighting
 
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/release/ameesme/ha-adapt.svg)](https://github.com/ameesme/ha-adapt/releases)
+[![License](https://img.shields.io/github/license/ameesme/ha-adapt.svg)](LICENSE)
+
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ameesme&repository=ha-adapt&category=integration)
+
 A Home Assistant custom integration that adapts the **brightness** and **color
 temperature** of your lights over the day. It offers an API surface comparable
 to [`basnijholt/adaptive-lighting`](https://github.com/basnijholt/adaptive-lighting),
@@ -48,8 +54,10 @@ These familiar options are exposed in the panel:
 
 ### HACS (custom repository)
 
-1. HACS → ⋮ → **Custom repositories** → add this repo as an **Integration**.
-2. Install **HA Adapt — Adaptive Lighting** and restart Home Assistant.
+Click the **"Open in HACS"** badge above, or in HACS go to ⋮ →
+**Custom repositories**, add `https://github.com/ameesme/ha-adapt` with the
+category **Integration**, then install **HA Adapt — Adaptive Lighting** and
+restart Home Assistant.
 
 ### Manual
 

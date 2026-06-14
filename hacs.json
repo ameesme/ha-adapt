@@ -1,5 +1,6 @@
 {
   "name": "HA Adapt — Adaptive Lighting",
   "render_readme": true,
+  "domains": ["switch"],
   "homeassistant": "2024.6.0"
 }
