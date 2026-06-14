@@ -123,6 +123,16 @@ npm run build   # outputs to ../custom_components/ha_adapt/frontend/dist
 The engine and model tests run without Home Assistant installed. Re-run
 `npm run build` and commit the bundle whenever the panel changes.
 
+### Releasing
+
+1. Bump `version` in `custom_components/ha_adapt/manifest.json`.
+2. Commit, then tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+
+The release workflow checks the tag matches the manifest version, rebuilds and
+verifies the panel bundle, and publishes a GitHub release (with a `ha_adapt.zip`
+asset). HACS then offers that version; without a release it installs from the
+default branch.
+
 ## License
 
 MIT

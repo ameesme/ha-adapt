@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check tag matches manifest version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          manifest="custom_components/ha_adapt/manifest.json"
+          version="$(jq -r .version "$manifest")"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag v$tag does not match manifest version $version. Bump $manifest before tagging."
+            exit 1
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build panel bundle
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Ensure committed bundle is up to date
+        run: |
+          if ! git diff --quiet -- custom_components/ha_adapt/frontend/dist; then
+            echo "::error::Committed panel bundle is stale. Run 'npm run build' and commit before tagging."
+            exit 1
+          fi
+
+      - name: Create integration zip
+        run: |
+          cd custom_components/ha_adapt
+          zip -r "$GITHUB_WORKSPACE/ha_adapt.zip" .
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ha_adapt.zip
+          generate_release_notes: true
