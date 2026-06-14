@@ -1,0 +1,90 @@
+import { html, type TemplateResult } from "lit";
+
+// Small presentational field builders shared by every editor/tab. They rely on
+// the `.field`/`.toggle` classes from baseStyles being present in the host.
+
+export function numberField(
+  label: string,
+  value: number,
+  onChange: (value: number) => void
+): TemplateResult {
+  return html`<label class="field"
+    >${label}
+    <input
+      type="number"
+      .value=${String(value)}
+      @change=${(e: Event) =>
+        onChange(Number((e.target as HTMLInputElement).value))}
+    />
+  </label>`;
+}
+
+export function textField(
+  label: string,
+  value: string,
+  placeholder: string,
+  onChange: (value: string) => void
+): TemplateResult {
+  return html`<label class="field"
+    >${label}
+    <input
+      type="text"
+      placeholder=${placeholder}
+      .value=${value}
+      @input=${(e: Event) => onChange((e.target as HTMLInputElement).value)}
+    />
+  </label>`;
+}
+
+export function timeField(
+  label: string,
+  value: string | null,
+  onChange: (value: string | null) => void
+): TemplateResult {
+  return html`<label class="field"
+    >${label}
+    <input
+      type="time"
+      step="1"
+      .value=${value ?? ""}
+      @change=${(e: Event) =>
+        onChange((e.target as HTMLInputElement).value || null)}
+    />
+  </label>`;
+}
+
+export function checkboxField(
+  label: string,
+  value: boolean,
+  onChange: (value: boolean) => void
+): TemplateResult {
+  return html`<label class="toggle">
+    <input
+      type="checkbox"
+      .checked=${value}
+      @change=${(e: Event) => onChange((e.target as HTMLInputElement).checked)}
+    />
+    ${label}
+  </label>`;
+}
+
+export function selectField(
+  label: string,
+  value: string,
+  options: Array<{ value: string; label: string }>,
+  onChange: (value: string) => void
+): TemplateResult {
+  return html`<label class="field"
+    >${label}
+    <select
+      @change=${(e: Event) => onChange((e.target as HTMLSelectElement).value)}
+    >
+      ${options.map(
+        (option) =>
+          html`<option value=${option.value} ?selected=${option.value === value}>
+            ${option.label}
+          </option>`
+      )}
+    </select>
+  </label>`;
+}

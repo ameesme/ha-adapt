@@ -1,0 +1,36 @@
+apply:
+  name: Apply
+  description: >-
+    Force an immediate adaptation of the controlled lights, ignoring any manual
+    control. Omit entity_id to apply to every controlled light.
+  fields:
+    entity_id:
+      name: Lights
+      description: Light entities to adapt. Defaults to all controlled lights.
+      required: false
+      selector:
+        entity:
+          domain: light
+          multiple: true
+
+set_manual_control:
+  name: Set manual control
+  description: >-
+    Mark lights as manually controlled (adaptation pauses) or hand control back
+    to the adaptive engine.
+  fields:
+    entity_id:
+      name: Lights
+      description: Light entities to update.
+      required: true
+      selector:
+        entity:
+          domain: light
+          multiple: true
+    manual_control:
+      name: Manual control
+      description: True to pause adaptation, false to resume it.
+      required: true
+      default: true
+      selector:
+        boolean:

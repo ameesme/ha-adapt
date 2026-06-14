@@ -1,0 +1,53 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Adaptive Lighting",
+        "description": "Select the lights or light groups to control. Everything else is configured in the Adaptive Lighting panel in the sidebar.",
+        "data": {
+          "lights": "Lights"
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "Adaptive Lighting is already configured. Only one instance is supported."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Controlled lights",
+        "description": "Choose which lights or light groups Adaptive Lighting controls.",
+        "data": {
+          "lights": "Lights"
+        }
+      }
+    }
+  },
+  "services": {
+    "apply": {
+      "name": "Apply",
+      "description": "Force an immediate adaptation of the controlled lights.",
+      "fields": {
+        "entity_id": {
+          "name": "Lights",
+          "description": "Light entities to adapt. Defaults to all controlled lights."
+        }
+      }
+    },
+    "set_manual_control": {
+      "name": "Set manual control",
+      "description": "Pause or resume adaptation for specific lights.",
+      "fields": {
+        "entity_id": {
+          "name": "Lights",
+          "description": "Light entities to update."
+        },
+        "manual_control": {
+          "name": "Manual control",
+          "description": "True to pause adaptation, false to resume it."
+        }
+      }
+    }
+  }
+}

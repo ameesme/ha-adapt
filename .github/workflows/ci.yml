@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  python:
+    name: Lint & test (Python)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install tools
+        run: pip install ruff pytest
+      - name: Ruff
+        run: ruff check .
+      # The engine/model tests are pure Python and need no Home Assistant.
+      - name: Pytest
+        run: python -m pytest
+
+  frontend:
+    name: Build panel (frontend)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Type-check & build
+        working-directory: frontend
+        run: npm run build
+      - name: Verify committed bundle is up to date
+        run: |
+          if ! git diff --quiet -- custom_components/ha_adapt/frontend/dist; then
+            echo "::error::Built panel bundle differs from the committed one. Run 'npm run build' and commit the result."
+            git --no-pager diff --stat -- custom_components/ha_adapt/frontend/dist
+            exit 1
+          fi
