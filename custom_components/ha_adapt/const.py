@@ -46,8 +46,6 @@ DEFAULT_TRANSITION: Final = 45  # seconds
 DEFAULT_INITIAL_TRANSITION: Final = 1  # seconds
 DEFAULT_SEND_SPLIT_DELAY: Final = 0  # milliseconds between split commands
 DEFAULT_AUTORESET_CONTROL: Final = 0  # seconds, 0 disables auto-reset
-DEFAULT_SLEEP_BRIGHTNESS: Final = 1  # percent
-DEFAULT_SLEEP_COLOR_TEMP: Final = 1000  # Kelvin
 
 # --- Defaults (per schema) ---------------------------------------------------
 DEFAULT_MIN_BRIGHTNESS: Final = 1  # percent

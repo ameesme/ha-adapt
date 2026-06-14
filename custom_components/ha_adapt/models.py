@@ -23,8 +23,6 @@ from .const import (
     DEFAULT_MIN_COLOR_TEMP,
     DEFAULT_SCHEMA_ID,
     DEFAULT_SEND_SPLIT_DELAY,
-    DEFAULT_SLEEP_BRIGHTNESS,
-    DEFAULT_SLEEP_COLOR_TEMP,
     DEFAULT_TRANSITION,
     MODE_SUN,
 )
@@ -104,8 +102,6 @@ class GlobalSettings:
     autoreset_control: int = DEFAULT_AUTORESET_CONTROL
     take_over_control: bool = True
     detect_non_ha_changes: bool = False
-    sleep_brightness: int = DEFAULT_SLEEP_BRIGHTNESS
-    sleep_color_temp: int = DEFAULT_SLEEP_COLOR_TEMP
 
     def to_dict(self) -> dict[str, Any]:
         return {f.name: getattr(self, f.name) for f in fields(self)}

@@ -98,7 +98,6 @@ def _config_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> dict:
         "assignments": dict(data.assignments),
         "lights": _lights_payload(hass, coordinator),
         "enabled": coordinator.enabled,
-        "sleep": coordinator.sleep,
     }
 
 

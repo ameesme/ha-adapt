@@ -35,12 +35,6 @@ export class SettingsTab extends TabBase {
         ${numberField("Split delay (ms)", s.send_split_delay, (v) =>
           save({ send_split_delay: v })
         )}
-        ${numberField("Sleep brightness %", s.sleep_brightness, (v) =>
-          save({ sleep_brightness: v })
-        )}
-        ${numberField("Sleep color temp K", s.sleep_color_temp, (v) =>
-          save({ sleep_color_temp: v })
-        )}
       </div>
       <div class="actions">
         ${checkboxField("Take over control", s.take_over_control, (v) =>

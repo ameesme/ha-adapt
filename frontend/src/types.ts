@@ -52,8 +52,6 @@ export interface GlobalSettings {
   autoreset_control: number;
   take_over_control: boolean;
   detect_non_ha_changes: boolean;
-  sleep_brightness: number;
-  sleep_color_temp: number;
 }
 
 export interface LightInfo {
@@ -74,7 +72,6 @@ export interface ConfigPayload {
   assignments: Record<string, string>;
   lights: LightInfo[];
   enabled: boolean;
-  sleep: boolean;
 }
 
 // Minimal slice of the Home Assistant object the panel relies on.

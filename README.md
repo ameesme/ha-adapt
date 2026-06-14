@@ -73,10 +73,10 @@ restart Home Assistant.
    - **Lights** — see each light's live target, reset manual control, and
      assign a schema.
    - **Schemas** — create/edit schemas, pick a mode, and tune the curve.
-   - **Settings** — `interval`, `transition`, auto-reset, sleep values, etc.
+   - **Settings** — `interval`, `transition`, auto-reset, etc.
 
-Two switches are also created: a master *Adaptive lighting* switch and a
-*Sleep mode* switch.
+A master *Adaptive lighting* switch is also created to enable/disable
+adaptation for the whole instance.
 
 ### Services
 
@@ -96,7 +96,7 @@ The integration is split into small, focused modules:
 | `models.py`      | Plain dataclasses (`Schema`, `GlobalSettings`, `StoreData`).    |
 | `store.py`       | File-backed persistence via HA's `Store`.                       |
 | `panel.py`       | Static asset, sidebar panel, and WebSocket API.                 |
-| `switch.py`      | Master + sleep switches.                                        |
+| `switch.py`      | Master switch.                                                  |
 | `config_flow.py` | Entity-id selection only.                                       |
 
 The key idea: an **input source** produces a normalized `DriveSignal`, which a

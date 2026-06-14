@@ -143,7 +143,6 @@ export class HaAdaptPanel extends LitElement {
         <span class="pill ${config.enabled ? "" : "off"}">
           ${config.enabled ? "Active" : "Paused"}
         </span>
-        ${config.sleep ? html`<span class="pill">Sleep</span>` : nothing}
         <span class="spacer"></span>
         <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
       </header>

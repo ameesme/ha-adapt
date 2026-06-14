@@ -76,7 +76,6 @@ class AdaptCoordinator:
         self.store = store
 
         self.enabled: bool = True
-        self.sleep: bool = False
 
         self._lights: list[str] = self._read_lights()
         self._runtime: dict[str, LightRuntime] = {}
@@ -178,10 +177,6 @@ class AdaptCoordinator:
         if enabled:
             self.hass.async_create_task(self.async_adapt_all())
 
-    def set_sleep(self, sleep: bool) -> None:
-        self.sleep = sleep
-        self.hass.async_create_task(self.async_adapt_all())
-
     async def async_save(self) -> None:
         await self.store.async_save()
 
@@ -237,15 +232,6 @@ class AdaptCoordinator:
 
     def _compute_target(self, entity_id: str, now: datetime) -> Target:
         schema = self.data.schema_for(entity_id)
-        if self.sleep:
-            return Target(
-                brightness_pct=(
-                    self.settings.sleep_brightness if schema.adapt_brightness else None
-                ),
-                color_temp_kelvin=(
-                    self.settings.sleep_color_temp if schema.adapt_color else None
-                ),
-            )
         snapshot = None
         sensor_value = None
         if schema.mode == MODE_SUN:

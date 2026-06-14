@@ -274,10 +274,10 @@ const Lt = (s, t) => {
   let r, n = t === 2 ? "<svg>" : t === 3 ? "<math>" : "", a = O;
   for (let l = 0; l < e; l++) {
     const o = s[l];
-    let u, _, d = -1, f = 0;
-    for (; f < o.length && (a.lastIndex = f, _ = a.exec(o), _ !== null); ) f = a.lastIndex, a === O ? _[1] === "!--" ? a = dt : _[1] !== void 0 ? a = pt : _[2] !== void 0 ? (wt.test(_[2]) && (r = RegExp("</" + _[2], "g")), a = v) : _[3] !== void 0 && (a = v) : a === v ? _[0] === ">" ? (a = r ?? O, d = -1) : _[1] === void 0 ? d = -2 : (d = a.lastIndex - _[2].length, u = _[1], a = _[3] === void 0 ? v : _[3] === '"' ? _t : ut) : a === _t || a === ut ? a = v : a === dt || a === pt ? a = O : (a = v, r = void 0);
+    let p, _, d = -1, f = 0;
+    for (; f < o.length && (a.lastIndex = f, _ = a.exec(o), _ !== null); ) f = a.lastIndex, a === O ? _[1] === "!--" ? a = dt : _[1] !== void 0 ? a = pt : _[2] !== void 0 ? (wt.test(_[2]) && (r = RegExp("</" + _[2], "g")), a = v) : _[3] !== void 0 && (a = v) : a === v ? _[0] === ">" ? (a = r ?? O, d = -1) : _[1] === void 0 ? d = -2 : (d = a.lastIndex - _[2].length, p = _[1], a = _[3] === void 0 ? v : _[3] === '"' ? _t : ut) : a === _t || a === ut ? a = v : a === dt || a === pt ? a = O : (a = v, r = void 0);
     const m = a === v && s[l + 1].startsWith("/>") ? " " : "";
-    n += a === O ? o + Dt : d >= 0 ? (i.push(u), o.slice(0, d) + xt + o.slice(d) + g + m) : o + g + (d === -2 ? l : m);
+    n += a === O ? o + Dt : d >= 0 ? (i.push(p), o.slice(0, d) + xt + o.slice(d) + g + m) : o + g + (d === -2 ? l : m);
   }
   return [St(s, n + (s[e] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), i];
 };
@@ -286,8 +286,8 @@ class U {
     let r;
     this.parts = [];
     let n = 0, a = 0;
-    const l = t.length - 1, o = this.parts, [u, _] = Lt(t, e);
-    if (this.el = U.createElement(u, i), b.currentNode = this.el.content, e === 2 || e === 3) {
+    const l = t.length - 1, o = this.parts, [p, _] = Lt(t, e);
+    if (this.el = U.createElement(p, i), b.currentNode = this.el.content, e === 2 || e === 3) {
       const d = this.el.content.firstChild;
       d.replaceWith(...d.childNodes);
     }
@@ -340,8 +340,8 @@ class zt {
     let n = b.nextNode(), a = 0, l = 0, o = i[0];
     for (; o !== void 0; ) {
       if (a === o.index) {
-        let u;
-        o.type === 2 ? u = new R(n, n.nextSibling, this, t) : o.type === 1 ? u = new o.ctor(n, o.name, o.strings, this, t) : o.type === 6 && (u = new Ft(n, this, t)), this._$AV.push(u), o = i[++l];
+        let p;
+        o.type === 2 ? p = new R(n, n.nextSibling, this, t) : o.type === 1 ? p = new o.ctor(n, o.name, o.strings, this, t) : o.type === 6 && (p = new Ft(n, this, t)), this._$AV.push(p), o = i[++l];
       }
       a !== o?.index && (n = b.nextNode(), a++);
     }
@@ -427,8 +427,8 @@ class W {
     if (n === void 0) t = S(this, t, e, 0), a = !T(t) || t !== this._$AH && t !== w, a && (this._$AH = t);
     else {
       const l = t;
-      let o, u;
-      for (t = n[0], o = 0; o < n.length - 1; o++) u = S(this, l[i + o], e, o), u === w && (u = this._$AH[o]), a ||= !T(u) || u !== this._$AH[o], u === c ? t = c : t !== c && (t += (u ?? "") + n[o + 1]), this._$AH[o] = u;
+      let o, p;
+      for (t = n[0], o = 0; o < n.length - 1; o++) p = S(this, l[i + o], e, o), p === w && (p = this._$AH[o]), a ||= !T(p) || p !== this._$AH[o], p === c ? t = c : t !== c && (t += (p ?? "") + n[o + 1]), this._$AH[o] = p;
     }
     a && !r && this.j(t);
   }
@@ -932,7 +932,7 @@ G.styles = j;
 G = ie([
   D("ha-adapt-lights-tab")
 ], G);
-function p(s, t, e) {
+function u(s, t, e) {
   return h`<label class="field"
     >${s}
     <input
@@ -1041,22 +1041,22 @@ let H = class extends y {
       </div>
 
       <div class="grid" style="margin-top:14px">
-        ${p(
+        ${u(
       "Min brightness %",
       s.min_brightness,
       (t) => this._patch({ min_brightness: t })
     )}
-        ${p(
+        ${u(
       "Max brightness %",
       s.max_brightness,
       (t) => this._patch({ max_brightness: t })
     )}
-        ${p(
+        ${u(
       "Min color temp K",
       s.min_color_temp,
       (t) => this._patch({ min_color_temp: t })
     )}
-        ${p(
+        ${u(
       "Max color temp K",
       s.max_color_temp,
       (t) => this._patch({ max_color_temp: t })
@@ -1115,22 +1115,22 @@ let H = class extends y {
       s.sunset_time,
       (t) => this._patch({ sunset_time: t })
     )}
-        ${p(
+        ${u(
       "Sunrise offset (s)",
       s.sunrise_offset,
       (t) => this._patch({ sunrise_offset: t })
     )}
-        ${p(
+        ${u(
       "Sunset offset (s)",
       s.sunset_offset,
       (t) => this._patch({ sunset_offset: t })
     )}
-        ${p(
+        ${u(
       "Ramp – dark side (s)",
       s.brightness_mode_time_dark,
       (t) => this._patch({ brightness_mode_time_dark: t })
     )}
-        ${p(
+        ${u(
       "Ramp – light side (s)",
       s.brightness_mode_time_light,
       (t) => this._patch({ brightness_mode_time_light: t })
@@ -1145,17 +1145,17 @@ let H = class extends y {
       </p>
       ${s.hourly_keyframes.map(
       (t, e) => h`<div class="keyframe">
-          ${p(
+          ${u(
         "Hour",
         t.hour,
         (i) => this._patchKeyframe(e, { hour: i })
       )}
-          ${p(
+          ${u(
         "Brightness %",
         t.brightness,
         (i) => this._patchKeyframe(e, { brightness: i })
       )}
-          ${p(
+          ${u(
         "Color temp K",
         t.color_temp,
         (i) => this._patchKeyframe(e, { color_temp: i })
@@ -1182,12 +1182,12 @@ let H = class extends y {
       "sensor.illuminance",
       (t) => this._patch({ sensor_entity_id: t || null })
     )}
-        ${p(
+        ${u(
       "Sensor min",
       s.sensor_min,
       (t) => this._patch({ sensor_min: t })
     )}
-        ${p(
+        ${u(
       "Sensor max",
       s.sensor_max,
       (t) => this._patch({ sensor_max: t })
@@ -1312,36 +1312,26 @@ let J = class extends I {
     return h`<div class="card">
       <h2>Global settings</h2>
       <div class="grid">
-        ${p("Interval (s)", s.interval, (e) => t({ interval: e }))}
-        ${p(
+        ${u("Interval (s)", s.interval, (e) => t({ interval: e }))}
+        ${u(
       "Transition (s)",
       s.transition,
       (e) => t({ transition: e })
     )}
-        ${p(
+        ${u(
       "Initial transition (s)",
       s.initial_transition,
       (e) => t({ initial_transition: e })
     )}
-        ${p(
+        ${u(
       "Auto-reset override (s)",
       s.autoreset_control,
       (e) => t({ autoreset_control: e })
     )}
-        ${p(
+        ${u(
       "Split delay (ms)",
       s.send_split_delay,
       (e) => t({ send_split_delay: e })
-    )}
-        ${p(
-      "Sleep brightness %",
-      s.sleep_brightness,
-      (e) => t({ sleep_brightness: e })
-    )}
-        ${p(
-      "Sleep color temp K",
-      s.sleep_color_temp,
-      (e) => t({ sleep_color_temp: e })
     )}
       </div>
       <div class="actions">
@@ -1404,7 +1394,6 @@ let $ = class extends y {
         <span class="pill ${s.enabled ? "" : "off"}">
           ${s.enabled ? "Active" : "Paused"}
         </span>
-        ${s.sleep ? h`<span class="pill">Sleep</span>` : c}
         <span class="spacer"></span>
         <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
       </header>
