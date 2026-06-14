@@ -1,8 +1,20 @@
 """Data model for HA Adapt.
 
-These dataclasses are plain, JSON-serialisable structures. They hold *no*
-Home Assistant references so they can be created and tested without a running
-HA instance. Persistence happens in store.py; the engine consumes them.
+Plain, JSON-serialisable dataclasses with **no** Home Assistant references, so
+they can be created and tested without a running HA instance.
+
+Model shape (schemas contain lights, not the other way around):
+
+    StoreData
+      settings: GlobalSettings          # instance-wide
+      active_schema_id: str             # the schema currently driving the lights
+      schemas: {id: Schema}
+        Schema
+          sun: SunConfig                # the configurable "sun" (timeline top row)
+          lights: {entity_id: LightConfig}
+            LightConfig
+              min/max brightness + color temp (per-light scaling)
+              hours: 24 cells, each None (sun-based) or {brightness, color_temp}
 """
 
 from __future__ import annotations
@@ -11,84 +23,132 @@ from dataclasses import dataclass, field, fields
 from typing import Any
 
 from .const import (
-    BRIGHTNESS_MODE_DEFAULT,
     DEFAULT_AUTORESET_CONTROL,
-    DEFAULT_BRIGHTNESS_MODE_TIME_DARK,
-    DEFAULT_BRIGHTNESS_MODE_TIME_LIGHT,
     DEFAULT_INITIAL_TRANSITION,
     DEFAULT_INTERVAL,
     DEFAULT_MAX_BRIGHTNESS,
     DEFAULT_MAX_COLOR_TEMP,
     DEFAULT_MIN_BRIGHTNESS,
     DEFAULT_MIN_COLOR_TEMP,
+    DEFAULT_RAMP_DARK,
+    DEFAULT_RAMP_LIGHT,
     DEFAULT_SCHEMA_ID,
     DEFAULT_SEND_SPLIT_DELAY,
     DEFAULT_TRANSITION,
-    MODE_SUN,
+    HOURS_PER_DAY,
 )
+
+# An hour cell is either None (fall back to the sun) or a mapping with explicit
+# "brightness" (percent) and "color_temp" (Kelvin).
+HourCell = dict[str, int] | None
 
 
 def _coerce(cls: type, data: dict[str, Any]) -> dict[str, Any]:
-    """Keep only keys that are valid fields of ``cls``.
-
-    Lets us load older/newer stored payloads without crashing on unknown keys.
-    """
+    """Keep only keys that are valid fields of ``cls``."""
     valid = {f.name for f in fields(cls)}
     return {k: v for k, v in data.items() if k in valid}
 
 
+def _normalize_hours(hours: list[Any] | None) -> list[HourCell]:
+    """Return a list of exactly 24 hour cells."""
+    result: list[HourCell] = [None] * HOURS_PER_DAY
+    for i, cell in enumerate(hours or []):
+        if i >= HOURS_PER_DAY:
+            break
+        if isinstance(cell, dict) and "brightness" in cell and "color_temp" in cell:
+            result[i] = {
+                "brightness": int(cell["brightness"]),
+                "color_temp": int(cell["color_temp"]),
+            }
+    return result
+
+
 @dataclass
-class Schema:
-    """A named, reusable lighting schema.
+class SunConfig:
+    """The configurable sun: drives every light's fallback (the timeline top row)."""
 
-    A schema fully describes how to compute brightness and color temperature
-    for the lights it is assigned to. The ``mode`` selects which inputs drive
-    the calculation; the remaining fields parametrise the chosen mode.
-    """
-
-    id: str
-    name: str
-    mode: str = MODE_SUN
-
-    # Shared output bounds / behaviour.
     min_brightness: int = DEFAULT_MIN_BRIGHTNESS
     max_brightness: int = DEFAULT_MAX_BRIGHTNESS
     min_color_temp: int = DEFAULT_MIN_COLOR_TEMP
     max_color_temp: int = DEFAULT_MAX_COLOR_TEMP
-    transition: int | None = None  # None -> fall back to global transition
-    adapt_brightness: bool = True
-    adapt_color: bool = True
-    # Send brightness and color as separate light.turn_on calls (e.g. IKEA).
-    separate_turn_on_commands: bool = False
-
-    # --- SUN mode --------------------------------------------------------
-    brightness_mode: str = BRIGHTNESS_MODE_DEFAULT
-    brightness_mode_time_dark: int = DEFAULT_BRIGHTNESS_MODE_TIME_DARK
-    brightness_mode_time_light: int = DEFAULT_BRIGHTNESS_MODE_TIME_LIGHT
+    # Width of the tanh brightness ramp around sunrise/sunset (seconds).
+    ramp_dark: int = DEFAULT_RAMP_DARK
+    ramp_light: int = DEFAULT_RAMP_LIGHT
     sunrise_time: str | None = None  # fixed "HH:MM:SS" overrides astral
-    sunset_time: str | None = None  # fixed "HH:MM:SS" overrides astral
+    sunset_time: str | None = None
     sunrise_offset: int = 0  # seconds
-    sunset_offset: int = 0  # seconds
-    min_sunrise_time: str | None = None  # earliest virtual sunrise "HH:MM:SS"
+    sunset_offset: int = 0
+    min_sunrise_time: str | None = None
     max_sunrise_time: str | None = None
     min_sunset_time: str | None = None
     max_sunset_time: str | None = None
-
-    # --- HOURLY mode -----------------------------------------------------
-    # Each keyframe: {"hour": float 0-24, "brightness": pct, "color_temp": K}
-    hourly_keyframes: list[dict[str, float]] = field(default_factory=list)
-
-    # --- SENSOR mode -----------------------------------------------------
-    sensor_entity_id: str | None = None
-    sensor_min: float = 0.0  # sensor value mapped to the minimum outputs
-    sensor_max: float = 100.0  # sensor value mapped to the maximum outputs
 
     def to_dict(self) -> dict[str, Any]:
         return {f.name: getattr(self, f.name) for f in fields(self)}
 
     @classmethod
+    def from_dict(cls, data: dict[str, Any] | None) -> SunConfig:
+        return cls(**_coerce(cls, data or {}))
+
+
+@dataclass
+class LightConfig:
+    """Per-light settings within a schema."""
+
+    min_brightness: int = DEFAULT_MIN_BRIGHTNESS
+    max_brightness: int = DEFAULT_MAX_BRIGHTNESS
+    min_color_temp: int = DEFAULT_MIN_COLOR_TEMP
+    max_color_temp: int = DEFAULT_MAX_COLOR_TEMP
+    # Send brightness and color as separate light.turn_on calls (e.g. IKEA).
+    separate_turn_on_commands: bool = False
+    # 24 cells; None = follow the sun for that hour.
+    hours: list[HourCell] = field(
+        default_factory=lambda: [None] * HOURS_PER_DAY
+    )
+
+    def __post_init__(self) -> None:
+        self.hours = _normalize_hours(self.hours)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {f.name: getattr(self, f.name) for f in fields(self)}
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any] | None) -> LightConfig:
+        return cls(**_coerce(cls, data or {}))
+
+
+@dataclass
+class Schema:
+    """A complete, named configuration covering all controlled lights."""
+
+    id: str
+    name: str
+    sun: SunConfig = field(default_factory=SunConfig)
+    lights: dict[str, LightConfig] = field(default_factory=dict)
+
+    def light_config(self, entity_id: str) -> LightConfig:
+        """Return the config for ``entity_id`` (a default if not customised)."""
+        return self.lights.get(entity_id) or LightConfig()
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "sun": self.sun.to_dict(),
+            "lights": {eid: cfg.to_dict() for eid, cfg in self.lights.items()},
+        }
+
+    @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Schema:
-        return cls(**_coerce(cls, data))
+        return cls(
+            id=data["id"],
+            name=data.get("name", data["id"]),
+            sun=SunConfig.from_dict(data.get("sun")),
+            lights={
+                eid: LightConfig.from_dict(cfg)
+                for eid, cfg in (data.get("lights") or {}).items()
+            },
+        )
 
 
 @dataclass
@@ -117,35 +177,38 @@ class StoreData:
 
     settings: GlobalSettings = field(default_factory=GlobalSettings)
     schemas: dict[str, Schema] = field(default_factory=dict)
-    # entity_id -> schema_id. A missing entry means "use the default schema".
-    assignments: dict[str, str] = field(default_factory=dict)
+    active_schema_id: str = DEFAULT_SCHEMA_ID
 
     def __post_init__(self) -> None:
-        # Guarantee a default schema always exists.
+        # Guarantee a default schema always exists and is a valid active target.
         if DEFAULT_SCHEMA_ID not in self.schemas:
             self.schemas[DEFAULT_SCHEMA_ID] = Schema(
                 id=DEFAULT_SCHEMA_ID, name="Default"
             )
+        if self.active_schema_id not in self.schemas:
+            self.active_schema_id = DEFAULT_SCHEMA_ID
 
-    def schema_for(self, entity_id: str) -> Schema:
-        """Return the schema assigned to ``entity_id`` (or the default)."""
-        schema_id = self.assignments.get(entity_id, DEFAULT_SCHEMA_ID)
-        return self.schemas.get(schema_id) or self.schemas[DEFAULT_SCHEMA_ID]
+    @property
+    def active_schema(self) -> Schema:
+        return self.schemas.get(self.active_schema_id) or self.schemas[
+            DEFAULT_SCHEMA_ID
+        ]
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "settings": self.settings.to_dict(),
             "schemas": {sid: s.to_dict() for sid, s in self.schemas.items()},
-            "assignments": dict(self.assignments),
+            "active_schema_id": self.active_schema_id,
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any] | None) -> StoreData:
         data = data or {}
-        settings = GlobalSettings.from_dict(data.get("settings", {}))
-        schemas = {
-            sid: Schema.from_dict(sd)
-            for sid, sd in (data.get("schemas") or {}).items()
-        }
-        assignments = dict(data.get("assignments") or {})
-        return cls(settings=settings, schemas=schemas, assignments=assignments)
+        return cls(
+            settings=GlobalSettings.from_dict(data.get("settings", {})),
+            schemas={
+                sid: Schema.from_dict(sd)
+                for sid, sd in (data.get("schemas") or {}).items()
+            },
+            active_schema_id=data.get("active_schema_id", DEFAULT_SCHEMA_ID),
+        )

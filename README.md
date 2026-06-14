@@ -17,38 +17,38 @@ purpose-built **web-ui panel** in the sidebar.
 
 ## Highlights
 
-- **Three control modes per schema**
-  - **Sun** — automatic brightness/color from the sun's position, with
-    `default` / `linear` / `tanh` brightness curves.
-  - **By hour** — interpolated brightness/color keyframes across the day.
-  - **Sensor** — drive lighting from any numeric sensor with custom scaling.
-    The sun is modelled as the *default* input source, so a real sensor is a
-    drop-in replacement (see [Architecture](#architecture)).
-- **Reusable schemas** — one default schema applies to every light; assign any
-  light its own schema for per-light behaviour.
+- **Schemas are timelines.** A schema covers *all* your lights. It has a
+  configurable **sun** plus a **24-hour timeline** with one row per light:
+  - The **sun row** (top) shows the computed brightness/color per hour.
+  - Each **light row** can pin an explicit brightness + color temp for any
+    hour; empty cells follow the sun, scaled into that light's range.
+  - Each light has its own **min/max brightness and color temp**.
+  - **Step through the day** with the time slider and optionally push the
+    preview live to your lights.
+- **One active schema at a time** — switch which schema drives the lights.
 - **Location-based sun temperature** — uses your Home Assistant location
-  (astral), with fixed `sunrise`/`sunset` times, offsets, and min/max bounds.
+  (astral), with fixed `sunrise`/`sunset` times and offsets.
+- **Tanh dawn/dusk ramps** — a single smooth brightness curve around
+  sunrise/sunset (ramp widths configurable).
 - **Turn-on interception & override detection** — manual changes pause
   adaptation, with a configurable **auto-reset** that hands control back.
-- **Split commands** — send brightness and color as separate `light.turn_on`
-  calls for devices that need it (e.g. IKEA).
-- **Tanh-based curves** for smooth dawn/dusk ramps.
+- **Split commands** — per light, send brightness and color as separate
+  `light.turn_on` calls for devices that need it (e.g. IKEA).
 - **File-backed storage** — all configuration lives in
-  `<config>/.storage/ha_adapt`; export/import via the panel for backups.
-- **Warm, monotone web-ui** — the configuration panel is themed in a single
-  amber/terracotta palette.
+  `<config>/.storage/ha_adapt`.
+- **Warm, monotone web-ui** — themed in a single amber/terracotta palette.
 
 ## Configuration that maps to adaptive-lighting
 
 These familiar options are exposed in the panel:
 
-| Option            | Where               | Meaning                                    |
-| ----------------- | ------------------- | ------------------------------------------ |
-| `interval`        | Settings            | How often to adapt the lights (seconds).   |
-| `transition`      | Settings / schema   | Light transition duration (seconds).       |
-| `sunset_time`     | Schema (Sun mode)   | Fixed `HH:MM:SS` sunset overriding astral. |
-| `autoreset`       | Settings            | Auto-reset manual control after N seconds. |
-| split commands    | Schema              | Separate brightness/color calls (IKEA).    |
+| Option         | Where    | Meaning                                    |
+| -------------- | -------- | ------------------------------------------ |
+| `interval`     | Settings | How often to adapt the lights (seconds).   |
+| `transition`   | Settings | Light transition duration (seconds).       |
+| `sunset_time`  | Sun      | Fixed `HH:MM:SS` sunset overriding astral. |
+| `autoreset`    | Settings | Auto-reset manual control after N seconds. |
+| split commands | Light    | Separate brightness/color calls (IKEA).    |
 
 ## Installation
 
@@ -70,9 +70,10 @@ restart Home Assistant.
 2. Select the lights or light groups to control. (This is the *only* thing the
    config flow asks — by design.)
 3. Open **Adaptive Lighting** in the sidebar:
-   - **Lights** — see each light's live target, reset manual control, and
-     assign a schema.
-   - **Schemas** — create/edit schemas, pick a mode, and tune the curve.
+   - **Lights** — live status of every light; reset manual control.
+   - **Schemas** — the timeline editor: tune the sun, click timeline cells to
+     pin per-hour values, set per-light ranges, mark a schema active, and step
+     the day with the preview slider.
    - **Settings** — `interval`, `transition`, auto-reset, etc.
 
 A master *Adaptive lighting* switch is also created to enable/disable
@@ -90,19 +91,20 @@ The integration is split into small, focused modules:
 
 | File             | Responsibility                                                  |
 | ---------------- | --------------------------------------------------------------- |
-| `engine.py`      | **Pure** math: sun snapshot, tanh/linear curves, drive→target.  |
+| `engine.py`      | **Pure** math: sun snapshot, tanh ramp, per-light hour anchors. |
 | `coordinator.py` | The runtime manager: scheduling, applying, override + auto-reset. |
 | `interceptor.py` | Listens for `light.turn_on` to flag manual control.             |
-| `models.py`      | Plain dataclasses (`Schema`, `GlobalSettings`, `StoreData`).    |
+| `models.py`      | Dataclasses (`Schema`, `SunConfig`, `LightConfig`, `StoreData`). |
 | `store.py`       | File-backed persistence via HA's `Store`.                       |
 | `panel.py`       | Static asset, sidebar panel, and WebSocket API.                 |
 | `switch.py`      | Master switch.                                                  |
 | `config_flow.py` | Entity-id selection only.                                       |
 
-The key idea: an **input source** produces a normalized `DriveSignal`, which a
-shared mapping turns into a concrete light `Target`. The sun is just the
-default source (`sun_drive`); a sensor is another (`sensor_drive`). This keeps
-the math pure and makes "replace the sun with a sensor" a one-line change.
+The key idea: the sun produces a normalized `DriveSignal`; scaling it into a
+light's range yields that light's hourly fallback. For each light the engine
+builds 24 **anchors** — explicit cells where set, sun-derived otherwise — and
+the live value is a cyclic interpolation across them. The same `DriveSignal`
+shape means a real sensor could feed the pipeline later instead of the sun.
 
 The web-ui (`frontend/`, Lit + TypeScript) is built with Vite into a single
 bundle committed at `custom_components/ha_adapt/frontend/dist/ha-adapt-panel.js`.

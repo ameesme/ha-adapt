@@ -1,33 +1,15 @@
-import type { Mode, Schema } from "./types";
+import type { LightConfig, Schema, SunConfig } from "./types";
 
-export const MODE_LABELS: Record<Mode, string> = {
-  sun: "Sun (automatic)",
-  hourly: "By hour",
-  sensor: "Sensor input",
-};
+export const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
-export const BRIGHTNESS_MODE_LABELS: Record<string, string> = {
-  default: "Default",
-  linear: "Linear ramp",
-  tanh: "Tanh (smooth)",
-};
-
-export function defaultSchema(id: string, name: string): Schema {
+export function defaultSunConfig(): SunConfig {
   return {
-    id,
-    name,
-    mode: "sun",
     min_brightness: 1,
     max_brightness: 100,
     min_color_temp: 2000,
     max_color_temp: 5500,
-    transition: null,
-    adapt_brightness: true,
-    adapt_color: true,
-    separate_turn_on_commands: false,
-    brightness_mode: "default",
-    brightness_mode_time_dark: 900,
-    brightness_mode_time_light: 3600,
+    ramp_dark: 900,
+    ramp_light: 3600,
     sunrise_time: null,
     sunset_time: null,
     sunrise_offset: 0,
@@ -36,16 +18,26 @@ export function defaultSchema(id: string, name: string): Schema {
     max_sunrise_time: null,
     min_sunset_time: null,
     max_sunset_time: null,
-    hourly_keyframes: [],
-    sensor_entity_id: null,
-    sensor_min: 0,
-    sensor_max: 100,
   };
 }
 
-// Rough Kelvin -> CSS color, used only for the little preview swatches.
-export function kelvinToCss(kelvin: number | null): string {
-  if (kelvin == null) return "transparent";
+export function defaultLightConfig(): LightConfig {
+  return {
+    min_brightness: 1,
+    max_brightness: 100,
+    min_color_temp: 2000,
+    max_color_temp: 5500,
+    separate_turn_on_commands: false,
+    hours: Array.from({ length: 24 }, () => null),
+  };
+}
+
+export function defaultSchema(id: string, name: string): Schema {
+  return { id, name, sun: defaultSunConfig(), lights: {} };
+}
+
+// Rough Kelvin -> CSS color, used for the timeline swatches.
+export function kelvinToCss(kelvin: number): string {
   const temp = Math.max(1000, Math.min(12000, kelvin)) / 100;
   let r: number;
   let g: number;
@@ -66,4 +58,8 @@ export function kelvinToCss(kelvin: number | null): string {
   }
   const clamp = (v: number) => Math.max(0, Math.min(255, Math.round(v)));
   return `rgb(${clamp(r)}, ${clamp(g)}, ${clamp(b)})`;
+}
+
+export function hourLabel(hour: number): string {
+  return String(hour).padStart(2, "0");
 }

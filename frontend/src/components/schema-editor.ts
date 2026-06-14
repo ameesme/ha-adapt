@@ -8,231 +8,318 @@ import {
 } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
-import {
-  checkboxField,
-  numberField,
-  selectField,
-  textField,
-  timeField,
-} from "../form-fields";
+import type { HaAdaptApi } from "../api";
+import { checkboxField, numberField } from "../form-fields";
 import { baseStyles } from "../theme";
-import type { HourlyKeyframe, Mode, Schema } from "../types";
-import { BRIGHTNESS_MODE_LABELS, MODE_LABELS } from "../utils";
+import type {
+  ConfigPayload,
+  HourCell,
+  LightConfig,
+  LightInfo,
+  Schema,
+  SunConfig,
+  TimelineData,
+} from "../types";
+import { defaultLightConfig } from "../utils";
+import type { CellRef } from "./timeline-grid";
+import "./timeline-grid";
+import "./sun-config";
 
-// Edits a single schema. Holds a local draft so edits are uncommitted until
-// "Save"; emits `schema-save` / `schema-delete` for the parent to persist.
+// Edits one schema: name, sun, the 24-hour timeline, and the contextual cell /
+// light editors. Persists through the api and bubbles `config-changed`; emits
+// `schema-delete` for the parent to handle selection.
 @customElement("ha-adapt-schema-editor")
 export class SchemaEditor extends LitElement {
   static override styles = [
     baseStyles,
     css`
-      .keyframe {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr auto;
-        gap: 8px;
-        align-items: end;
-        margin-bottom: 8px;
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .scrubber {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .scrubber input[type="range"] {
+        flex: 1;
+        accent-color: var(--accent);
+      }
+      .clock {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        color: var(--accent-strong);
+        min-width: 52px;
       }
     `,
   ];
 
   @property({ attribute: false }) schema!: Schema;
+  @property({ attribute: false }) lights: LightInfo[] = [];
+  @property({ attribute: false }) api!: HaAdaptApi;
+  @property({ type: Boolean }) active = false;
+
   @state() private _draft!: Schema;
+  @state() private _timeline?: TimelineData;
+  @state() private _selectedCell: CellRef | null = null;
+  @state() private _selectedLight: string | null = null;
+  @state() private _previewHour = 12;
+  @state() private _livePreview = false;
+
+  private _previewTimer?: number;
 
   protected override willUpdate(changed: PropertyValues): void {
-    // Reset the draft only when switching to a different schema, so in-progress
-    // edits survive unrelated re-renders.
     if (changed.has("schema") && this._draft?.id !== this.schema.id) {
-      this._draft = { ...this.schema };
+      this._draft = structuredClone(this.schema);
+      this._selectedCell = null;
+      this._selectedLight = null;
+      void this._loadTimeline();
     }
   }
 
+  private async _loadTimeline(): Promise<void> {
+    try {
+      this._timeline = await this.api.timeline(this._draft.id);
+    } catch {
+      this._timeline = undefined;
+    }
+  }
+
+  // --- persistence ---------------------------------------------------------
+
+  private async _saveAndRefresh(): Promise<void> {
+    try {
+      const config = await this.api.saveSchema(this._draft);
+      this.dispatchEvent(
+        new CustomEvent<ConfigPayload>("config-changed", {
+          detail: config,
+          bubbles: true,
+          composed: true,
+        })
+      );
+      await this._loadTimeline();
+    } catch (err) {
+      this.dispatchEvent(
+        new CustomEvent("panel-error", {
+          detail: String(err),
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }
+  }
+
+  private _lightCfg(entityId: string): LightConfig {
+    return this._draft.lights[entityId] ?? defaultLightConfig();
+  }
+
+  private _patchLight(entityId: string, patch: Partial<LightConfig>): void {
+    const next = { ...this._lightCfg(entityId), ...patch };
+    this._draft = {
+      ...this._draft,
+      lights: { ...this._draft.lights, [entityId]: next },
+    };
+    void this._saveAndRefresh();
+  }
+
+  // --- render --------------------------------------------------------------
+
   override render(): TemplateResult {
-    const draft = this._draft;
+    return html`
+      <div class="card">
+        <div class="toolbar">
+          <input
+            type="text"
+            style="max-width:260px"
+            .value=${this._draft.name}
+            @change=${(e: Event) =>
+              this._patchSchema({
+                name: (e.target as HTMLInputElement).value,
+              })}
+          />
+          ${this.active
+            ? html`<span class="badge">Active</span>`
+            : html`<button
+                class="btn ghost"
+                @click=${() => void this._setActive()}
+              >
+                Set active
+              </button>`}
+          <span class="grow"></span>
+          ${this._draft.id !== "default"
+            ? html`<button class="btn danger" @click=${this._delete}>
+                Delete
+              </button>`
+            : nothing}
+        </div>
+      </div>
+
+      <ha-adapt-sun-config
+        .sun=${this._draft.sun}
+        @sun-changed=${(e: CustomEvent<SunConfig>) =>
+          this._patchSchema({ sun: e.detail })}
+      ></ha-adapt-sun-config>
+
+      <ha-adapt-timeline-grid
+        .lights=${this.lights}
+        .timeline=${this._timeline}
+        .selected=${this._selectedCell}
+        .previewHour=${this._previewHour}
+        @select-cell=${(e: CustomEvent<CellRef>) => {
+          this._selectedCell = e.detail;
+          this._selectedLight = null;
+        }}
+        @select-light=${(e: CustomEvent<string>) => {
+          this._selectedLight = e.detail;
+          this._selectedCell = null;
+        }}
+      ></ha-adapt-timeline-grid>
+
+      ${this._renderScrubber()}
+      ${this._selectedCell ? this._renderCellEditor() : nothing}
+      ${this._selectedLight ? this._renderLightEditor() : nothing}
+    `;
+  }
+
+  private _renderScrubber(): TemplateResult {
+    const h = Math.floor(this._previewHour);
+    const m = Math.round((this._previewHour - h) * 60);
+    const label = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
     return html`<div class="card">
+      <div class="scrubber">
+        <span class="clock">${label}</span>
+        <input
+          type="range"
+          min="0"
+          max="23.5"
+          step="0.5"
+          .value=${String(this._previewHour)}
+          @input=${(e: Event) =>
+            this._onScrub(Number((e.target as HTMLInputElement).value))}
+        />
+        ${checkboxField("Live preview to lights", this._livePreview, (v) => {
+          this._livePreview = v;
+          if (v) this._sendPreview();
+        })}
+      </div>
+      <p class="muted">
+        Drag to step through the day. With live preview on, the lights that are
+        currently on follow the slider.
+      </p>
+    </div>`;
+  }
+
+  private _renderCellEditor(): TemplateResult {
+    const ref = this._selectedCell!;
+    const light = this.lights.find((l) => l.entity_id === ref.entityId);
+    const explicit = this._lightCfg(ref.entityId).hours[ref.hour];
+    const effective = this._timeline?.lights[ref.entityId]?.[ref.hour];
+    const brightness = explicit?.brightness ?? effective?.brightness ?? 50;
+    const colorTemp = explicit?.color_temp ?? effective?.color_temp ?? 3000;
+    return html`<div class="card">
+      <h2>
+        ${light?.name ?? ref.entityId} · ${String(ref.hour).padStart(2, "0")}:00
+      </h2>
+      <p class="muted">
+        ${explicit
+          ? "Explicit override for this hour."
+          : "Currently following the sun — set a value to override."}
+      </p>
       <div class="grid">
-        ${textField("Name", draft.name, "", (v) => this._patch({ name: v }))}
-        ${selectField(
-          "Mode",
-          draft.mode,
-          (Object.keys(MODE_LABELS) as Mode[]).map((mode) => ({
-            value: mode,
-            label: MODE_LABELS[mode],
-          })),
-          (v) => this._patch({ mode: v as Mode })
+        ${numberField("Brightness %", brightness, (v) =>
+          this._setCell(ref, { brightness: v, color_temp: colorTemp })
+        )}
+        ${numberField("Color temp K", colorTemp, (v) =>
+          this._setCell(ref, { brightness, color_temp: v })
         )}
       </div>
-
-      <div class="grid" style="margin-top:14px">
-        ${numberField("Min brightness %", draft.min_brightness, (v) =>
-          this._patch({ min_brightness: v })
-        )}
-        ${numberField("Max brightness %", draft.max_brightness, (v) =>
-          this._patch({ max_brightness: v })
-        )}
-        ${numberField("Min color temp K", draft.min_color_temp, (v) =>
-          this._patch({ min_color_temp: v })
-        )}
-        ${numberField("Max color temp K", draft.max_color_temp, (v) =>
-          this._patch({ max_color_temp: v })
-        )}
-      </div>
-
       <div class="actions">
-        ${checkboxField("Adapt brightness", draft.adapt_brightness, (v) =>
-          this._patch({ adapt_brightness: v })
-        )}
-        ${checkboxField("Adapt color", draft.adapt_color, (v) =>
-          this._patch({ adapt_color: v })
-        )}
-        ${checkboxField(
-          "Split commands (IKEA)",
-          draft.separate_turn_on_commands,
-          (v) => this._patch({ separate_turn_on_commands: v })
-        )}
-      </div>
-
-      ${draft.mode === "sun" ? this._renderSun(draft) : nothing}
-      ${draft.mode === "hourly" ? this._renderHourly(draft) : nothing}
-      ${draft.mode === "sensor" ? this._renderSensor(draft) : nothing}
-
-      <div class="actions">
-        <button class="btn" @click=${this._save}>Save schema</button>
-        ${draft.id !== "default"
-          ? html`<button class="btn danger" @click=${this._delete}>
-              Delete
+        ${explicit
+          ? html`<button
+              class="btn ghost"
+              @click=${() => this._setCell(ref, null)}
+            >
+              Use sun (clear)
             </button>`
           : nothing}
+        <button class="btn ghost" @click=${() => (this._selectedCell = null)}>
+          Close
+        </button>
       </div>
     </div>`;
   }
 
-  private _renderSun(draft: Schema): TemplateResult {
-    return html`<h2 style="margin-top:18px">Sun settings</h2>
+  private _renderLightEditor(): TemplateResult {
+    const entityId = this._selectedLight!;
+    const light = this.lights.find((l) => l.entity_id === entityId);
+    const cfg = this._lightCfg(entityId);
+    return html`<div class="card">
+      <h2>${light?.name ?? entityId} · range</h2>
       <div class="grid">
-        ${selectField(
-          "Brightness curve",
-          draft.brightness_mode,
-          Object.keys(BRIGHTNESS_MODE_LABELS).map((mode) => ({
-            value: mode,
-            label: BRIGHTNESS_MODE_LABELS[mode],
-          })),
-          (v) =>
-            this._patch({ brightness_mode: v as Schema["brightness_mode"] })
+        ${numberField("Min brightness %", cfg.min_brightness, (v) =>
+          this._patchLight(entityId, { min_brightness: v })
         )}
-        ${timeField("Fixed sunrise", draft.sunrise_time, (v) =>
-          this._patch({ sunrise_time: v })
+        ${numberField("Max brightness %", cfg.max_brightness, (v) =>
+          this._patchLight(entityId, { max_brightness: v })
         )}
-        ${timeField("Fixed sunset", draft.sunset_time, (v) =>
-          this._patch({ sunset_time: v })
+        ${numberField("Min color temp K", cfg.min_color_temp, (v) =>
+          this._patchLight(entityId, { min_color_temp: v })
         )}
-        ${numberField("Sunrise offset (s)", draft.sunrise_offset, (v) =>
-          this._patch({ sunrise_offset: v })
+        ${numberField("Max color temp K", cfg.max_color_temp, (v) =>
+          this._patchLight(entityId, { max_color_temp: v })
         )}
-        ${numberField("Sunset offset (s)", draft.sunset_offset, (v) =>
-          this._patch({ sunset_offset: v })
+      </div>
+      <div class="actions">
+        ${checkboxField(
+          "Split commands (IKEA)",
+          cfg.separate_turn_on_commands,
+          (v) => this._patchLight(entityId, { separate_turn_on_commands: v })
         )}
-        ${numberField(
-          "Ramp – dark side (s)",
-          draft.brightness_mode_time_dark,
-          (v) => this._patch({ brightness_mode_time_dark: v })
-        )}
-        ${numberField(
-          "Ramp – light side (s)",
-          draft.brightness_mode_time_light,
-          (v) => this._patch({ brightness_mode_time_light: v })
-        )}
-      </div>`;
+        <span class="grow"></span>
+        <button class="btn ghost" @click=${() => (this._selectedLight = null)}>
+          Close
+        </button>
+      </div>
+    </div>`;
   }
 
-  private _renderHourly(draft: Schema): TemplateResult {
-    return html`<h2 style="margin-top:18px">Hourly keyframes</h2>
-      <p class="muted">
-        Brightness and color temperature are interpolated between these points
-        across the day.
-      </p>
-      ${draft.hourly_keyframes.map(
-        (frame, index) => html`<div class="keyframe">
-          ${numberField("Hour", frame.hour, (v) =>
-            this._patchKeyframe(index, { hour: v })
-          )}
-          ${numberField("Brightness %", frame.brightness, (v) =>
-            this._patchKeyframe(index, { brightness: v })
-          )}
-          ${numberField("Color temp K", frame.color_temp, (v) =>
-            this._patchKeyframe(index, { color_temp: v })
-          )}
-          <button class="btn danger" @click=${() => this._removeKeyframe(index)}>
-            ✕
-          </button>
-        </div>`
-      )}
-      <button class="btn ghost" @click=${this._addKeyframe}>
-        + Add keyframe
-      </button>`;
-  }
+  // --- actions -------------------------------------------------------------
 
-  private _renderSensor(draft: Schema): TemplateResult {
-    return html`<h2 style="margin-top:18px">Sensor input</h2>
-      <p class="muted">
-        Drive brightness and color from a sensor. The sun is the built-in
-        default source — this lets a real sensor take over.
-      </p>
-      <div class="grid">
-        ${textField(
-          "Sensor entity id",
-          draft.sensor_entity_id ?? "",
-          "sensor.illuminance",
-          (v) => this._patch({ sensor_entity_id: v || null })
-        )}
-        ${numberField("Sensor min", draft.sensor_min, (v) =>
-          this._patch({ sensor_min: v })
-        )}
-        ${numberField("Sensor max", draft.sensor_max, (v) =>
-          this._patch({ sensor_max: v })
-        )}
-      </div>`;
-  }
-
-  private _patch(patch: Partial<Schema>): void {
+  private _patchSchema(patch: Partial<Schema>): void {
     this._draft = { ...this._draft, ...patch };
+    void this._saveAndRefresh();
   }
 
-  private _patchKeyframe(index: number, patch: Partial<HourlyKeyframe>): void {
-    const frames = this._draft.hourly_keyframes.map((frame, i) =>
-      i === index ? { ...frame, ...patch } : frame
-    );
-    this._draft = { ...this._draft, hourly_keyframes: frames };
+  private _setCell(ref: CellRef, cell: HourCell): void {
+    const cfg = this._lightCfg(ref.entityId);
+    const hours = [...cfg.hours];
+    hours[ref.hour] = cell;
+    this._patchLight(ref.entityId, { hours });
   }
 
-  private _addKeyframe = (): void => {
-    this._draft = {
-      ...this._draft,
-      hourly_keyframes: [
-        ...this._draft.hourly_keyframes,
-        { hour: 12, brightness: 80, color_temp: 4000 },
-      ],
-    };
-  };
-
-  private _removeKeyframe(index: number): void {
-    this._draft = {
-      ...this._draft,
-      hourly_keyframes: this._draft.hourly_keyframes.filter(
-        (_, i) => i !== index
-      ),
-    };
+  private async _setActive(): Promise<void> {
+    try {
+      const config = await this.api.setActiveSchema(this._draft.id);
+      this.dispatchEvent(
+        new CustomEvent<ConfigPayload>("config-changed", {
+          detail: config,
+          bubbles: true,
+          composed: true,
+        })
+      );
+    } catch (err) {
+      this.dispatchEvent(
+        new CustomEvent("panel-error", {
+          detail: String(err),
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }
   }
-
-  private _save = (): void => {
-    this.dispatchEvent(
-      new CustomEvent("schema-save", {
-        detail: this._draft,
-        bubbles: true,
-        composed: true,
-      })
-    );
-  };
 
   private _delete = (): void => {
     this.dispatchEvent(
@@ -243,6 +330,18 @@ export class SchemaEditor extends LitElement {
       })
     );
   };
+
+  private _onScrub(hour: number): void {
+    this._previewHour = hour;
+    if (this._livePreview) this._sendPreview();
+  }
+
+  private _sendPreview(): void {
+    window.clearTimeout(this._previewTimer);
+    this._previewTimer = window.setTimeout(() => {
+      void this.api.preview(this._draft.id, this._previewHour, true);
+    }, 150);
+  }
 }
 
 declare global {

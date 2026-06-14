@@ -1,33 +1,13 @@
-// Shapes mirroring the Python dataclasses (models.py) and the WebSocket
-// payloads (panel.py). Kept intentionally permissive — the backend is the
-// source of truth and tolerates unknown keys.
+// Shapes mirroring the Python dataclasses (models.py) and WebSocket payloads
+// (panel.py). A schema owns the sun config and one timeline row per light.
 
-export type Mode = "sun" | "hourly" | "sensor";
-export type BrightnessMode = "default" | "linear" | "tanh";
-
-export interface HourlyKeyframe {
-  hour: number;
-  brightness: number;
-  color_temp: number;
-}
-
-export interface Schema {
-  id: string;
-  name: string;
-  mode: Mode;
-
+export interface SunConfig {
   min_brightness: number;
   max_brightness: number;
   min_color_temp: number;
   max_color_temp: number;
-  transition: number | null;
-  adapt_brightness: boolean;
-  adapt_color: boolean;
-  separate_turn_on_commands: boolean;
-
-  brightness_mode: BrightnessMode;
-  brightness_mode_time_dark: number;
-  brightness_mode_time_light: number;
+  ramp_dark: number;
+  ramp_light: number;
   sunrise_time: string | null;
   sunset_time: string | null;
   sunrise_offset: number;
@@ -36,12 +16,25 @@ export interface Schema {
   max_sunrise_time: string | null;
   min_sunset_time: string | null;
   max_sunset_time: string | null;
+}
 
-  hourly_keyframes: HourlyKeyframe[];
+// An hour cell is either an explicit override or null (follow the sun).
+export type HourCell = { brightness: number; color_temp: number } | null;
 
-  sensor_entity_id: string | null;
-  sensor_min: number;
-  sensor_max: number;
+export interface LightConfig {
+  min_brightness: number;
+  max_brightness: number;
+  min_color_temp: number;
+  max_color_temp: number;
+  separate_turn_on_commands: boolean;
+  hours: HourCell[]; // length 24
+}
+
+export interface Schema {
+  id: string;
+  name: string;
+  sun: SunConfig;
+  lights: Record<string, LightConfig>;
 }
 
 export interface GlobalSettings {
@@ -58,20 +51,28 @@ export interface LightInfo {
   entity_id: string;
   name: string;
   state: string;
-  schema_id: string;
   manual_control: boolean;
-  target: {
-    brightness_pct: number | null;
-    color_temp_kelvin: number | null;
-  };
+  target: { brightness_pct: number | null; color_temp_kelvin: number | null };
 }
 
 export interface ConfigPayload {
   settings: GlobalSettings;
   schemas: Record<string, Schema>;
-  assignments: Record<string, string>;
+  active_schema_id: string;
   lights: LightInfo[];
   enabled: boolean;
+}
+
+// Computed per-hour values for rendering the timeline (from ha_adapt/timeline).
+export interface TimelineCell {
+  brightness: number;
+  color_temp: number;
+  explicit: boolean;
+}
+
+export interface TimelineData {
+  sun: { brightness: number; color_temp: number }[]; // length 24
+  lights: Record<string, TimelineCell[]>; // entity_id -> length 24
 }
 
 // Minimal slice of the Home Assistant object the panel relies on.

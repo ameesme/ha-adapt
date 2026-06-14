@@ -48,11 +48,11 @@ from . import engine
 from .const import (
     CONF_LIGHTS,
     DOMAIN,
-    MODE_SENSOR,
-    MODE_SUN,
+    HOURS_PER_DAY,
     SIGNAL_CONFIG_UPDATED,
 )
-from .engine import Target
+from .engine import DriveSignal, Target
+from .models import LightConfig, Schema, SunConfig
 from .store import HaAdaptStore
 
 
@@ -177,6 +177,10 @@ class AdaptCoordinator:
         if enabled:
             self.hass.async_create_task(self.async_adapt_all())
 
+    def set_active_schema(self, schema_id: str) -> None:
+        if schema_id in self.data.schemas:
+            self.data.active_schema_id = schema_id
+
     async def async_save(self) -> None:
         await self.store.async_save()
 
@@ -221,45 +225,42 @@ class AdaptCoordinator:
         target = self._compute_target(entity_id, now)
         if target.is_empty:
             return
-        schema = self.data.schema_for(entity_id)
-        transition = (
-            schema.transition
-            if schema.transition is not None
-            else self.settings.transition
+        light_cfg = self.data.active_schema.light_config(entity_id)
+        await self._apply_light(
+            entity_id, light_cfg, target, self.settings.transition
         )
-        await self._apply_light(entity_id, schema, target, transition)
         rt.last_target = target
 
     def _compute_target(self, entity_id: str, now: datetime) -> Target:
-        schema = self.data.schema_for(entity_id)
-        snapshot = None
-        sensor_value = None
-        if schema.mode == MODE_SUN:
-            snapshot = engine.sun_snapshot(now, self._sun_events(schema, now))
-        elif schema.mode == MODE_SENSOR and schema.sensor_entity_id:
-            sensor_value = self._read_sensor(schema.sensor_entity_id)
-        return engine.compute_target(schema, now, snapshot, sensor_value)
+        schema = self.data.active_schema
+        drives = self._sun_drives(schema.sun, now)
+        light_cfg = schema.light_config(entity_id)
+        return engine.light_target(light_cfg, drives, _local_hour(now))
 
-    def _read_sensor(self, entity_id: str) -> float | None:
-        state = self.hass.states.get(entity_id)
-        if state is None:
-            return None
-        try:
-            return float(state.state)
-        except (ValueError, TypeError):
-            return None
+    def _sun_drives(self, sun: SunConfig, now: datetime) -> list[DriveSignal]:
+        """The sun's normalized drive for each of the 24 local hours of today."""
+        events = self._sun_events(sun, now)
+        midnight = dt_util.as_local(now).replace(
+            hour=0, minute=0, second=0, microsecond=0
+        )
+        drives: list[DriveSignal] = []
+        for hour in range(HOURS_PER_DAY):
+            moment = dt_util.as_utc(midnight + timedelta(hours=hour))
+            snap = engine.sun_snapshot(moment, events)
+            drives.append(engine.sun_drive(moment, snap, sun))
+        return drives
 
     # --- applying values to lights ------------------------------------------
 
     async def _apply_light(
-        self, entity_id: str, schema, target: Target, transition: int
+        self, entity_id: str, light_cfg: LightConfig, target: Target, transition: int
     ) -> None:
         base = {ATTR_ENTITY_ID: entity_id, ATTR_TRANSITION: transition}
         has_both = (
             target.brightness_pct is not None
             and target.color_temp_kelvin is not None
         )
-        if schema.separate_turn_on_commands and has_both:
+        if light_cfg.separate_turn_on_commands and has_both:
             # IKEA-style: brightness and color in two separate calls.
             await self._turn_on({**base, ATTR_BRIGHTNESS_PCT: target.brightness_pct})
             delay = self.settings.send_split_delay / 1000.0
@@ -290,16 +291,16 @@ class AdaptCoordinator:
         dq.append(context_id)
         self._our_context_set.add(context_id)
 
-    # --- sun events (astral + per-schema time overrides) --------------------
+    # --- sun events (astral + per-sun time overrides) -----------------------
 
-    def _sun_events(self, schema, now: datetime) -> list[tuple[datetime, str]]:
+    def _sun_events(self, sun: SunConfig, now: datetime) -> list[tuple[datetime, str]]:
         """Sunrise/sunset events for yesterday/today/tomorrow as UTC datetimes."""
         events: list[tuple[datetime, str]] = []
         today = dt_util.as_local(now).date()
         for offset_days in (-1, 0, 1):
             date = today + timedelta(days=offset_days)
-            sunrise = self._sun_event_at(schema, date, "sunrise")
-            sunset = self._sun_event_at(schema, date, "sunset")
+            sunrise = self._sun_event_at(sun, date, "sunrise")
+            sunset = self._sun_event_at(sun, date, "sunset")
             if sunrise:
                 events.append((sunrise, "sunrise"))
             if sunset:
@@ -307,10 +308,10 @@ class AdaptCoordinator:
         events.sort(key=lambda event: event[0])
         return events
 
-    def _sun_event_at(self, schema, date, kind: str) -> datetime | None:
+    def _sun_event_at(self, sun: SunConfig, date, kind: str) -> datetime | None:
         is_sunrise = kind == "sunrise"
-        fixed = schema.sunrise_time if is_sunrise else schema.sunset_time
-        offset = schema.sunrise_offset if is_sunrise else schema.sunset_offset
+        fixed = sun.sunrise_time if is_sunrise else sun.sunset_time
+        offset = sun.sunrise_offset if is_sunrise else sun.sunset_offset
 
         if fixed:
             event = self._combine_local(date, fixed)
@@ -320,13 +321,13 @@ class AdaptCoordinator:
             if event is None:  # polar day/night
                 return None
         event = event + timedelta(seconds=offset)
-        return self._apply_bounds(schema, kind, event)
+        return self._apply_bounds(sun, kind, event)
 
-    def _apply_bounds(self, schema, kind: str, event: datetime) -> datetime:
+    def _apply_bounds(self, sun: SunConfig, kind: str, event: datetime) -> datetime:
         if kind == "sunrise":
-            lo, hi = schema.min_sunrise_time, schema.max_sunrise_time
+            lo, hi = sun.min_sunrise_time, sun.max_sunrise_time
         else:
-            lo, hi = schema.min_sunset_time, schema.max_sunset_time
+            lo, hi = sun.min_sunset_time, sun.max_sunset_time
         local_date = dt_util.as_local(event).date()
         if lo:
             lo_dt = self._combine_local(local_date, lo)
@@ -418,6 +419,58 @@ class AdaptCoordinator:
     def compute_preview(self, entity_id: str) -> Target:
         """Return what we *would* apply right now (for the web-ui preview)."""
         return self._compute_target(entity_id, dt_util.utcnow())
+
+    # --- web-ui timeline + stepping preview ---------------------------------
+
+    def compute_timeline(self, schema: Schema) -> dict:
+        """Per-hour values for the sun row and every light row of ``schema``."""
+        now = dt_util.utcnow()
+        drives = self._sun_drives(schema.sun, now)
+        sun = [
+            {"brightness": bri, "color_temp": temp}
+            for bri, temp in engine.sun_row(schema.sun, drives)
+        ]
+        lights: dict[str, list[dict]] = {}
+        for entity_id in self._lights:
+            cfg = schema.light_config(entity_id)
+            anchors = engine.light_anchors(cfg, drives)
+            lights[entity_id] = [
+                {
+                    "brightness": int(round(anchors[hour][0])),
+                    "color_temp": int(round(anchors[hour][1] / 5) * 5),
+                    "explicit": cfg.hours[hour] is not None,
+                }
+                for hour in range(HOURS_PER_DAY)
+            ]
+        return {"sun": sun, "lights": lights}
+
+    async def async_preview(
+        self, schema_id: str, hour: float, apply: bool
+    ) -> dict[str, dict]:
+        """Compute (and optionally apply) targets at a simulated ``hour``."""
+        schema = self.data.schemas.get(schema_id) or self.data.active_schema
+        drives = self._sun_drives(schema.sun, dt_util.utcnow())
+        targets: dict[str, dict] = {}
+        for entity_id in self._lights:
+            cfg = schema.light_config(entity_id)
+            target = engine.light_target(cfg, drives, hour)
+            targets[entity_id] = {
+                "brightness_pct": target.brightness_pct,
+                "color_temp_kelvin": target.color_temp_kelvin,
+            }
+            if apply:
+                state = self.hass.states.get(entity_id)
+                if state is not None and state.state == STATE_ON:
+                    await self._apply_light(
+                        entity_id, cfg, target, self.settings.transition
+                    )
+        return targets
+
+
+def _local_hour(now: datetime) -> float:
+    """Fractional local hour-of-day (0..24) for ``now``."""
+    local = dt_util.as_local(now)
+    return local.hour + local.minute / 60.0 + local.second / 3600.0
 
 
 def get_coordinator(hass: HomeAssistant) -> AdaptCoordinator | None:

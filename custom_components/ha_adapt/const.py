@@ -17,21 +17,9 @@ STORAGE_VERSION: Final = 1
 # is persisted via the Store (see store.py).
 CONF_LIGHTS: Final = "lights"
 
-# --- Control modes -----------------------------------------------------------
-MODE_SUN: Final = "sun"
-MODE_HOURLY: Final = "hourly"
-MODE_SENSOR: Final = "sensor"
-MODES: Final = (MODE_SUN, MODE_HOURLY, MODE_SENSOR)
-
-# Brightness sub-modes for the sun mode.
-BRIGHTNESS_MODE_DEFAULT: Final = "default"
-BRIGHTNESS_MODE_LINEAR: Final = "linear"
-BRIGHTNESS_MODE_TANH: Final = "tanh"
-BRIGHTNESS_MODES: Final = (
-    BRIGHTNESS_MODE_DEFAULT,
-    BRIGHTNESS_MODE_LINEAR,
-    BRIGHTNESS_MODE_TANH,
-)
+# --- Timeline --------------------------------------------------------------
+# Each light row on a schema's 24-hour timeline has one cell per hour.
+HOURS_PER_DAY: Final = 24
 
 # --- Manual-control detection thresholds -------------------------------------
 # How much an attribute must change (vs. the value we last applied) before we
@@ -52,8 +40,9 @@ DEFAULT_MIN_BRIGHTNESS: Final = 1  # percent
 DEFAULT_MAX_BRIGHTNESS: Final = 100  # percent
 DEFAULT_MIN_COLOR_TEMP: Final = 2000  # Kelvin
 DEFAULT_MAX_COLOR_TEMP: Final = 5500  # Kelvin
-DEFAULT_BRIGHTNESS_MODE_TIME_DARK: Final = 900  # seconds
-DEFAULT_BRIGHTNESS_MODE_TIME_LIGHT: Final = 3600  # seconds
+# Width of the tanh brightness ramp on each side of sunrise/sunset (seconds).
+DEFAULT_RAMP_DARK: Final = 900  # night side of the ramp
+DEFAULT_RAMP_LIGHT: Final = 3600  # day side of the ramp
 
 DEFAULT_SCHEMA_ID: Final = "default"
 

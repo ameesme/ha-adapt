@@ -26,7 +26,7 @@ from .coordinator import AdaptCoordinator, get_coordinator
 from .models import GlobalSettings, Schema, StoreData
 
 # Bump to bust the browser cache when the bundle changes.
-PANEL_CACHE_VERSION = "0.1.0"
+PANEL_CACHE_VERSION = "0.2.0"
 
 
 async def async_setup_panel(
@@ -77,9 +77,6 @@ def _lights_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> list[
                 "entity_id": entity_id,
                 "name": state.name if state else entity_id,
                 "state": state.state if state else "unavailable",
-                "schema_id": coordinator.data.assignments.get(
-                    entity_id, DEFAULT_SCHEMA_ID
-                ),
                 "manual_control": coordinator.is_manual(entity_id),
                 "target": {
                     "brightness_pct": target.brightness_pct,
@@ -95,10 +92,18 @@ def _config_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> dict:
     return {
         "settings": data.settings.to_dict(),
         "schemas": {sid: schema.to_dict() for sid, schema in data.schemas.items()},
-        "assignments": dict(data.assignments),
+        "active_schema_id": data.active_schema_id,
         "lights": _lights_payload(hass, coordinator),
         "enabled": coordinator.enabled,
     }
+
+
+def _error_if_not_ready(connection, msg) -> AdaptCoordinator | None:
+    coordinator = get_coordinator(connection.hass)
+    if coordinator is None:
+        connection.send_error(msg["id"], "not_ready", "Integration not set up")
+        return None
+    return coordinator
 
 
 # --- WebSocket commands ------------------------------------------------------
@@ -110,8 +115,10 @@ def _register_ws_commands(hass: HomeAssistant) -> None:
         ws_update_settings,
         ws_save_schema,
         ws_delete_schema,
-        ws_assign_light,
+        ws_set_active_schema,
         ws_set_manual_control,
+        ws_timeline,
+        ws_preview,
         ws_apply,
         ws_export,
         ws_import,
@@ -122,11 +129,9 @@ def _register_ws_commands(hass: HomeAssistant) -> None:
 @websocket_api.websocket_command({vol.Required("type"): "ha_adapt/get_config"})
 @websocket_api.async_response
 async def ws_get_config(hass, connection, msg) -> None:
-    coordinator = get_coordinator(hass)
-    if coordinator is None:
-        connection.send_error(msg["id"], "not_ready", "Integration not set up")
-        return
-    connection.send_result(msg["id"], _config_payload(hass, coordinator))
+    coordinator = _error_if_not_ready(connection, msg)
+    if coordinator is not None:
+        connection.send_result(msg["id"], _config_payload(hass, coordinator))
 
 
 @websocket_api.websocket_command(
@@ -137,9 +142,8 @@ async def ws_get_config(hass, connection, msg) -> None:
 )
 @websocket_api.async_response
 async def ws_update_settings(hass, connection, msg) -> None:
-    coordinator = get_coordinator(hass)
+    coordinator = _error_if_not_ready(connection, msg)
     if coordinator is None:
-        connection.send_error(msg["id"], "not_ready", "Integration not set up")
         return
     merged = coordinator.data.settings.to_dict()
     merged.update(msg["settings"])
@@ -156,14 +160,13 @@ async def ws_update_settings(hass, connection, msg) -> None:
 )
 @websocket_api.async_response
 async def ws_save_schema(hass, connection, msg) -> None:
-    coordinator = get_coordinator(hass)
+    coordinator = _error_if_not_ready(connection, msg)
     if coordinator is None:
-        connection.send_error(msg["id"], "not_ready", "Integration not set up")
         return
-    schema = Schema.from_dict(msg["schema"])
-    if not schema.id:
+    if not msg["schema"].get("id"):
         connection.send_error(msg["id"], "invalid_schema", "Schema id is required")
         return
+    schema = Schema.from_dict(msg["schema"])
     coordinator.data.schemas[schema.id] = schema
     await coordinator.async_apply_config_change()
     connection.send_result(msg["id"], _config_payload(hass, coordinator))
@@ -177,9 +180,8 @@ async def ws_save_schema(hass, connection, msg) -> None:
 )
 @websocket_api.async_response
 async def ws_delete_schema(hass, connection, msg) -> None:
-    coordinator = get_coordinator(hass)
+    coordinator = _error_if_not_ready(connection, msg)
     if coordinator is None:
-        connection.send_error(msg["id"], "not_ready", "Integration not set up")
         return
     schema_id = msg["schema_id"]
     if schema_id == DEFAULT_SCHEMA_ID:
@@ -188,35 +190,24 @@ async def ws_delete_schema(hass, connection, msg) -> None:
         )
         return
     coordinator.data.schemas.pop(schema_id, None)
-    # Lights assigned to the removed schema fall back to the default.
-    coordinator.data.assignments = {
-        entity_id: sid
-        for entity_id, sid in coordinator.data.assignments.items()
-        if sid != schema_id
-    }
+    if coordinator.data.active_schema_id == schema_id:
+        coordinator.data.active_schema_id = DEFAULT_SCHEMA_ID
     await coordinator.async_apply_config_change()
     connection.send_result(msg["id"], _config_payload(hass, coordinator))
 
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "ha_adapt/assign_light",
-        vol.Required("entity_id"): str,
-        vol.Required("schema_id"): vol.Any(str, None),
+        vol.Required("type"): "ha_adapt/set_active_schema",
+        vol.Required("schema_id"): str,
     }
 )
 @websocket_api.async_response
-async def ws_assign_light(hass, connection, msg) -> None:
-    coordinator = get_coordinator(hass)
+async def ws_set_active_schema(hass, connection, msg) -> None:
+    coordinator = _error_if_not_ready(connection, msg)
     if coordinator is None:
-        connection.send_error(msg["id"], "not_ready", "Integration not set up")
         return
-    entity_id = msg["entity_id"]
-    schema_id = msg["schema_id"]
-    if not schema_id or schema_id == DEFAULT_SCHEMA_ID:
-        coordinator.data.assignments.pop(entity_id, None)
-    else:
-        coordinator.data.assignments[entity_id] = schema_id
+    coordinator.set_active_schema(msg["schema_id"])
     await coordinator.async_apply_config_change()
     connection.send_result(msg["id"], _config_payload(hass, coordinator))
 
@@ -230,12 +221,48 @@ async def ws_assign_light(hass, connection, msg) -> None:
 )
 @websocket_api.async_response
 async def ws_set_manual_control(hass, connection, msg) -> None:
-    coordinator = get_coordinator(hass)
+    coordinator = _error_if_not_ready(connection, msg)
     if coordinator is None:
-        connection.send_error(msg["id"], "not_ready", "Integration not set up")
         return
     coordinator.set_manual_control(msg["entity_id"], msg["manual_control"])
     connection.send_result(msg["id"], _config_payload(hass, coordinator))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ha_adapt/timeline",
+        vol.Required("schema_id"): str,
+    }
+)
+@websocket_api.async_response
+async def ws_timeline(hass, connection, msg) -> None:
+    coordinator = _error_if_not_ready(connection, msg)
+    if coordinator is None:
+        return
+    schema = coordinator.data.schemas.get(msg["schema_id"])
+    if schema is None:
+        connection.send_error(msg["id"], "not_found", "Unknown schema")
+        return
+    connection.send_result(msg["id"], coordinator.compute_timeline(schema))
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ha_adapt/preview",
+        vol.Required("schema_id"): str,
+        vol.Required("hour"): vol.Coerce(float),
+        vol.Optional("apply", default=False): bool,
+    }
+)
+@websocket_api.async_response
+async def ws_preview(hass, connection, msg) -> None:
+    coordinator = _error_if_not_ready(connection, msg)
+    if coordinator is None:
+        return
+    targets = await coordinator.async_preview(
+        msg["schema_id"], msg["hour"], msg["apply"]
+    )
+    connection.send_result(msg["id"], {"targets": targets})
 
 
 @websocket_api.websocket_command(
@@ -246,9 +273,8 @@ async def ws_set_manual_control(hass, connection, msg) -> None:
 )
 @websocket_api.async_response
 async def ws_apply(hass, connection, msg) -> None:
-    coordinator = get_coordinator(hass)
+    coordinator = _error_if_not_ready(connection, msg)
     if coordinator is None:
-        connection.send_error(msg["id"], "not_ready", "Integration not set up")
         return
     raw = msg.get("entity_id")
     entity_ids = [raw] if isinstance(raw, str) else raw
@@ -259,11 +285,9 @@ async def ws_apply(hass, connection, msg) -> None:
 @websocket_api.websocket_command({vol.Required("type"): "ha_adapt/export"})
 @websocket_api.async_response
 async def ws_export(hass, connection, msg) -> None:
-    coordinator = get_coordinator(hass)
-    if coordinator is None:
-        connection.send_error(msg["id"], "not_ready", "Integration not set up")
-        return
-    connection.send_result(msg["id"], coordinator.data.to_dict())
+    coordinator = _error_if_not_ready(connection, msg)
+    if coordinator is not None:
+        connection.send_result(msg["id"], coordinator.data.to_dict())
 
 
 @websocket_api.websocket_command(
@@ -274,9 +298,8 @@ async def ws_export(hass, connection, msg) -> None:
 )
 @websocket_api.async_response
 async def ws_import(hass, connection, msg) -> None:
-    coordinator = get_coordinator(hass)
+    coordinator = _error_if_not_ready(connection, msg)
     if coordinator is None:
-        connection.send_error(msg["id"], "not_ready", "Integration not set up")
         return
     coordinator.store.data = StoreData.from_dict(msg["data"])
     await coordinator.async_apply_config_change()

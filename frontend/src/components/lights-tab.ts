@@ -15,24 +15,28 @@ export class LightsTab extends TabBase {
       return html`<div class="card">
         <div class="empty">
           No lights are configured. Add light entities in the integration's
-          options, then assign schemas here.
+          options, then design schemas on the Schemas tab.
         </div>
       </div>`;
     }
     return html`<div class="card">
       <h2>Controlled lights</h2>
+      <p class="muted">
+        Live status of every light. Behaviour is configured per schema on the
+        Schemas tab.
+      </p>
       ${this.config.lights.map((light) => this._renderRow(light))}
     </div>`;
   }
 
   private _renderRow(light: LightInfo): TemplateResult {
-    const schemas = Object.values(this.config.schemas);
     const { brightness_pct, color_temp_kelvin } = light.target;
     return html`<div class="row">
       <div
         class="swatch"
-        style="background:${kelvinToCss(color_temp_kelvin)}"
-        title="Preview color"
+        style="background:${color_temp_kelvin
+          ? kelvinToCss(color_temp_kelvin)
+          : "transparent"}"
       ></div>
       <div class="grow">
         <div>${light.name}</div>
@@ -54,25 +58,6 @@ export class LightsTab extends TabBase {
               Reset
             </button>`
         : nothing}
-      <select
-        @change=${(e: Event) =>
-          void this.run(
-            this.api.assignLight(
-              light.entity_id,
-              (e.target as HTMLSelectElement).value
-            )
-          )}
-      >
-        ${schemas.map(
-          (schema) =>
-            html`<option
-              value=${schema.id}
-              ?selected=${schema.id === light.schema_id}
-            >
-              ${schema.name}
-            </option>`
-        )}
-      </select>
     </div>`;
   }
 }
