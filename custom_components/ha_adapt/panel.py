@@ -7,6 +7,7 @@ coordinator so the running adaptation reflects changes immediately.
 
 from __future__ import annotations
 
+import hashlib
 import os
 
 from homeassistant.components import frontend, websocket_api
@@ -25,8 +26,14 @@ from .const import (
 from .coordinator import AdaptCoordinator, get_coordinator
 from .models import GlobalSettings, Schema, StoreData
 
-# Bump to bust the browser cache when the bundle changes.
-PANEL_CACHE_VERSION = "0.2.0"
+
+def _bundle_token(path: str) -> str:
+    """Short content hash of the built bundle, for cache-busting the panel URL."""
+    try:
+        with open(path, "rb") as handle:
+            return hashlib.md5(handle.read()).hexdigest()[:8]  # noqa: S324
+    except OSError:
+        return "0"
 
 
 async def async_setup_panel(
@@ -40,6 +47,9 @@ async def async_setup_panel(
         [StaticPathConfig(PANEL_STATIC_PATH, js_path, False)]
     )
 
+    # Hash the bundle so the browser always fetches a new build (no manual bump).
+    token = await hass.async_add_executor_job(_bundle_token, js_path)
+
     frontend.async_register_built_in_panel(
         hass,
         component_name="custom",
@@ -52,7 +62,7 @@ async def async_setup_panel(
                 "name": PANEL_ELEMENT,
                 "embed_iframe": False,
                 "trust_external": False,
-                "module_url": f"{PANEL_STATIC_PATH}?v={PANEL_CACHE_VERSION}",
+                "module_url": f"{PANEL_STATIC_PATH}?v={token}",
             }
         },
     )
