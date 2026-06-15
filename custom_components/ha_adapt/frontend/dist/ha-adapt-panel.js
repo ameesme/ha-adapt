@@ -1665,6 +1665,8 @@ let A = class extends $ {
     >
       <header>
         <h1>Adaptive Lighting</h1>
+        <span class="spacer"></span>
+        <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
         <select
           @change=${(i) => this._selectedId = i.target.value}
         >
@@ -1675,8 +1677,6 @@ let A = class extends $ {
     )}
         </select>
         <button class="btn ghost" @click=${this._new}>+ New</button>
-        <span class="spacer"></span>
-        <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
       </header>
 
       ${this._error ? h`<div class="card error">${this._error}</div>` : d}

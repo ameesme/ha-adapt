@@ -114,6 +114,8 @@ export class HaAdaptPanel extends LitElement {
     >
       <header>
         <h1>Adaptive Lighting</h1>
+        <span class="spacer"></span>
+        <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
         <select
           @change=${(e: Event) =>
             (this._selectedId = (e.target as HTMLSelectElement).value)}
@@ -125,8 +127,6 @@ export class HaAdaptPanel extends LitElement {
           )}
         </select>
         <button class="btn ghost" @click=${this._new}>+ New</button>
-        <span class="spacer"></span>
-        <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
       </header>
 
       ${this._error
