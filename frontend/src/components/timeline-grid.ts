@@ -195,7 +195,13 @@ export class TimelineGrid extends LitElement {
   private _sunRow(nowHour: number): TemplateResult {
     const row = this.timeline!.sun;
     return html`<div class="gridrow sunrow">
-      <div class="label">☀️ Sun</div>
+      <div
+        class="label clickable"
+        title="Edit the sun"
+        @click=${() => this._emit("select-sun", null)}
+      >
+        ☀️ Sun
+      </div>
       ${HOURS.map((h) =>
         this._cell(row[h], h === nowHour, "readonly", false, false)
       )}

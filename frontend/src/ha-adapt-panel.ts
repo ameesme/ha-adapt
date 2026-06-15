@@ -4,13 +4,14 @@ import { customElement, property, state } from "lit/decorators.js";
 import { HaAdaptApi } from "./api";
 import { baseStyles, tokenStyles } from "./theme";
 import type { ConfigPayload, HomeAssistant } from "./types";
+import { defaultSchema } from "./utils";
 
-import "./components/schemas-tab";
-import "./components/settings-tab";
+import "./components/schema-editor";
 
-// The panel is a thin, full-width shell around a single schema page. It owns the
-// API + config state; children report changes via bubbling
-// `config-changed`/`panel-error` events, keeping all data flow in one place.
+// The panel owns the API + config state and the currently-edited schema. The
+// schema selector lives in the header; the schema editor renders the timeline
+// plus a right-hand side panel. Children report changes via bubbling
+// `config-changed` / `panel-error` events.
 @customElement("ha-adapt-panel")
 export class HaAdaptPanel extends LitElement {
   static override styles = [
@@ -19,49 +20,31 @@ export class HaAdaptPanel extends LitElement {
     css`
       .wrap {
         width: 100%;
-        padding: 24px 20px 64px;
-        /* Clip (not hidden) so the page never scrolls sideways while the
-           timeline keeps its own inner horizontal scroll. */
+        padding: 18px 20px 64px;
         overflow-x: clip;
       }
       header {
         display: flex;
         align-items: center;
-        gap: 14px;
-        margin-bottom: 20px;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 18px;
       }
       header h1 {
-        font-size: 1.5rem;
-        font-weight: 650;
+        font-size: 1.25rem;
+        font-weight: 700;
         margin: 0;
+      }
+      header select {
+        width: auto;
+        min-width: 160px;
       }
       .spacer {
         flex: 1;
       }
-      .pill {
-        padding: 4px 12px;
-        border-radius: 999px;
-        font-size: 0.78rem;
-        font-weight: 600;
-        background: var(--accent-soft);
-        color: var(--accent-strong);
-      }
-      .pill.off {
-        background: #ece2d3;
-        color: var(--text-soft);
-      }
       .error {
         border-color: var(--danger);
         color: var(--danger);
-      }
-      details.settings-fold {
-        margin-top: 18px;
-      }
-      details.settings-fold > summary {
-        cursor: pointer;
-        font-weight: 650;
-        color: var(--text-soft);
-        padding: 6px 2px;
       }
     `,
   ];
@@ -71,6 +54,7 @@ export class HaAdaptPanel extends LitElement {
 
   @state() private _config?: ConfigPayload;
   @state() private _error?: string;
+  @state() private _selectedId?: string;
 
   private _api?: HaAdaptApi;
   private _loaded = false;
@@ -97,6 +81,14 @@ export class HaAdaptPanel extends LitElement {
     }
   }
 
+  private get _currentId(): string {
+    const config = this._config!;
+    if (this._selectedId && config.schemas[this._selectedId]) {
+      return this._selectedId;
+    }
+    return config.active_schema_id;
+  }
+
   private _onConfigChanged(e: CustomEvent<ConfigPayload>): void {
     this._config = e.detail;
     this._error = undefined;
@@ -113,6 +105,8 @@ export class HaAdaptPanel extends LitElement {
       </div>`;
     }
     const config = this._config;
+    const currentId = this._currentId;
+    const schema = config.schemas[currentId];
     return html`<div
       class="wrap"
       @config-changed=${this._onConfigChanged}
@@ -120,9 +114,17 @@ export class HaAdaptPanel extends LitElement {
     >
       <header>
         <h1>Adaptive Lighting</h1>
-        <span class="pill ${config.enabled ? "" : "off"}">
-          ${config.enabled ? "Active" : "Paused"}
-        </span>
+        <select
+          @change=${(e: Event) =>
+            (this._selectedId = (e.target as HTMLSelectElement).value)}
+        >
+          ${Object.values(config.schemas).map(
+            (s) => html`<option value=${s.id} ?selected=${s.id === currentId}>
+              ${s.name}${s.id === config.active_schema_id ? " (active)" : ""}
+            </option>`
+          )}
+        </select>
+        <button class="btn ghost" @click=${this._new}>+ New</button>
         <span class="spacer"></span>
         <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
       </header>
@@ -131,24 +133,36 @@ export class HaAdaptPanel extends LitElement {
         ? html`<div class="card error">${this._error}</div>`
         : nothing}
 
-      <ha-adapt-schemas-tab
-        .config=${config}
-        .api=${this._api!}
-      ></ha-adapt-schemas-tab>
-
-      <details class="settings-fold">
-        <summary>Global settings</summary>
-        <ha-adapt-settings-tab
-          .config=${config}
-          .api=${this._api!}
-        ></ha-adapt-settings-tab>
-      </details>
+      ${schema
+        ? html`<ha-adapt-schema-editor
+            .schema=${schema}
+            .config=${config}
+            .api=${this._api!}
+            @schema-delete=${this._onDelete}
+          ></ha-adapt-schema-editor>`
+        : nothing}
     </div>`;
   }
 
+  private async _new(): Promise<void> {
+    const id = `schema_${Date.now().toString(36)}`;
+    this._selectedId = id;
+    await this._run(this._api!.saveSchema(defaultSchema(id, "New schema")));
+  }
+
+  private async _onDelete(e: CustomEvent<string>): Promise<void> {
+    this._selectedId = this._config!.active_schema_id;
+    await this._run(this._api!.deleteSchema(e.detail));
+  }
+
   private async _applyNow(): Promise<void> {
+    await this._run(this._api!.apply());
+  }
+
+  private async _run(promise: Promise<ConfigPayload>): Promise<void> {
     try {
-      this._config = await this._api!.apply();
+      this._config = await promise;
+      this._error = undefined;
     } catch (err) {
       this._error = String(err);
     }
