@@ -32,9 +32,6 @@ export class SettingsTab extends TabBase {
           s.autoreset_control,
           (v) => save({ autoreset_control: v })
         )}
-        ${numberField("Split delay (ms)", s.send_split_delay, (v) =>
-          save({ send_split_delay: v })
-        )}
       </div>
       <div class="actions">
         ${checkboxField("Take over control", s.take_over_control, (v) =>

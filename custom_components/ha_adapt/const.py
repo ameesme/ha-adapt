@@ -32,7 +32,7 @@ RGB_REDMEAN_CHANGE: Final = 80
 DEFAULT_INTERVAL: Final = 90  # seconds between adaptation passes
 DEFAULT_TRANSITION: Final = 45  # seconds
 DEFAULT_INITIAL_TRANSITION: Final = 1  # seconds
-DEFAULT_SEND_SPLIT_DELAY: Final = 0  # milliseconds between split commands
+DEFAULT_SEND_SPLIT_DELAY: Final = 100  # milliseconds between split commands
 DEFAULT_AUTORESET_CONTROL: Final = 0  # seconds, 0 disables auto-reset
 
 # --- Defaults (per schema) ---------------------------------------------------

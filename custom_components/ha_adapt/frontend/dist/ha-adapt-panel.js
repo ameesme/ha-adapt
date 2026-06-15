@@ -262,7 +262,7 @@ O.elementStyles = [], O.shadowRootOptions = { mode: "open" }, O[R("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const rt = globalThis, pt = (e) => e, Z = rt.trustedTypes, ut = Z ? Z.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, yt = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, wt = "?" + w, It = `<${wt}>`, P = document, I = () => P.createComment(""), D = (e) => e === null || typeof e != "object" && typeof e != "function", nt = Array.isArray, Dt = (e) => nt(e) || typeof e?.[Symbol.iterator] == "function", Q = `[ 	
+const rt = globalThis, pt = (e) => e, Z = rt.trustedTypes, ut = Z ? Z.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, yt = "$lit$", y = `lit$${Math.random().toFixed(9).slice(2)}$`, wt = "?" + y, It = `<${wt}>`, P = document, I = () => P.createComment(""), D = (e) => e === null || typeof e != "object" && typeof e != "function", nt = Array.isArray, Dt = (e) => nt(e) || typeof e?.[Symbol.iterator] == "function", Q = `[ 	
 \f\r]`, U = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _t = /-->/g, gt = />/g, E = RegExp(`>|${Q}(?:([^\\s"'>=/]+)(${Q}*=${Q}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), ft = /'/g, mt = /"/g, xt = /^(?:script|style|textarea|title)$/i, jt = (e) => (t, ...s) => ({ _$litType$: e, strings: t, values: s }), h = jt(1), k = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), vt = /* @__PURE__ */ new WeakMap(), C = P.createTreeWalker(P, 129);
 function At(e, t) {
@@ -276,8 +276,8 @@ const zt = (e, t) => {
     const a = e[l];
     let p, u, c = -1, m = 0;
     for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === U ? u[1] === "!--" ? o = _t : u[1] !== void 0 ? o = gt : u[2] !== void 0 ? (xt.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = E) : u[3] !== void 0 && (o = E) : o === E ? u[0] === ">" ? (o = r ?? U, c = -1) : u[1] === void 0 ? c = -2 : (c = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? E : u[3] === '"' ? mt : ft) : o === mt || o === ft ? o = E : o === _t || o === gt ? o = U : (o = E, r = void 0);
-    const y = o === E && e[l + 1].startsWith("/>") ? " " : "";
-    n += o === U ? a + It : c >= 0 ? (i.push(p), a.slice(0, c) + yt + a.slice(c) + w + y) : a + w + (c === -2 ? l : y);
+    const b = o === E && e[l + 1].startsWith("/>") ? " " : "";
+    n += o === U ? a + It : c >= 0 ? (i.push(p), a.slice(0, c) + yt + a.slice(c) + y + b) : a + y + (c === -2 ? l : b);
   }
   return [At(e, n + (e[s] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), i];
 };
@@ -294,21 +294,21 @@ class j {
     for (; (r = C.nextNode()) !== null && a.length < l; ) {
       if (r.nodeType === 1) {
         if (r.hasAttributes()) for (const c of r.getAttributeNames()) if (c.endsWith(yt)) {
-          const m = u[o++], y = r.getAttribute(c).split(w), q = /([.?@])?(.*)/.exec(m);
-          a.push({ type: 1, index: n, name: q[2], strings: y, ctor: q[1] === "." ? Kt : q[1] === "?" ? Vt : q[1] === "@" ? qt : X }), r.removeAttribute(c);
-        } else c.startsWith(w) && (a.push({ type: 6, index: n }), r.removeAttribute(c));
+          const m = u[o++], b = r.getAttribute(c).split(y), q = /([.?@])?(.*)/.exec(m);
+          a.push({ type: 1, index: n, name: q[2], strings: b, ctor: q[1] === "." ? Kt : q[1] === "?" ? Vt : q[1] === "@" ? qt : X }), r.removeAttribute(c);
+        } else c.startsWith(y) && (a.push({ type: 6, index: n }), r.removeAttribute(c));
         if (xt.test(r.tagName)) {
-          const c = r.textContent.split(w), m = c.length - 1;
+          const c = r.textContent.split(y), m = c.length - 1;
           if (m > 0) {
             r.textContent = Z ? Z.emptyScript : "";
-            for (let y = 0; y < m; y++) r.append(c[y], I()), C.nextNode(), a.push({ type: 2, index: ++n });
+            for (let b = 0; b < m; b++) r.append(c[b], I()), C.nextNode(), a.push({ type: 2, index: ++n });
             r.append(c[m], I());
           }
         }
       } else if (r.nodeType === 8) if (r.data === wt) a.push({ type: 2, index: n });
       else {
         let c = -1;
-        for (; (c = r.data.indexOf(w, c + 1)) !== -1; ) a.push({ type: 7, index: n }), c += w.length - 1;
+        for (; (c = r.data.indexOf(y, c + 1)) !== -1; ) a.push({ type: 7, index: n }), c += y.length - 1;
       }
       n++;
     }
@@ -493,7 +493,7 @@ const Zt = (e, t, s) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ot = globalThis;
-class $ extends O {
+class v extends O {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -515,9 +515,9 @@ class $ extends O {
     return k;
   }
 }
-$._$litElement$ = !0, $.finalized = !0, ot.litElementHydrateSupport?.({ LitElement: $ });
+v._$litElement$ = !0, v.finalized = !0, ot.litElementHydrateSupport?.({ LitElement: v });
 const Gt = ot.litElementPolyfillSupport;
-Gt?.({ LitElement: $ });
+Gt?.({ LitElement: v });
 (ot.litElementVersions ??= []).push("4.2.2");
 /**
  * @license
@@ -844,7 +844,7 @@ function ie(e) {
 function re(e) {
   return String(e).padStart(2, "0");
 }
-function v(e, t, s) {
+function w(e, t, s) {
   return h`<label class="field"
     >${e}
     <input
@@ -896,7 +896,7 @@ var ne = Object.defineProperty, oe = Object.getOwnPropertyDescriptor, T = (e, t,
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
   return i && r && ne(t, s, r), r;
 };
-let x = class extends $ {
+let x = class extends v {
   constructor() {
     super(...arguments), this.lights = [], this.selected = null, this.previewHour = 12, this.live = !1;
   }
@@ -1145,7 +1145,7 @@ var ae = Object.defineProperty, le = Object.getOwnPropertyDescriptor, Et = (e, t
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
   return i && r && ae(t, s, r), r;
 };
-let G = class extends $ {
+let G = class extends v {
   render() {
     const e = this.sun;
     return h`<div class="card">
@@ -1200,22 +1200,22 @@ let G = class extends $ {
       e.sunset_time,
       (t) => this._patch({ sunset_time: t })
     )}
-        ${v(
+        ${w(
       "Sunrise offset (s)",
       e.sunrise_offset,
       (t) => this._patch({ sunrise_offset: t })
     )}
-        ${v(
+        ${w(
       "Sunset offset (s)",
       e.sunset_offset,
       (t) => this._patch({ sunset_offset: t })
     )}
-        ${v(
+        ${w(
       "Ramp – dark side (s)",
       e.ramp_dark,
       (t) => this._patch({ ramp_dark: t })
     )}
-        ${v(
+        ${w(
       "Ramp – light side (s)",
       e.ramp_light,
       (t) => this._patch({ ramp_light: t })
@@ -1245,7 +1245,7 @@ var he = Object.defineProperty, Ct = (e, t, s, i) => {
     (o = e[n]) && (r = o(t, s, r) || r);
   return r && he(t, s, r), r;
 };
-class at extends $ {
+class at extends v {
   /** Run an API mutation and bubble the resulting config (or error) up. */
   async run(t) {
     try {
@@ -1285,26 +1285,21 @@ let tt = class extends at {
     return h`<div class="card">
       <h2>Global settings</h2>
       <div class="grid">
-        ${v("Interval (s)", e.interval, (s) => t({ interval: s }))}
-        ${v(
+        ${w("Interval (s)", e.interval, (s) => t({ interval: s }))}
+        ${w(
       "Transition (s)",
       e.transition,
       (s) => t({ transition: s })
     )}
-        ${v(
+        ${w(
       "Initial transition (s)",
       e.initial_transition,
       (s) => t({ initial_transition: s })
     )}
-        ${v(
+        ${w(
       "Auto-reset override (s)",
       e.autoreset_control,
       (s) => t({ autoreset_control: s })
-    )}
-        ${v(
-      "Split delay (ms)",
-      e.send_split_delay,
-      (s) => t({ send_split_delay: s })
     )}
       </div>
       <div class="actions">
@@ -1321,12 +1316,12 @@ tt.styles = V;
 tt = de([
   K("ha-adapt-settings-tab")
 ], tt);
-var pe = Object.defineProperty, ue = Object.getOwnPropertyDescriptor, b = (e, t, s, i) => {
+var pe = Object.defineProperty, ue = Object.getOwnPropertyDescriptor, $ = (e, t, s, i) => {
   for (var r = i > 1 ? void 0 : i ? ue(t, s) : t, n = e.length - 1, o; n >= 0; n--)
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
   return i && r && pe(t, s, r), r;
 };
-let g = class extends $ {
+let g = class extends v {
   constructor() {
     super(...arguments), this._sel = null, this._previewHour = 12, this._livePreview = !1, this._setActive = () => {
       this.api.setActiveSchema(this._draft.id).then((e) => this._emit("config-changed", e)).catch((e) => this._emit("panel-error", String(e)));
@@ -1596,31 +1591,31 @@ g.styles = [
       }
     `
 ];
-b([
+$([
   _({ attribute: !1 })
 ], g.prototype, "schema", 2);
-b([
+$([
   _({ attribute: !1 })
 ], g.prototype, "config", 2);
-b([
+$([
   _({ attribute: !1 })
 ], g.prototype, "api", 2);
-b([
+$([
   S()
 ], g.prototype, "_draft", 2);
-b([
+$([
   S()
 ], g.prototype, "_timeline", 2);
-b([
+$([
   S()
 ], g.prototype, "_sel", 2);
-b([
+$([
   S()
 ], g.prototype, "_previewHour", 2);
-b([
+$([
   S()
 ], g.prototype, "_livePreview", 2);
-g = b([
+g = $([
   K("ha-adapt-schema-editor")
 ], g);
 var _e = Object.defineProperty, ge = Object.getOwnPropertyDescriptor, H = (e, t, s, i) => {
@@ -1628,7 +1623,7 @@ var _e = Object.defineProperty, ge = Object.getOwnPropertyDescriptor, H = (e, t,
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
   return i && r && _e(t, s, r), r;
 };
-let A = class extends $ {
+let A = class extends v {
   constructor() {
     super(...arguments), this.narrow = !1, this._loaded = !1;
   }
