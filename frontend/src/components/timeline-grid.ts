@@ -19,6 +19,7 @@ export class TimelineGrid extends LitElement {
     css`
       .scroll {
         overflow-x: auto;
+        max-width: 100%;
         padding-bottom: 6px;
       }
       .grid {

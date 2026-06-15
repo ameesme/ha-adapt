@@ -55,6 +55,10 @@ from .engine import DriveSignal, Target
 from .models import LightConfig, Schema, SunConfig
 from .store import HaAdaptStore
 
+# Transition (seconds) used when stepping the timeline preview, so the lights
+# follow the slider quickly instead of starting a long fade each step.
+PREVIEW_TRANSITION = 0.4
+
 
 @dataclass
 class LightRuntime:
@@ -253,7 +257,7 @@ class AdaptCoordinator:
     # --- applying values to lights ------------------------------------------
 
     async def _apply_light(
-        self, entity_id: str, light_cfg: LightConfig, target: Target, transition: int
+        self, entity_id: str, light_cfg: LightConfig, target: Target, transition: float
     ) -> None:
         base = {ATTR_ENTITY_ID: entity_id, ATTR_TRANSITION: transition}
         has_both = (
@@ -461,9 +465,8 @@ class AdaptCoordinator:
             if apply:
                 state = self.hass.states.get(entity_id)
                 if state is not None and state.state == STATE_ON:
-                    await self._apply_light(
-                        entity_id, cfg, target, self.settings.transition
-                    )
+                    # Short transition so scrubbing the timeline is responsive.
+                    await self._apply_light(entity_id, cfg, target, PREVIEW_TRANSITION)
         return targets
 
 

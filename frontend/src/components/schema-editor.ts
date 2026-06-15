@@ -227,7 +227,11 @@ export class SchemaEditor extends LitElement {
         />
         ${checkboxField("Live preview to lights", this._livePreview, (v) => {
           this._livePreview = v;
-          if (v) this._sendPreview();
+          if (v) {
+            this._sendPreview();
+          } else {
+            void this.api.apply(); // restore real-time values
+          }
         })}
       </div>
       <p class="muted">

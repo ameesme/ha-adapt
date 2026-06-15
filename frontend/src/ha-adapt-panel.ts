@@ -5,21 +5,12 @@ import { HaAdaptApi } from "./api";
 import { baseStyles, tokenStyles } from "./theme";
 import type { ConfigPayload, HomeAssistant } from "./types";
 
-import "./components/lights-tab";
 import "./components/schemas-tab";
 import "./components/settings-tab";
 
-type Tab = "lights" | "schemas" | "settings";
-
-const TABS: Array<{ id: Tab; label: string }> = [
-  { id: "lights", label: "Lights" },
-  { id: "schemas", label: "Schemas" },
-  { id: "settings", label: "Settings" },
-];
-
-// The panel is a thin shell: it owns the API + config state and renders the
-// active tab. Tabs report changes via bubbling `config-changed`/`panel-error`
-// events, keeping all data flow in one place.
+// The panel is a thin, full-width shell around a single schema page. It owns the
+// API + config state; children report changes via bubbling
+// `config-changed`/`panel-error` events, keeping all data flow in one place.
 @customElement("ha-adapt-panel")
 export class HaAdaptPanel extends LitElement {
   static override styles = [
@@ -27,9 +18,11 @@ export class HaAdaptPanel extends LitElement {
     baseStyles,
     css`
       .wrap {
-        max-width: 920px;
-        margin: 0 auto;
+        width: 100%;
         padding: 24px 20px 64px;
+        /* Clip (not hidden) so the page never scrolls sideways while the
+           timeline keeps its own inner horizontal scroll. */
+        overflow-x: clip;
       }
       header {
         display: flex;
@@ -57,30 +50,18 @@ export class HaAdaptPanel extends LitElement {
         background: #ece2d3;
         color: var(--text-soft);
       }
-      nav.tabs {
-        display: flex;
-        gap: 6px;
-        margin-bottom: 22px;
-        border-bottom: 2px solid var(--border);
-      }
-      nav.tabs button {
-        border: none;
-        background: none;
-        padding: 10px 16px;
-        font-size: 0.95rem;
-        font-weight: 600;
-        color: var(--text-soft);
-        cursor: pointer;
-        border-bottom: 3px solid transparent;
-        margin-bottom: -2px;
-      }
-      nav.tabs button.active {
-        color: var(--accent-strong);
-        border-bottom-color: var(--accent);
-      }
       .error {
         border-color: var(--danger);
         color: var(--danger);
+      }
+      details.settings-fold {
+        margin-top: 18px;
+      }
+      details.settings-fold > summary {
+        cursor: pointer;
+        font-weight: 650;
+        color: var(--text-soft);
+        padding: 6px 2px;
       }
     `,
   ];
@@ -89,7 +70,6 @@ export class HaAdaptPanel extends LitElement {
   @property({ attribute: false }) narrow = false;
 
   @state() private _config?: ConfigPayload;
-  @state() private _tab: Tab = "lights";
   @state() private _error?: string;
 
   private _api?: HaAdaptApi;
@@ -151,39 +131,19 @@ export class HaAdaptPanel extends LitElement {
         ? html`<div class="card error">${this._error}</div>`
         : nothing}
 
-      <nav class="tabs">
-        ${TABS.map(
-          (tab) => html`<button
-            class=${this._tab === tab.id ? "active" : ""}
-            @click=${() => (this._tab = tab.id)}
-          >
-            ${tab.label}
-          </button>`
-        )}
-      </nav>
+      <ha-adapt-schemas-tab
+        .config=${config}
+        .api=${this._api!}
+      ></ha-adapt-schemas-tab>
 
-      ${this._renderTab(config)}
+      <details class="settings-fold">
+        <summary>Global settings</summary>
+        <ha-adapt-settings-tab
+          .config=${config}
+          .api=${this._api!}
+        ></ha-adapt-settings-tab>
+      </details>
     </div>`;
-  }
-
-  private _renderTab(config: ConfigPayload): TemplateResult {
-    switch (this._tab) {
-      case "schemas":
-        return html`<ha-adapt-schemas-tab
-          .config=${config}
-          .api=${this._api!}
-        ></ha-adapt-schemas-tab>`;
-      case "settings":
-        return html`<ha-adapt-settings-tab
-          .config=${config}
-          .api=${this._api!}
-        ></ha-adapt-settings-tab>`;
-      default:
-        return html`<ha-adapt-lights-tab
-          .config=${config}
-          .api=${this._api!}
-        ></ha-adapt-lights-tab>`;
-    }
   }
 
   private async _applyNow(): Promise<void> {
