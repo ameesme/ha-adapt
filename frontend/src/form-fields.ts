@@ -19,6 +19,32 @@ export function numberField(
   </label>`;
 }
 
+export function rangeField(
+  label: string,
+  value: number,
+  min: number,
+  max: number,
+  step: number,
+  unit: string,
+  onChange: (value: number) => void
+): TemplateResult {
+  return html`<label class="field">
+    <span class="field-head">
+      <span>${label}</span>
+      <b>${value}${unit}</b>
+    </span>
+    <input
+      type="range"
+      min=${min}
+      max=${max}
+      step=${step}
+      .value=${String(value)}
+      @input=${(e: Event) =>
+        onChange(Number((e.target as HTMLInputElement).value))}
+    />
+  </label>`;
+}
+
 export function textField(
   label: string,
   value: string,

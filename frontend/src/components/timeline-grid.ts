@@ -10,8 +10,12 @@ export interface CellRef {
   hour: number;
 }
 
-// Renders the 24-hour grid: a read-only sun row plus one clickable row per
-// light. Emits `select-cell` (CellRef) and `select-light` (entity id).
+type GridCell = TimelineCell | { brightness: number; color_temp: number };
+
+// The 24-hour grid: an integrated time scrubber, an hour header, a distinct
+// sun row, and one clickable row per light. Row labels stay pinned while the
+// columns scroll horizontally. Emits `select-cell`, `select-light`, `scrub`,
+// and `live-toggle`.
 @customElement("ha-adapt-timeline-grid")
 export class TimelineGrid extends LitElement {
   static override styles = [
@@ -22,28 +26,43 @@ export class TimelineGrid extends LitElement {
         max-width: 100%;
         padding-bottom: 6px;
       }
-      .grid {
-        display: grid;
-        grid-auto-rows: minmax(0, auto);
+      .rows {
+        display: flex;
+        flex-direction: column;
         gap: 2px;
+        min-width: max-content;
       }
       .gridrow {
         display: grid;
-        grid-template-columns: 130px repeat(24, 30px);
+        grid-template-columns: 140px repeat(24, 30px);
         gap: 2px;
         align-items: center;
       }
       .label {
+        position: sticky;
+        left: 0;
+        z-index: 3;
+        background: var(--surface);
         font-size: 0.82rem;
         font-weight: 600;
         color: var(--text);
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        padding-right: 6px;
+        padding: 4px 8px 4px 2px;
+        box-shadow: 1px 0 0 var(--border);
       }
       .label.clickable {
         cursor: pointer;
+      }
+      .sunrow {
+        background: var(--accent-soft);
+        border-radius: 6px;
+        padding: 3px 0;
+      }
+      .sunrow .label {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
       }
       .hourhead {
         font-size: 0.7rem;
@@ -53,6 +72,28 @@ export class TimelineGrid extends LitElement {
       .hourhead.now {
         color: var(--accent-strong);
         font-weight: 700;
+      }
+      .scrubrow .track {
+        grid-column: 2 / -1;
+        display: flex;
+        align-items: center;
+      }
+      .scrubrow input[type="range"] {
+        width: 100%;
+      }
+      .clock {
+        font-variant-numeric: tabular-nums;
+        font-weight: 700;
+        color: var(--accent-strong);
+      }
+      .live {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 0.7rem;
+        font-weight: 600;
+        color: var(--text-soft);
+        cursor: pointer;
       }
       .cell {
         position: relative;
@@ -90,6 +131,7 @@ export class TimelineGrid extends LitElement {
   @property({ attribute: false }) timeline?: TimelineData;
   @property({ attribute: false }) selected: CellRef | null = null;
   @property({ type: Number }) previewHour = 12;
+  @property({ type: Boolean }) live = false;
 
   override render(): TemplateResult {
     if (!this.timeline) {
@@ -98,11 +140,43 @@ export class TimelineGrid extends LitElement {
     const nowHour = Math.floor(this.previewHour) % 24;
     return html`<div class="card">
       <div class="scroll">
-        <div class="grid">
+        <div class="rows">
+          ${this._scrubRow()}
           ${this._headerRow(nowHour)}
           ${this._sunRow(nowHour)}
           ${this.lights.map((light) => this._lightRow(light, nowHour))}
         </div>
+      </div>
+    </div>`;
+  }
+
+  private _scrubRow(): TemplateResult {
+    const h = Math.floor(this.previewHour);
+    const m = Math.round((this.previewHour - h) * 60);
+    const label = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    return html`<div class="gridrow scrubrow">
+      <div class="label">
+        <span class="clock">${label}</span>
+        <label class="live">
+          <input
+            type="checkbox"
+            .checked=${this.live}
+            @change=${(e: Event) =>
+              this._emit("live-toggle", (e.target as HTMLInputElement).checked)}
+          />
+          live
+        </label>
+      </div>
+      <div class="track">
+        <input
+          type="range"
+          min="0"
+          max="23.5"
+          step="0.5"
+          .value=${String(this.previewHour)}
+          @input=${(e: Event) =>
+            this._emit("scrub", Number((e.target as HTMLInputElement).value))}
+        />
       </div>
     </div>`;
   }
@@ -120,7 +194,7 @@ export class TimelineGrid extends LitElement {
 
   private _sunRow(nowHour: number): TemplateResult {
     const row = this.timeline!.sun;
-    return html`<div class="gridrow">
+    return html`<div class="gridrow sunrow">
       <div class="label">☀️ Sun</div>
       ${HOURS.map((h) =>
         this._cell(row[h], h === nowHour, "readonly", false, false)
@@ -156,7 +230,7 @@ export class TimelineGrid extends LitElement {
   }
 
   private _cell(
-    cell: TimelineCell | { brightness: number; color_temp: number } | undefined,
+    cell: GridCell | undefined,
     isNow: boolean,
     extra: string,
     explicit: boolean,
@@ -177,10 +251,7 @@ export class TimelineGrid extends LitElement {
       @click=${onClick}
       title=${cell ? `${cell.brightness}% · ${cell.color_temp} K` : ""}
     >
-      <div
-        class="fill"
-        style="height:${brightness}%;background:${color}"
-      ></div>
+      <div class="fill" style="height:${brightness}%;background:${color}"></div>
     </div>`;
   }
 

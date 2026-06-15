@@ -2,18 +2,22 @@ import type { LightConfig, Schema, SunConfig } from "./types";
 
 export const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
+// Slider bounds for color-temperature inputs.
+export const KELVIN_MIN = 1500;
+export const KELVIN_MAX = 6500;
+
 export function defaultSunConfig(): SunConfig {
   return {
-    min_brightness: 1,
+    min_brightness: 5,
     max_brightness: 100,
     min_color_temp: 2000,
     max_color_temp: 5500,
-    ramp_dark: 900,
-    ramp_light: 3600,
+    ramp_dark: 5000,
+    ramp_light: 9000,
     sunrise_time: null,
     sunset_time: null,
-    sunrise_offset: 0,
-    sunset_offset: 0,
+    sunrise_offset: 5000,
+    sunset_offset: -5000,
     min_sunrise_time: null,
     max_sunrise_time: null,
     min_sunset_time: null,

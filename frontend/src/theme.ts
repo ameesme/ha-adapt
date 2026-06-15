@@ -103,6 +103,26 @@ export const baseStyles = css`
     border-color: var(--accent);
   }
 
+  input[type="range"] {
+    width: 100%;
+    accent-color: var(--accent);
+    padding: 0;
+    border: none;
+    background: transparent;
+  }
+
+  .field-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+
+  .field-head b {
+    color: var(--accent-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
   .toggle {
     display: inline-flex;
     align-items: center;

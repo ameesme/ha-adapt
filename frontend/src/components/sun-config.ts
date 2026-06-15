@@ -1,7 +1,8 @@
 import { LitElement, html, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { numberField, timeField } from "../form-fields";
+import { numberField, rangeField, timeField } from "../form-fields";
+import { KELVIN_MAX, KELVIN_MIN } from "../utils";
 import { baseStyles } from "../theme";
 import type { SunConfig } from "../types";
 
@@ -20,17 +21,29 @@ export class SunConfigEditor extends LitElement {
         The sun drives every light's fallback. Empty timeline cells follow it.
       </p>
       <div class="grid">
-        ${numberField("Min brightness %", s.min_brightness, (v) =>
+        ${rangeField("Min brightness", s.min_brightness, 1, 100, 1, "%", (v) =>
           this._patch({ min_brightness: v })
         )}
-        ${numberField("Max brightness %", s.max_brightness, (v) =>
+        ${rangeField("Max brightness", s.max_brightness, 1, 100, 1, "%", (v) =>
           this._patch({ max_brightness: v })
         )}
-        ${numberField("Min color temp K", s.min_color_temp, (v) =>
-          this._patch({ min_color_temp: v })
+        ${rangeField(
+          "Min color temp",
+          s.min_color_temp,
+          KELVIN_MIN,
+          KELVIN_MAX,
+          50,
+          "K",
+          (v) => this._patch({ min_color_temp: v })
         )}
-        ${numberField("Max color temp K", s.max_color_temp, (v) =>
-          this._patch({ max_color_temp: v })
+        ${rangeField(
+          "Max color temp",
+          s.max_color_temp,
+          KELVIN_MIN,
+          KELVIN_MAX,
+          50,
+          "K",
+          (v) => this._patch({ max_color_temp: v })
         )}
         ${timeField("Fixed sunrise", s.sunrise_time, (v) =>
           this._patch({ sunrise_time: v })

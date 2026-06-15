@@ -40,9 +40,13 @@ DEFAULT_MIN_BRIGHTNESS: Final = 1  # percent
 DEFAULT_MAX_BRIGHTNESS: Final = 100  # percent
 DEFAULT_MIN_COLOR_TEMP: Final = 2000  # Kelvin
 DEFAULT_MAX_COLOR_TEMP: Final = 5500  # Kelvin
+# --- Sun defaults ----------------------------------------------------------
+DEFAULT_SUN_MIN_BRIGHTNESS: Final = 5  # percent
+DEFAULT_SUNRISE_OFFSET: Final = 5000  # seconds
+DEFAULT_SUNSET_OFFSET: Final = -5000  # seconds
 # Width of the tanh brightness ramp on each side of sunrise/sunset (seconds).
-DEFAULT_RAMP_DARK: Final = 900  # night side of the ramp
-DEFAULT_RAMP_LIGHT: Final = 3600  # day side of the ramp
+DEFAULT_RAMP_DARK: Final = 5000  # night side of the ramp
+DEFAULT_RAMP_LIGHT: Final = 9000  # day side of the ramp
 
 DEFAULT_SCHEMA_ID: Final = "default"
 

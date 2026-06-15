@@ -9,7 +9,7 @@ import {
 import { customElement, property, state } from "lit/decorators.js";
 
 import type { HaAdaptApi } from "../api";
-import { checkboxField, numberField } from "../form-fields";
+import { checkboxField, rangeField } from "../form-fields";
 import { baseStyles } from "../theme";
 import type {
   ConfigPayload,
@@ -20,7 +20,7 @@ import type {
   SunConfig,
   TimelineData,
 } from "../types";
-import { defaultLightConfig } from "../utils";
+import { KELVIN_MAX, KELVIN_MIN, defaultLightConfig } from "../utils";
 import type { CellRef } from "./timeline-grid";
 import "./timeline-grid";
 import "./sun-config";
@@ -38,21 +38,6 @@ export class SchemaEditor extends LitElement {
         gap: 10px;
         align-items: center;
         flex-wrap: wrap;
-      }
-      .scrubber {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .scrubber input[type="range"] {
-        flex: 1;
-        accent-color: var(--accent);
-      }
-      .clock {
-        font-variant-numeric: tabular-nums;
-        font-weight: 700;
-        color: var(--accent-strong);
-        min-width: 52px;
       }
     `,
   ];
@@ -193,6 +178,7 @@ export class SchemaEditor extends LitElement {
         .timeline=${this._timeline}
         .selected=${this._selectedCell}
         .previewHour=${this._previewHour}
+        .live=${this._livePreview}
         @select-cell=${(e: CustomEvent<CellRef>) => {
           this._selectedCell = e.detail;
           this._selectedLight = null;
@@ -201,44 +187,22 @@ export class SchemaEditor extends LitElement {
           this._selectedLight = e.detail;
           this._selectedCell = null;
         }}
+        @scrub=${(e: CustomEvent<number>) => this._onScrub(e.detail)}
+        @live-toggle=${(e: CustomEvent<boolean>) => this._onLiveToggle(e.detail)}
       ></ha-adapt-timeline-grid>
 
-      ${this._renderScrubber()}
       ${this._selectedCell ? this._renderCellEditor() : nothing}
       ${this._selectedLight ? this._renderLightEditor() : nothing}
     `;
   }
 
-  private _renderScrubber(): TemplateResult {
-    const h = Math.floor(this._previewHour);
-    const m = Math.round((this._previewHour - h) * 60);
-    const label = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
-    return html`<div class="card">
-      <div class="scrubber">
-        <span class="clock">${label}</span>
-        <input
-          type="range"
-          min="0"
-          max="23.5"
-          step="0.5"
-          .value=${String(this._previewHour)}
-          @input=${(e: Event) =>
-            this._onScrub(Number((e.target as HTMLInputElement).value))}
-        />
-        ${checkboxField("Live preview to lights", this._livePreview, (v) => {
-          this._livePreview = v;
-          if (v) {
-            this._sendPreview();
-          } else {
-            void this.api.apply(); // restore real-time values
-          }
-        })}
-      </div>
-      <p class="muted">
-        Drag to step through the day. With live preview on, the lights that are
-        currently on follow the slider.
-      </p>
-    </div>`;
+  private _onLiveToggle(live: boolean): void {
+    this._livePreview = live;
+    if (live) {
+      this._sendPreview();
+    } else {
+      void this.api.apply(); // restore real-time values
+    }
   }
 
   private _renderCellEditor(): TemplateResult {
@@ -258,11 +222,17 @@ export class SchemaEditor extends LitElement {
           : "Currently following the sun — set a value to override."}
       </p>
       <div class="grid">
-        ${numberField("Brightness %", brightness, (v) =>
+        ${rangeField("Brightness", brightness, 1, 100, 1, "%", (v) =>
           this._setCell(ref, { brightness: v, color_temp: colorTemp })
         )}
-        ${numberField("Color temp K", colorTemp, (v) =>
-          this._setCell(ref, { brightness, color_temp: v })
+        ${rangeField(
+          "Color temp",
+          colorTemp,
+          KELVIN_MIN,
+          KELVIN_MAX,
+          50,
+          "K",
+          (v) => this._setCell(ref, { brightness, color_temp: v })
         )}
       </div>
       <div class="actions">
@@ -288,17 +258,29 @@ export class SchemaEditor extends LitElement {
     return html`<div class="card">
       <h2>${light?.name ?? entityId} · range</h2>
       <div class="grid">
-        ${numberField("Min brightness %", cfg.min_brightness, (v) =>
+        ${rangeField("Min brightness", cfg.min_brightness, 1, 100, 1, "%", (v) =>
           this._patchLight(entityId, { min_brightness: v })
         )}
-        ${numberField("Max brightness %", cfg.max_brightness, (v) =>
+        ${rangeField("Max brightness", cfg.max_brightness, 1, 100, 1, "%", (v) =>
           this._patchLight(entityId, { max_brightness: v })
         )}
-        ${numberField("Min color temp K", cfg.min_color_temp, (v) =>
-          this._patchLight(entityId, { min_color_temp: v })
+        ${rangeField(
+          "Min color temp",
+          cfg.min_color_temp,
+          KELVIN_MIN,
+          KELVIN_MAX,
+          50,
+          "K",
+          (v) => this._patchLight(entityId, { min_color_temp: v })
         )}
-        ${numberField("Max color temp K", cfg.max_color_temp, (v) =>
-          this._patchLight(entityId, { max_color_temp: v })
+        ${rangeField(
+          "Max color temp",
+          cfg.max_color_temp,
+          KELVIN_MIN,
+          KELVIN_MAX,
+          50,
+          "K",
+          (v) => this._patchLight(entityId, { max_color_temp: v })
         )}
       </div>
       <div class="actions">

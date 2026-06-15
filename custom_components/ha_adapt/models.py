@@ -34,6 +34,9 @@ from .const import (
     DEFAULT_RAMP_LIGHT,
     DEFAULT_SCHEMA_ID,
     DEFAULT_SEND_SPLIT_DELAY,
+    DEFAULT_SUN_MIN_BRIGHTNESS,
+    DEFAULT_SUNRISE_OFFSET,
+    DEFAULT_SUNSET_OFFSET,
     DEFAULT_TRANSITION,
     HOURS_PER_DAY,
 )
@@ -67,7 +70,7 @@ def _normalize_hours(hours: list[Any] | None) -> list[HourCell]:
 class SunConfig:
     """The configurable sun: drives every light's fallback (the timeline top row)."""
 
-    min_brightness: int = DEFAULT_MIN_BRIGHTNESS
+    min_brightness: int = DEFAULT_SUN_MIN_BRIGHTNESS
     max_brightness: int = DEFAULT_MAX_BRIGHTNESS
     min_color_temp: int = DEFAULT_MIN_COLOR_TEMP
     max_color_temp: int = DEFAULT_MAX_COLOR_TEMP
@@ -76,8 +79,8 @@ class SunConfig:
     ramp_light: int = DEFAULT_RAMP_LIGHT
     sunrise_time: str | None = None  # fixed "HH:MM:SS" overrides astral
     sunset_time: str | None = None
-    sunrise_offset: int = 0  # seconds
-    sunset_offset: int = 0
+    sunrise_offset: int = DEFAULT_SUNRISE_OFFSET  # seconds
+    sunset_offset: int = DEFAULT_SUNSET_OFFSET
     min_sunrise_time: str | None = None
     max_sunrise_time: str | None = None
     min_sunset_time: str | None = None
