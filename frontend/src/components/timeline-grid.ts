@@ -42,14 +42,17 @@ export class TimelineGrid extends LitElement {
         position: sticky;
         left: 0;
         z-index: 3;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         background: var(--surface);
         font-size: 0.82rem;
         font-weight: 600;
         color: var(--text);
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;
-        padding: 4px 8px 4px 2px;
+        padding: 0 12px;
         box-shadow: 1px 0 0 var(--border);
       }
       .label.clickable {

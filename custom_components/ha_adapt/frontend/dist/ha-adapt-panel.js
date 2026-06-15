@@ -263,8 +263,8 @@ O.elementStyles = [], O.shadowRootOptions = { mode: "open" }, O[R("elementProper
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const rt = globalThis, pt = (e) => e, Z = rt.trustedTypes, ut = Z ? Z.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, yt = "$lit$", w = `lit$${Math.random().toFixed(9).slice(2)}$`, wt = "?" + w, It = `<${wt}>`, P = document, I = () => P.createComment(""), D = (e) => e === null || typeof e != "object" && typeof e != "function", nt = Array.isArray, Dt = (e) => nt(e) || typeof e?.[Symbol.iterator] == "function", Q = `[ 	
-\f\r]`, U = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _t = /-->/g, ft = />/g, E = RegExp(`>|${Q}(?:([^\\s"'>=/]+)(${Q}*=${Q}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), gt = /'/g, mt = /"/g, xt = /^(?:script|style|textarea|title)$/i, jt = (e) => (t, ...s) => ({ _$litType$: e, strings: t, values: s }), h = jt(1), k = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), vt = /* @__PURE__ */ new WeakMap(), C = P.createTreeWalker(P, 129);
+\f\r]`, U = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _t = /-->/g, gt = />/g, E = RegExp(`>|${Q}(?:([^\\s"'>=/]+)(${Q}*=${Q}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ft = /'/g, mt = /"/g, xt = /^(?:script|style|textarea|title)$/i, jt = (e) => (t, ...s) => ({ _$litType$: e, strings: t, values: s }), h = jt(1), k = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), vt = /* @__PURE__ */ new WeakMap(), C = P.createTreeWalker(P, 129);
 function At(e, t) {
   if (!nt(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return ut !== void 0 ? ut.createHTML(t) : t;
@@ -275,7 +275,7 @@ const zt = (e, t) => {
   for (let l = 0; l < s; l++) {
     const a = e[l];
     let p, u, c = -1, m = 0;
-    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === U ? u[1] === "!--" ? o = _t : u[1] !== void 0 ? o = ft : u[2] !== void 0 ? (xt.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = E) : u[3] !== void 0 && (o = E) : o === E ? u[0] === ">" ? (o = r ?? U, c = -1) : u[1] === void 0 ? c = -2 : (c = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? E : u[3] === '"' ? mt : gt) : o === mt || o === gt ? o = E : o === _t || o === ft ? o = U : (o = E, r = void 0);
+    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === U ? u[1] === "!--" ? o = _t : u[1] !== void 0 ? o = gt : u[2] !== void 0 ? (xt.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = E) : u[3] !== void 0 && (o = E) : o === E ? u[0] === ">" ? (o = r ?? U, c = -1) : u[1] === void 0 ? c = -2 : (c = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? E : u[3] === '"' ? mt : ft) : o === mt || o === ft ? o = E : o === _t || o === gt ? o = U : (o = E, r = void 0);
     const y = o === E && e[l + 1].startsWith("/>") ? " " : "";
     n += o === U ? a + It : c >= 0 ? (i.push(p), a.slice(0, c) + yt + a.slice(c) + w + y) : a + w + (c === -2 ? l : y);
   }
@@ -854,7 +854,7 @@ function v(e, t, s) {
     />
   </label>`;
 }
-function g(e, t, s, i, r, n, o) {
+function f(e, t, s, i, r, n, o) {
   return h`<label class="field">
     <span class="field-head">
       <span>${e}</span>
@@ -1035,14 +1035,17 @@ x.styles = [
         position: sticky;
         left: 0;
         z-index: 3;
+        align-self: stretch;
+        display: flex;
+        align-items: center;
+        gap: 8px;
         background: var(--surface);
         font-size: 0.82rem;
         font-weight: 600;
         color: var(--text);
         white-space: nowrap;
         overflow: hidden;
-        text-overflow: ellipsis;
-        padding: 4px 8px 4px 2px;
+        padding: 0 12px;
         box-shadow: 1px 0 0 var(--border);
       }
       .label.clickable {
@@ -1151,7 +1154,7 @@ let G = class extends $ {
         The sun drives every light's fallback. Empty timeline cells follow it.
       </p>
       <div class="grid">
-        ${g(
+        ${f(
       "Min brightness",
       e.min_brightness,
       1,
@@ -1160,7 +1163,7 @@ let G = class extends $ {
       "%",
       (t) => this._patch({ min_brightness: t })
     )}
-        ${g(
+        ${f(
       "Max brightness",
       e.max_brightness,
       1,
@@ -1169,7 +1172,7 @@ let G = class extends $ {
       "%",
       (t) => this._patch({ max_brightness: t })
     )}
-        ${g(
+        ${f(
       "Min color temp",
       e.min_color_temp,
       N,
@@ -1178,7 +1181,7 @@ let G = class extends $ {
       "K",
       (t) => this._patch({ min_color_temp: t })
     )}
-        ${g(
+        ${f(
       "Max color temp",
       e.max_color_temp,
       N,
@@ -1323,7 +1326,7 @@ var pe = Object.defineProperty, ue = Object.getOwnPropertyDescriptor, b = (e, t,
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
   return i && r && pe(t, s, r), r;
 };
-let f = class extends $ {
+let g = class extends $ {
   constructor() {
     super(...arguments), this._sel = null, this._previewHour = 12, this._livePreview = !1, this._setActive = () => {
       this.api.setActiveSchema(this._draft.id).then((e) => this._emit("config-changed", e)).catch((e) => this._emit("panel-error", String(e)));
@@ -1446,7 +1449,7 @@ let f = class extends $ {
       <p class="muted">
         ${s ? "Explicit override for this hour." : "Following the sun — set a value to override."}
       </p>
-      ${g(
+      ${f(
       "Brightness",
       r,
       1,
@@ -1455,7 +1458,7 @@ let f = class extends $ {
       "%",
       (o) => this._setCell(e, { brightness: o, color_temp: n })
     )}
-      ${g(
+      ${f(
       "Color temp",
       n,
       N,
@@ -1476,7 +1479,7 @@ let f = class extends $ {
     const t = this.config.lights.find((i) => i.entity_id === e), s = this._lightCfg(e);
     return h`<div class="card">
       <h2>${t?.name ?? e}</h2>
-      ${g(
+      ${f(
       "Min brightness",
       s.min_brightness,
       1,
@@ -1485,7 +1488,7 @@ let f = class extends $ {
       "%",
       (i) => this._patchLight(e, { min_brightness: i })
     )}
-      ${g(
+      ${f(
       "Max brightness",
       s.max_brightness,
       1,
@@ -1494,7 +1497,7 @@ let f = class extends $ {
       "%",
       (i) => this._patchLight(e, { max_brightness: i })
     )}
-      ${g(
+      ${f(
       "Min color temp",
       s.min_color_temp,
       N,
@@ -1503,7 +1506,7 @@ let f = class extends $ {
       "K",
       (i) => this._patchLight(e, { min_color_temp: i })
     )}
-      ${g(
+      ${f(
       "Max color temp",
       s.max_color_temp,
       N,
@@ -1540,7 +1543,7 @@ let f = class extends $ {
     );
   }
 };
-f.styles = [
+g.styles = [
   V,
   z`
       .head {
@@ -1595,33 +1598,33 @@ f.styles = [
 ];
 b([
   _({ attribute: !1 })
-], f.prototype, "schema", 2);
+], g.prototype, "schema", 2);
 b([
   _({ attribute: !1 })
-], f.prototype, "config", 2);
+], g.prototype, "config", 2);
 b([
   _({ attribute: !1 })
-], f.prototype, "api", 2);
+], g.prototype, "api", 2);
 b([
   S()
-], f.prototype, "_draft", 2);
+], g.prototype, "_draft", 2);
 b([
   S()
-], f.prototype, "_timeline", 2);
+], g.prototype, "_timeline", 2);
 b([
   S()
-], f.prototype, "_sel", 2);
+], g.prototype, "_sel", 2);
 b([
   S()
-], f.prototype, "_previewHour", 2);
+], g.prototype, "_previewHour", 2);
 b([
   S()
-], f.prototype, "_livePreview", 2);
-f = b([
+], g.prototype, "_livePreview", 2);
+g = b([
   K("ha-adapt-schema-editor")
-], f);
-var _e = Object.defineProperty, fe = Object.getOwnPropertyDescriptor, H = (e, t, s, i) => {
-  for (var r = i > 1 ? void 0 : i ? fe(t, s) : t, n = e.length - 1, o; n >= 0; n--)
+], g);
+var _e = Object.defineProperty, ge = Object.getOwnPropertyDescriptor, H = (e, t, s, i) => {
+  for (var r = i > 1 ? void 0 : i ? ge(t, s) : t, n = e.length - 1, o; n >= 0; n--)
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
   return i && r && _e(t, s, r), r;
 };
