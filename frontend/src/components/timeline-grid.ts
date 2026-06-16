@@ -21,6 +21,14 @@ export class TimelineGrid extends LitElement {
   static override styles = [
     baseStyles,
     css`
+      :host {
+        display: block;
+        height: 100%;
+      }
+      .card {
+        height: 100%;
+        box-sizing: border-box;
+      }
       .scroll {
         overflow-x: auto;
         max-width: 100%;
@@ -61,6 +69,10 @@ export class TimelineGrid extends LitElement {
       .sunrow .label {
         color: var(--accent-strong);
       }
+      .gridrow.rowselected .label {
+        background: var(--accent-soft);
+        color: var(--accent-strong);
+      }
       .section-head {
         position: sticky;
         left: 0;
@@ -92,15 +104,6 @@ export class TimelineGrid extends LitElement {
         font-variant-numeric: tabular-nums;
         font-weight: 700;
         color: var(--accent-strong);
-      }
-      .live {
-        display: inline-flex;
-        align-items: center;
-        gap: 5px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        color: var(--text-soft);
-        cursor: pointer;
       }
       .cell {
         position: relative;
@@ -137,8 +140,9 @@ export class TimelineGrid extends LitElement {
   @property({ attribute: false }) lights: LightInfo[] = [];
   @property({ attribute: false }) timeline?: TimelineData;
   @property({ attribute: false }) selected: CellRef | null = null;
+  // "sun" or an entity_id — the row to highlight as selected.
+  @property({ attribute: false }) selectedRow: string | null = null;
   @property({ type: Number }) previewHour = 12;
-  @property({ type: Boolean }) live = false;
 
   override render(): TemplateResult {
     if (!this.timeline) {
@@ -165,18 +169,6 @@ export class TimelineGrid extends LitElement {
     return html`<div class="gridrow scrubrow">
       <div class="label">
         <span class="clock">${label}</span>
-        <label class="live">
-          <input
-            type="checkbox"
-            .checked=${this.live}
-            @change=${(e: Event) =>
-              this._emit(
-                "preview-toggle",
-                (e.target as HTMLInputElement).checked
-              )}
-          />
-          Preview
-        </label>
       </div>
       <div class="track">
         <input
@@ -205,7 +197,8 @@ export class TimelineGrid extends LitElement {
 
   private _sunRow(nowHour: number): TemplateResult {
     const row = this.timeline!.sun;
-    return html`<div class="gridrow sunrow">
+    const selected = this.selectedRow === "sun" ? "rowselected" : "";
+    return html`<div class="gridrow sunrow ${selected}">
       <div
         class="label clickable"
         title="Edit the sun"
@@ -221,7 +214,8 @@ export class TimelineGrid extends LitElement {
 
   private _lightRow(light: LightInfo, nowHour: number): TemplateResult {
     const row = this.timeline!.lights[light.entity_id] ?? [];
-    return html`<div class="gridrow">
+    const selected = this.selectedRow === light.entity_id ? "rowselected" : "";
+    return html`<div class="gridrow ${selected}">
       <div
         class="label clickable"
         title="Edit light range"

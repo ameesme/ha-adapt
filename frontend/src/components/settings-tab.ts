@@ -15,8 +15,7 @@ export class SettingsTab extends TabBase {
     const save = (patch: Partial<GlobalSettings>) =>
       void this.run(this.api.updateSettings(patch));
 
-    return html`<div class="card">
-      <h2>Global settings</h2>
+    return html`
       <div class="grid">
         ${numberField("Interval (s)", s.interval, (v) => save({ interval: v }))}
         ${numberField("Transition (s)", s.transition, (v) =>
@@ -38,7 +37,7 @@ export class SettingsTab extends TabBase {
           save({ take_over_control: v })
         )}
       </div>
-    </div>`;
+    `;
   }
 }
 

@@ -78,8 +78,7 @@ export class SchemaEditor extends LitElement {
         gap: 16px;
         align-items: stretch;
       }
-      /* The side panel is the inspector card: full height, and tinted when
-         something is selected. */
+      /* The side panel is the inspector card: full height. */
       .side {
         align-self: stretch;
         display: flex;
@@ -91,10 +90,6 @@ export class SchemaEditor extends LitElement {
         box-shadow: var(--shadow);
         padding: 18px;
       }
-      .side.selected {
-        background: var(--accent-soft);
-        border-color: var(--accent);
-      }
       .side h2 {
         margin: 0 0 4px;
         font-size: 1.05rem;
@@ -102,6 +97,16 @@ export class SchemaEditor extends LitElement {
       }
       .settings-below {
         margin-top: 16px;
+      }
+      .settings-below > summary {
+        cursor: pointer;
+        font-weight: 650;
+        color: var(--text-soft);
+        padding: 6px 2px;
+      }
+      .settings-below ha-adapt-settings-tab {
+        display: block;
+        padding: 10px 2px 4px;
       }
       @media (max-width: 960px) {
         .layout {
@@ -239,8 +244,8 @@ export class SchemaEditor extends LitElement {
             .lights=${this.config.lights}
             .timeline=${this._timeline}
             .selected=${this._sel?.kind === "cell" ? this._sel.ref : null}
+            .selectedRow=${this._selectedRow}
             .previewHour=${this._previewHour}
-            .live=${this.preview}
             @select-cell=${(e: CustomEvent<CellRef>) =>
               (this._sel = { kind: "cell", ref: e.detail })}
             @select-light=${(e: CustomEvent<string>) =>
@@ -250,18 +255,25 @@ export class SchemaEditor extends LitElement {
           ></ha-adapt-timeline-grid>
         </div>
 
-        <div class="side ${this._sel ? "selected" : ""}">
-          ${this._renderContext()}
-        </div>
+        <div class="side">${this._renderContext()}</div>
       </div>
 
-      <div class="settings-below">
+      <details class="settings-below">
+        <summary>Global settings</summary>
         <ha-adapt-settings-tab
           .config=${this.config}
           .api=${this.api}
         ></ha-adapt-settings-tab>
-      </div>
+      </details>
     `;
+  }
+
+  private get _selectedRow(): string | null {
+    const sel = this._sel;
+    if (!sel) return null;
+    if (sel.kind === "sun") return "sun";
+    if (sel.kind === "light") return sel.entityId;
+    return sel.ref.entityId;
   }
 
   private _renderContext(): TemplateResult {

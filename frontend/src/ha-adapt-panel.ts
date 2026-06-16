@@ -112,7 +112,6 @@ export class HaAdaptPanel extends LitElement {
       class="wrap"
       @config-changed=${this._onConfigChanged}
       @panel-error=${this._onError}
-      @preview-toggle=${(e: CustomEvent<boolean>) => (this._preview = e.detail)}
     >
       <header>
         <h1>Adaptive Lighting</h1>
