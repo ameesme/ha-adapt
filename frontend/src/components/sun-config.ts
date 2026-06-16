@@ -1,4 +1,4 @@
-import { LitElement, html, type TemplateResult } from "lit";
+import { LitElement, html, css, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import { numberField, rangeField, timeField } from "../form-fields";
@@ -9,13 +9,22 @@ import type { SunConfig } from "../types";
 // Editor for a schema's sun. Emits `sun-changed` with the updated SunConfig.
 @customElement("ha-adapt-sun-config")
 export class SunConfigEditor extends LitElement {
-  static override styles = baseStyles;
+  static override styles = [
+    baseStyles,
+    css`
+      h2 {
+        margin: 0 0 4px;
+        font-size: 1.05rem;
+        font-weight: 650;
+      }
+    `,
+  ];
 
   @property({ attribute: false }) sun!: SunConfig;
 
   override render(): TemplateResult {
     const s = this.sun;
-    return html`<div class="card">
+    return html`
       <h2>☀️ Sun</h2>
       <p class="muted">
         The sun drives every light's fallback. Empty timeline cells follow it.
@@ -64,7 +73,7 @@ export class SunConfigEditor extends LitElement {
           this._patch({ ramp_light: v })
         )}
       </div>
-    </div>`;
+    `;
   }
 
   private _patch(patch: Partial<SunConfig>): void {

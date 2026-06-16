@@ -67,3 +67,9 @@ export function kelvinToCss(kelvin: number): string {
 export function hourLabel(hour: number): string {
   return String(hour).padStart(2, "0");
 }
+
+// Fractional local hour-of-day right now (e.g. 14.5 at 14:30).
+export function currentHour(): number {
+  const now = new Date();
+  return now.getHours() + now.getMinutes() / 60;
+}

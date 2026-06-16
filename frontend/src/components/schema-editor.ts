@@ -19,7 +19,12 @@ import type {
   SunConfig,
   TimelineData,
 } from "../types";
-import { KELVIN_MAX, KELVIN_MIN, defaultLightConfig } from "../utils";
+import {
+  KELVIN_MAX,
+  KELVIN_MIN,
+  currentHour,
+  defaultLightConfig,
+} from "../utils";
 import type { CellRef } from "./timeline-grid";
 import "./timeline-grid";
 import "./sun-config";
@@ -71,20 +76,36 @@ export class SchemaEditor extends LitElement {
         display: grid;
         grid-template-columns: minmax(0, 1fr) 340px;
         gap: 16px;
-        align-items: start;
+        align-items: stretch;
       }
+      /* The side panel is the inspector card: full height, and tinted when
+         something is selected. */
       .side {
-        position: sticky;
-        top: 14px;
+        align-self: stretch;
         display: flex;
         flex-direction: column;
+        gap: 10px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        padding: 18px;
+      }
+      .side.selected {
+        background: var(--accent-soft);
+        border-color: var(--accent);
+      }
+      .side h2 {
+        margin: 0 0 4px;
+        font-size: 1.05rem;
+        font-weight: 650;
+      }
+      .settings-below {
+        margin-top: 16px;
       }
       @media (max-width: 960px) {
         .layout {
           grid-template-columns: 1fr;
-        }
-        .side {
-          position: static;
         }
       }
     `,
@@ -93,12 +114,12 @@ export class SchemaEditor extends LitElement {
   @property({ attribute: false }) schema!: Schema;
   @property({ attribute: false }) config!: ConfigPayload;
   @property({ attribute: false }) api!: HaAdaptApi;
+  @property({ type: Boolean }) preview = false;
 
   @state() private _draft!: Schema;
   @state() private _timeline?: TimelineData;
   @state() private _sel: Selection = null;
-  @state() private _previewHour = 12;
-  @state() private _livePreview = false;
+  @state() private _previewHour = currentHour();
 
   private _previewTimer?: number;
   private _saveTimer?: number;
@@ -113,6 +134,11 @@ export class SchemaEditor extends LitElement {
       this._draft = structuredClone(this.schema);
       this._sel = null;
       void this._loadTimeline();
+    }
+    // React to the preview toggle (driven from the header or the timeline).
+    if (changed.has("preview") && changed.get("preview") !== undefined) {
+      if (this.preview) this._sendPreview();
+      else void this.api.apply();
     }
   }
 
@@ -214,25 +240,26 @@ export class SchemaEditor extends LitElement {
             .timeline=${this._timeline}
             .selected=${this._sel?.kind === "cell" ? this._sel.ref : null}
             .previewHour=${this._previewHour}
-            .live=${this._livePreview}
+            .live=${this.preview}
             @select-cell=${(e: CustomEvent<CellRef>) =>
               (this._sel = { kind: "cell", ref: e.detail })}
             @select-light=${(e: CustomEvent<string>) =>
               (this._sel = { kind: "light", entityId: e.detail })}
             @select-sun=${() => (this._sel = { kind: "sun" })}
             @scrub=${(e: CustomEvent<number>) => this._onScrub(e.detail)}
-            @live-toggle=${(e: CustomEvent<boolean>) =>
-              this._onLiveToggle(e.detail)}
           ></ha-adapt-timeline-grid>
         </div>
 
-        <div class="side">
+        <div class="side ${this._sel ? "selected" : ""}">
           ${this._renderContext()}
-          <ha-adapt-settings-tab
-            .config=${this.config}
-            .api=${this.api}
-          ></ha-adapt-settings-tab>
         </div>
+      </div>
+
+      <div class="settings-below">
+        <ha-adapt-settings-tab
+          .config=${this.config}
+          .api=${this.api}
+        ></ha-adapt-settings-tab>
       </div>
     `;
   }
@@ -248,10 +275,8 @@ export class SchemaEditor extends LitElement {
     }
     if (sel?.kind === "light") return this._renderLightEditor(sel.entityId);
     if (sel?.kind === "cell") return this._renderCellEditor(sel.ref);
-    return html`<div class="card">
-      <div class="empty">
-        Click the ☀️ sun row, a light, or an hour cell to edit it here.
-      </div>
+    return html`<div class="empty">
+      Click the ☀️ sun row, a light, or an hour cell to edit it here.
     </div>`;
   }
 
@@ -261,7 +286,7 @@ export class SchemaEditor extends LitElement {
     const effective = this._timeline?.lights[ref.entityId]?.[ref.hour];
     const brightness = explicit?.brightness ?? effective?.brightness ?? 50;
     const colorTemp = explicit?.color_temp ?? effective?.color_temp ?? 3000;
-    return html`<div class="card">
+    return html`
       <h2>
         ${light?.name ?? ref.entityId} · ${String(ref.hour).padStart(2, "0")}:00
       </h2>
@@ -284,13 +309,13 @@ export class SchemaEditor extends LitElement {
           : nothing}
         <button class="btn ghost" @click=${() => (this._sel = null)}>Close</button>
       </div>
-    </div>`;
+    `;
   }
 
   private _renderLightEditor(entityId: string): TemplateResult {
     const light = this.config.lights.find((l) => l.entity_id === entityId);
     const cfg = this._lightCfg(entityId);
-    return html`<div class="card">
+    return html`
       <h2>${light?.name ?? entityId}</h2>
       ${rangeField("Min brightness", cfg.min_brightness, 1, 100, 1, "%", (v) =>
         this._patchLight(entityId, { min_brightness: v })
@@ -325,7 +350,7 @@ export class SchemaEditor extends LitElement {
         <span class="grow"></span>
         <button class="btn ghost" @click=${() => (this._sel = null)}>Close</button>
       </div>
-    </div>`;
+    `;
   }
 
   // --- actions -------------------------------------------------------------
@@ -343,16 +368,7 @@ export class SchemaEditor extends LitElement {
 
   private _onScrub(hour: number): void {
     this._previewHour = hour;
-    if (this._livePreview) this._sendPreview();
-  }
-
-  private _onLiveToggle(live: boolean): void {
-    this._livePreview = live;
-    if (live) {
-      this._sendPreview();
-    } else {
-      void this.api.apply();
-    }
+    if (this.preview) this._sendPreview();
   }
 
   private _sendPreview(): void {

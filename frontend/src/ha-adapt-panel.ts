@@ -55,6 +55,7 @@ export class HaAdaptPanel extends LitElement {
   @state() private _config?: ConfigPayload;
   @state() private _error?: string;
   @state() private _selectedId?: string;
+  @state() private _preview = false;
 
   private _api?: HaAdaptApi;
   private _loaded = false;
@@ -111,11 +112,11 @@ export class HaAdaptPanel extends LitElement {
       class="wrap"
       @config-changed=${this._onConfigChanged}
       @panel-error=${this._onError}
+      @preview-toggle=${(e: CustomEvent<boolean>) => (this._preview = e.detail)}
     >
       <header>
         <h1>Adaptive Lighting</h1>
         <span class="spacer"></span>
-        <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
         <select
           @change=${(e: Event) =>
             (this._selectedId = (e.target as HTMLSelectElement).value)}
@@ -127,6 +128,13 @@ export class HaAdaptPanel extends LitElement {
           )}
         </select>
         <button class="btn ghost" @click=${this._new}>+ New</button>
+        <button
+          class="btn ${this._preview ? "" : "ghost"}"
+          @click=${() => (this._preview = !this._preview)}
+        >
+          Preview
+        </button>
+        <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
       </header>
 
       ${this._error
@@ -138,6 +146,7 @@ export class HaAdaptPanel extends LitElement {
             .schema=${schema}
             .config=${config}
             .api=${this._api!}
+            .preview=${this._preview}
             @schema-delete=${this._onDelete}
           ></ha-adapt-schema-editor>`
         : nothing}
