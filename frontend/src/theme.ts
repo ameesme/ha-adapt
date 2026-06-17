@@ -86,7 +86,7 @@ export const baseStyles = css`
 
   @media (max-width: 960px) {
     .grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     /* Flatten cards on mobile so they don't add a second horizontal padding
        inside the panel's own padding. */
@@ -111,6 +111,8 @@ export const baseStyles = css`
     border-radius: 8px;
     padding: 8px 10px;
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   input:focus,

@@ -134,6 +134,20 @@ export class TimelineGrid extends LitElement {
       .cell.now {
         border-bottom: 3px solid var(--accent);
       }
+      @media (max-width: 960px) {
+        .card {
+          padding: 0;
+        }
+        /* Match the page background (the card is flat on mobile) so the sticky
+           labels and the right-side scroll cutoff blend in. */
+        .label {
+          background: var(--bg);
+          padding: 0 6px;
+        }
+        .section-head {
+          padding-left: 6px;
+        }
+      }
     `,
   ];
 

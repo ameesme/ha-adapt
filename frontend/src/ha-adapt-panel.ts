@@ -26,6 +26,7 @@ export class HaAdaptPanel extends LitElement {
       header {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 12px;
         flex-wrap: wrap;
         margin-bottom: 18px;
@@ -33,18 +34,21 @@ export class HaAdaptPanel extends LitElement {
       header h1 {
         font-size: 1.25rem;
         font-weight: 700;
-        margin: 0;
+        margin: 0 auto 0 0;
       }
       header select {
         width: auto;
         min-width: 160px;
       }
-      .spacer {
-        flex: 1;
-      }
       .error {
         border-color: var(--danger);
         color: var(--danger);
+      }
+      @media (max-width: 960px) {
+        .wrap {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
       }
     `,
   ];
@@ -115,7 +119,6 @@ export class HaAdaptPanel extends LitElement {
     >
       <header>
         <h1>Adaptive Lighting</h1>
-        <span class="spacer"></span>
         <select
           @change=${(e: Event) =>
             (this._selectedId = (e.target as HTMLSelectElement).value)}

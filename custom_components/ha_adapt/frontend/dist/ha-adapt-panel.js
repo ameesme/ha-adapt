@@ -45,7 +45,7 @@ const Pt = (e) => new bt(typeof e == "string" ? e : e + "", void 0, st), H = (e,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Ot, defineProperty: Mt, getOwnPropertyDescriptor: Tt, getOwnPropertyNames: Ht, getOwnPropertySymbols: Rt, getPrototypeOf: Ut } = Object, J = globalThis, ct = J.trustedTypes, Nt = ct ? ct.emptyScript : "", It = J.reactiveElementPolyfillSupport, N = (e, t) => e, W = { toAttribute(e, t) {
+const { is: Mt, defineProperty: Ot, getOwnPropertyDescriptor: Tt, getOwnPropertyNames: Ht, getOwnPropertySymbols: Rt, getPrototypeOf: Ut } = Object, J = globalThis, ct = J.trustedTypes, Nt = ct ? ct.emptyScript : "", It = J.reactiveElementPolyfillSupport, N = (e, t) => e, W = { toAttribute(e, t) {
   switch (t) {
     case Boolean:
       e = e ? Nt : null;
@@ -73,9 +73,9 @@ const { is: Ot, defineProperty: Mt, getOwnPropertyDescriptor: Tt, getOwnProperty
       }
   }
   return s;
-} }, it = (e, t) => !Ot(e, t), dt = { attribute: !0, type: String, converter: W, reflect: !1, useDefault: !1, hasChanged: it };
+} }, it = (e, t) => !Mt(e, t), dt = { attribute: !0, type: String, converter: W, reflect: !1, useDefault: !1, hasChanged: it };
 Symbol.metadata ??= Symbol("metadata"), J.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-let O = class extends HTMLElement {
+let M = class extends HTMLElement {
   static addInitializer(t) {
     this._$Ei(), (this.l ??= []).push(t);
   }
@@ -85,7 +85,7 @@ let O = class extends HTMLElement {
   static createProperty(t, s = dt) {
     if (s.state && (s.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((s = Object.create(s)).wrapped = !0), this.elementProperties.set(t, s), !s.noAccessor) {
       const i = Symbol(), r = this.getPropertyDescriptor(t, i, s);
-      r !== void 0 && Mt(this.prototype, t, r);
+      r !== void 0 && Ot(this.prototype, t, r);
     }
   }
   static getPropertyDescriptor(t, s, i) {
@@ -256,15 +256,15 @@ let O = class extends HTMLElement {
   firstUpdated(t) {
   }
 };
-O.elementStyles = [], O.shadowRootOptions = { mode: "open" }, O[N("elementProperties")] = /* @__PURE__ */ new Map(), O[N("finalized")] = /* @__PURE__ */ new Map(), It?.({ ReactiveElement: O }), (J.reactiveElementVersions ??= []).push("2.1.2");
+M.elementStyles = [], M.shadowRootOptions = { mode: "open" }, M[N("elementProperties")] = /* @__PURE__ */ new Map(), M[N("finalized")] = /* @__PURE__ */ new Map(), It?.({ ReactiveElement: M }), (J.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const rt = globalThis, pt = (e) => e, Z = rt.trustedTypes, ut = Z ? Z.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, wt = "$lit$", y = `lit$${Math.random().toFixed(9).slice(2)}$`, yt = "?" + y, Lt = `<${yt}>`, P = document, z = () => P.createComment(""), D = (e) => e === null || typeof e != "object" && typeof e != "function", nt = Array.isArray, zt = (e) => nt(e) || typeof e?.[Symbol.iterator] == "function", Q = `[ 	
+const rt = globalThis, pt = (e) => e, Z = rt.trustedTypes, ut = Z ? Z.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, wt = "$lit$", y = `lit$${Math.random().toFixed(9).slice(2)}$`, yt = "?" + y, zt = `<${yt}>`, P = document, L = () => P.createComment(""), D = (e) => e === null || typeof e != "object" && typeof e != "function", nt = Array.isArray, Lt = (e) => nt(e) || typeof e?.[Symbol.iterator] == "function", Q = `[ 	
 \f\r]`, U = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _t = /-->/g, gt = />/g, E = RegExp(`>|${Q}(?:([^\\s"'>=/]+)(${Q}*=${Q}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ft = /'/g, mt = /"/g, xt = /^(?:script|style|textarea|title)$/i, Dt = (e) => (t, ...s) => ({ _$litType$: e, strings: t, values: s }), h = Dt(1), M = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), vt = /* @__PURE__ */ new WeakMap(), C = P.createTreeWalker(P, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ft = /'/g, mt = /"/g, xt = /^(?:script|style|textarea|title)$/i, Dt = (e) => (t, ...s) => ({ _$litType$: e, strings: t, values: s }), h = Dt(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), vt = /* @__PURE__ */ new WeakMap(), C = P.createTreeWalker(P, 129);
 function At(e, t) {
   if (!nt(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return ut !== void 0 ? ut.createHTML(t) : t;
@@ -277,7 +277,7 @@ const jt = (e, t) => {
     let p, u, c = -1, m = 0;
     for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === U ? u[1] === "!--" ? o = _t : u[1] !== void 0 ? o = gt : u[2] !== void 0 ? (xt.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = E) : u[3] !== void 0 && (o = E) : o === E ? u[0] === ">" ? (o = r ?? U, c = -1) : u[1] === void 0 ? c = -2 : (c = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? E : u[3] === '"' ? mt : ft) : o === mt || o === ft ? o = E : o === _t || o === gt ? o = U : (o = E, r = void 0);
     const w = o === E && e[l + 1].startsWith("/>") ? " " : "";
-    n += o === U ? a + Lt : c >= 0 ? (i.push(p), a.slice(0, c) + wt + a.slice(c) + y + w) : a + y + (c === -2 ? l : w);
+    n += o === U ? a + zt : c >= 0 ? (i.push(p), a.slice(0, c) + wt + a.slice(c) + y + w) : a + y + (c === -2 ? l : w);
   }
   return [At(e, n + (e[s] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), i];
 };
@@ -301,8 +301,8 @@ class j {
           const c = r.textContent.split(y), m = c.length - 1;
           if (m > 0) {
             r.textContent = Z ? Z.emptyScript : "";
-            for (let w = 0; w < m; w++) r.append(c[w], z()), C.nextNode(), a.push({ type: 2, index: ++n });
-            r.append(c[m], z());
+            for (let w = 0; w < m; w++) r.append(c[w], L()), C.nextNode(), a.push({ type: 2, index: ++n });
+            r.append(c[m], L());
           }
         }
       } else if (r.nodeType === 8) if (r.data === yt) a.push({ type: 2, index: n });
@@ -319,7 +319,7 @@ class j {
   }
 }
 function T(e, t, s = e, i) {
-  if (t === M) return t;
+  if (t === O) return t;
   let r = i !== void 0 ? s._$Co?.[i] : s._$Cl;
   const n = D(t) ? void 0 : t._$litDirective$;
   return r?.constructor !== n && (r?._$AO?.(!1), n === void 0 ? r = void 0 : (r = new n(e), r._$AT(e, s, i)), i !== void 0 ? (s._$Co ??= [])[i] = r : s._$Cl = r), r !== void 0 && (t = T(e, r._$AS(e, t.values), r, i)), t;
@@ -371,7 +371,7 @@ class B {
     return this._$AB;
   }
   _$AI(t, s = this) {
-    t = T(this, t, s), D(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== M && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : zt(t) ? this.k(t) : this._(t);
+    t = T(this, t, s), D(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== O && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : Lt(t) ? this.k(t) : this._(t);
   }
   O(t) {
     return this._$AA.parentNode.insertBefore(t, this._$AB);
@@ -398,7 +398,7 @@ class B {
     nt(this._$AH) || (this._$AH = [], this._$AR());
     const s = this._$AH;
     let i, r = 0;
-    for (const n of t) r === s.length ? s.push(i = new B(this.O(z()), this.O(z()), this, this.options)) : i = s[r], i._$AI(n), r++;
+    for (const n of t) r === s.length ? s.push(i = new B(this.O(L()), this.O(L()), this, this.options)) : i = s[r], i._$AI(n), r++;
     r < s.length && (this._$AR(i && i._$AB.nextSibling, r), s.length = r);
   }
   _$AR(t = this._$AA.nextSibling, s) {
@@ -424,11 +424,11 @@ class X {
   _$AI(t, s = this, i, r) {
     const n = this.strings;
     let o = !1;
-    if (n === void 0) t = T(this, t, s, 0), o = !D(t) || t !== this._$AH && t !== M, o && (this._$AH = t);
+    if (n === void 0) t = T(this, t, s, 0), o = !D(t) || t !== this._$AH && t !== O, o && (this._$AH = t);
     else {
       const l = t;
       let a, p;
-      for (t = n[0], a = 0; a < n.length - 1; a++) p = T(this, l[i + a], s, a), p === M && (p = this._$AH[a]), o ||= !D(p) || p !== this._$AH[a], p === d ? t = d : t !== d && (t += (p ?? "") + n[a + 1]), this._$AH[a] = p;
+      for (t = n[0], a = 0; a < n.length - 1; a++) p = T(this, l[i + a], s, a), p === O && (p = this._$AH[a]), o ||= !D(p) || p !== this._$AH[a], p === d ? t = d : t !== d && (t += (p ?? "") + n[a + 1]), this._$AH[a] = p;
     }
     o && !r && this.j(t);
   }
@@ -457,7 +457,7 @@ class Vt extends X {
     super(t, s, i, r, n), this.type = 5;
   }
   _$AI(t, s = this) {
-    if ((t = T(this, t, s, 0) ?? d) === M) return;
+    if ((t = T(this, t, s, 0) ?? d) === O) return;
     const i = this._$AH, r = t === d && i !== d || t.capture !== i.capture || t.once !== i.once || t.passive !== i.passive, n = t !== d && (i === d || r);
     r && this.element.removeEventListener(this.name, this, i), n && this.element.addEventListener(this.name, this, t), this._$AH = t;
   }
@@ -483,7 +483,7 @@ const Zt = (e, t, s) => {
   let r = i._$litPart$;
   if (r === void 0) {
     const n = s?.renderBefore ?? null;
-    i._$litPart$ = r = new B(t.insertBefore(z(), n), n, void 0, s ?? {});
+    i._$litPart$ = r = new B(t.insertBefore(L(), n), n, void 0, s ?? {});
   }
   return r._$AI(e), r;
 };
@@ -493,7 +493,7 @@ const Zt = (e, t, s) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ot = globalThis;
-class v extends O {
+class v extends M {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -512,7 +512,7 @@ class v extends O {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return M;
+    return O;
   }
 }
 v._$litElement$ = !0, v.finalized = !0, ot.litElementHydrateSupport?.({ LitElement: v });
@@ -694,7 +694,7 @@ const Yt = H`
 
   @media (max-width: 960px) {
     .grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     /* Flatten cards on mobile so they don't add a second horizontal padding
        inside the panel's own padding. */
@@ -719,6 +719,8 @@ const Yt = H`
     border-radius: 8px;
     padding: 8px 10px;
     width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   input:focus,
@@ -818,7 +820,7 @@ const Yt = H`
     color: var(--text-soft);
     padding: 28px;
   }
-`, Y = Array.from({ length: 24 }, (e, t) => t), I = 1500, L = 6500;
+`, Y = Array.from({ length: 24 }, (e, t) => t), I = 1500, z = 6500;
 function te() {
   return {
     min_brightness: 5,
@@ -1140,6 +1142,20 @@ A.styles = [
       .cell.now {
         border-bottom: 3px solid var(--accent);
       }
+      @media (max-width: 960px) {
+        .card {
+          padding: 0;
+        }
+        /* Match the page background (the card is flat on mobile) so the sticky
+           labels and the right-side scroll cutoff blend in. */
+        .label {
+          background: var(--bg);
+          padding: 0 6px;
+        }
+        .section-head {
+          padding-left: 6px;
+        }
+      }
     `
 ];
 R([
@@ -1196,7 +1212,7 @@ let G = class extends v {
       "Min color temp",
       e.min_color_temp,
       I,
-      L,
+      z,
       50,
       "K",
       (t) => this._patch({ min_color_temp: t })
@@ -1205,7 +1221,7 @@ let G = class extends v {
       "Max color temp",
       e.max_color_temp,
       I,
-      L,
+      z,
       50,
       "K",
       (t) => this._patch({ max_color_temp: t })
@@ -1488,7 +1504,7 @@ let g = class extends v {
       "Color temp",
       n,
       I,
-      L,
+      z,
       50,
       "K",
       (o) => this._setCell(e, { brightness: r, color_temp: o })
@@ -1527,7 +1543,7 @@ let g = class extends v {
       "Min color temp",
       s.min_color_temp,
       I,
-      L,
+      z,
       50,
       "K",
       (i) => this._patchLight(e, { min_color_temp: i })
@@ -1536,7 +1552,7 @@ let g = class extends v {
       "Max color temp",
       s.max_color_temp,
       I,
-      L,
+      z,
       50,
       "K",
       (i) => this._patchLight(e, { max_color_temp: i })
@@ -1724,7 +1740,6 @@ let $ = class extends v {
     >
       <header>
         <h1>Adaptive Lighting</h1>
-        <span class="spacer"></span>
         <select
           @change=${(i) => this._selectedId = i.target.value}
         >
@@ -1785,6 +1800,7 @@ $.styles = [
       header {
         display: flex;
         align-items: center;
+        justify-content: flex-end;
         gap: 12px;
         flex-wrap: wrap;
         margin-bottom: 18px;
@@ -1792,18 +1808,21 @@ $.styles = [
       header h1 {
         font-size: 1.25rem;
         font-weight: 700;
-        margin: 0;
+        margin: 0 auto 0 0;
       }
       header select {
         width: auto;
         min-width: 160px;
       }
-      .spacer {
-        flex: 1;
-      }
       .error {
         border-color: var(--danger);
         color: var(--danger);
+      }
+      @media (max-width: 960px) {
+        .wrap {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
       }
     `
 ];
