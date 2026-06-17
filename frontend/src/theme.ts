@@ -84,6 +84,12 @@ export const baseStyles = css`
     gap: 14px;
   }
 
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   input[type="text"],
   input[type="number"],
   input[type="time"],

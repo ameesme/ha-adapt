@@ -262,7 +262,7 @@ O.elementStyles = [], O.shadowRootOptions = { mode: "open" }, O[N("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const rt = globalThis, pt = (e) => e, Z = rt.trustedTypes, ut = Z ? Z.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, wt = "$lit$", y = `lit$${Math.random().toFixed(9).slice(2)}$`, yt = "?" + y, Dt = `<${yt}>`, P = document, L = () => P.createComment(""), z = (e) => e === null || typeof e != "object" && typeof e != "function", nt = Array.isArray, Lt = (e) => nt(e) || typeof e?.[Symbol.iterator] == "function", Q = `[ 	
+const rt = globalThis, pt = (e) => e, Z = rt.trustedTypes, ut = Z ? Z.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, wt = "$lit$", y = `lit$${Math.random().toFixed(9).slice(2)}$`, yt = "?" + y, Lt = `<${yt}>`, P = document, D = () => P.createComment(""), z = (e) => e === null || typeof e != "object" && typeof e != "function", nt = Array.isArray, Dt = (e) => nt(e) || typeof e?.[Symbol.iterator] == "function", Q = `[ 	
 \f\r]`, U = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _t = /-->/g, ft = />/g, E = RegExp(`>|${Q}(?:([^\\s"'>=/]+)(${Q}*=${Q}*(?:[^ 	
 \f\r"'\`<>=]|("|')|))|$)`, "g"), gt = /'/g, mt = /"/g, xt = /^(?:script|style|textarea|title)$/i, zt = (e) => (t, ...s) => ({ _$litType$: e, strings: t, values: s }), h = zt(1), M = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), vt = /* @__PURE__ */ new WeakMap(), C = P.createTreeWalker(P, 129);
 function At(e, t) {
@@ -277,7 +277,7 @@ const jt = (e, t) => {
     let p, u, c = -1, m = 0;
     for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === U ? u[1] === "!--" ? o = _t : u[1] !== void 0 ? o = ft : u[2] !== void 0 ? (xt.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = E) : u[3] !== void 0 && (o = E) : o === E ? u[0] === ">" ? (o = r ?? U, c = -1) : u[1] === void 0 ? c = -2 : (c = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? E : u[3] === '"' ? mt : gt) : o === mt || o === gt ? o = E : o === _t || o === ft ? o = U : (o = E, r = void 0);
     const w = o === E && e[l + 1].startsWith("/>") ? " " : "";
-    n += o === U ? a + Dt : c >= 0 ? (i.push(p), a.slice(0, c) + wt + a.slice(c) + y + w) : a + y + (c === -2 ? l : w);
+    n += o === U ? a + Lt : c >= 0 ? (i.push(p), a.slice(0, c) + wt + a.slice(c) + y + w) : a + y + (c === -2 ? l : w);
   }
   return [At(e, n + (e[s] || "<?>") + (t === 2 ? "</svg>" : t === 3 ? "</math>" : "")), i];
 };
@@ -301,8 +301,8 @@ class j {
           const c = r.textContent.split(y), m = c.length - 1;
           if (m > 0) {
             r.textContent = Z ? Z.emptyScript : "";
-            for (let w = 0; w < m; w++) r.append(c[w], L()), C.nextNode(), a.push({ type: 2, index: ++n });
-            r.append(c[m], L());
+            for (let w = 0; w < m; w++) r.append(c[w], D()), C.nextNode(), a.push({ type: 2, index: ++n });
+            r.append(c[m], D());
           }
         }
       } else if (r.nodeType === 8) if (r.data === yt) a.push({ type: 2, index: n });
@@ -371,7 +371,7 @@ class B {
     return this._$AB;
   }
   _$AI(t, s = this) {
-    t = T(this, t, s), z(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== M && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : Lt(t) ? this.k(t) : this._(t);
+    t = T(this, t, s), z(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== M && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : Dt(t) ? this.k(t) : this._(t);
   }
   O(t) {
     return this._$AA.parentNode.insertBefore(t, this._$AB);
@@ -398,7 +398,7 @@ class B {
     nt(this._$AH) || (this._$AH = [], this._$AR());
     const s = this._$AH;
     let i, r = 0;
-    for (const n of t) r === s.length ? s.push(i = new B(this.O(L()), this.O(L()), this, this.options)) : i = s[r], i._$AI(n), r++;
+    for (const n of t) r === s.length ? s.push(i = new B(this.O(D()), this.O(D()), this, this.options)) : i = s[r], i._$AI(n), r++;
     r < s.length && (this._$AR(i && i._$AB.nextSibling, r), s.length = r);
   }
   _$AR(t = this._$AA.nextSibling, s) {
@@ -483,7 +483,7 @@ const Zt = (e, t, s) => {
   let r = i._$litPart$;
   if (r === void 0) {
     const n = s?.renderBefore ?? null;
-    i._$litPart$ = r = new B(t.insertBefore(L(), n), n, void 0, s ?? {});
+    i._$litPart$ = r = new B(t.insertBefore(D(), n), n, void 0, s ?? {});
   }
   return r._$AI(e), r;
 };
@@ -692,6 +692,12 @@ const Yt = H`
     gap: 14px;
   }
 
+  @media (max-width: 960px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
   input[type="text"],
   input[type="number"],
   input[type="time"],
@@ -802,7 +808,7 @@ const Yt = H`
     color: var(--text-soft);
     padding: 28px;
   }
-`, Y = Array.from({ length: 24 }, (e, t) => t), I = 1500, D = 6500;
+`, Y = Array.from({ length: 24 }, (e, t) => t), I = 1500, L = 6500;
 function te() {
   return {
     min_brightness: 5,
@@ -1180,7 +1186,7 @@ let G = class extends v {
       "Min color temp",
       e.min_color_temp,
       I,
-      D,
+      L,
       50,
       "K",
       (t) => this._patch({ min_color_temp: t })
@@ -1189,7 +1195,7 @@ let G = class extends v {
       "Max color temp",
       e.max_color_temp,
       I,
-      D,
+      L,
       50,
       "K",
       (t) => this._patch({ max_color_temp: t })
@@ -1472,7 +1478,7 @@ let f = class extends v {
       "Color temp",
       n,
       I,
-      D,
+      L,
       50,
       "K",
       (o) => this._setCell(e, { brightness: r, color_temp: o })
@@ -1511,7 +1517,7 @@ let f = class extends v {
       "Min color temp",
       s.min_color_temp,
       I,
-      D,
+      L,
       50,
       "K",
       (i) => this._patchLight(e, { min_color_temp: i })
@@ -1520,7 +1526,7 @@ let f = class extends v {
       "Max color temp",
       s.max_color_temp,
       I,
-      D,
+      L,
       50,
       "K",
       (i) => this._patchLight(e, { max_color_temp: i })
@@ -1587,6 +1593,12 @@ f.styles = [
         gap: 16px;
         align-items: stretch;
       }
+      /* Let both columns shrink below their content so the timeline scrolls
+         internally instead of overflowing the viewport. */
+      .main,
+      .side {
+        min-width: 0;
+      }
       /* The side panel is the inspector card: full height. */
       .side {
         align-self: stretch;
@@ -1619,7 +1631,7 @@ f.styles = [
       }
       @media (max-width: 960px) {
         .layout {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
       }
     `

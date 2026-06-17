@@ -78,6 +78,12 @@ export class SchemaEditor extends LitElement {
         gap: 16px;
         align-items: stretch;
       }
+      /* Let both columns shrink below their content so the timeline scrolls
+         internally instead of overflowing the viewport. */
+      .main,
+      .side {
+        min-width: 0;
+      }
       /* The side panel is the inspector card: full height. */
       .side {
         align-self: stretch;
@@ -110,7 +116,7 @@ export class SchemaEditor extends LitElement {
       }
       @media (max-width: 960px) {
         .layout {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
       }
     `,
