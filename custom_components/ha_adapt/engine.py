@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import math
 
-from .const import HOURS_PER_DAY
+from .const import BRIGHTNESS_CHANGE, COLOR_TEMP_CHANGE, HOURS_PER_DAY
 from .models import LightConfig, SunConfig
 
 # --- small numeric helpers ---------------------------------------------------
@@ -240,3 +240,31 @@ def light_target(
     anchors = light_anchors(light, drives)
     bri, temp = interpolate_cyclic(anchors, hour)
     return Target(brightness_pct=int(round(bri)), color_temp_kelvin=_round5(temp))
+
+
+def target_changed(
+    target: Target | None,
+    brightness_255: int | None,
+    color_temp_kelvin: int | None,
+) -> bool:
+    """Whether a *present* actual value diverges from ``target`` beyond the
+    manual-control thresholds.
+
+    Returns ``False`` when there is no baseline target or the actual value is
+    absent, so settled/transition state updates aren't misread as manual
+    control.
+    """
+    if target is None:
+        return False
+    if (
+        target.brightness_pct is not None
+        and brightness_255 is not None
+        and abs(brightness_255 - round(target.brightness_pct / 100 * 255))
+        > BRIGHTNESS_CHANGE
+    ):
+        return True
+    return bool(
+        target.color_temp_kelvin is not None
+        and color_temp_kelvin is not None
+        and abs(color_temp_kelvin - target.color_temp_kelvin) > COLOR_TEMP_CHANGE
+    )

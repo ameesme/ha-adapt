@@ -143,6 +143,7 @@ export class SchemaEditor extends LitElement {
 
   private _previewTimer?: number;
   private _saveTimer?: number;
+  private _timelineTimer?: number;
 
   private get _active(): boolean {
     return this.schema.id === this.config.active_schema_id;
@@ -167,12 +168,26 @@ export class SchemaEditor extends LitElement {
     super.disconnectedCallback();
   }
 
+  // Render/preview the *draft* (unsaved) schema so edits are visible live.
   private async _loadTimeline(): Promise<void> {
     try {
-      this._timeline = await this.api.timeline(this._draft.id);
+      this._timeline = await this.api.timeline(this._draft);
     } catch {
       this._timeline = undefined;
     }
+  }
+
+  // Called after every edit: fast visual refresh + live preview, with a
+  // slower debounce for the actual save.
+  private _afterEdit(): void {
+    this._scheduleSave();
+    this._scheduleTimeline();
+    if (this.preview) this._sendPreview();
+  }
+
+  private _scheduleTimeline(): void {
+    window.clearTimeout(this._timelineTimer);
+    this._timelineTimer = window.setTimeout(() => void this._loadTimeline(), 120);
   }
 
   // --- persistence ---------------------------------------------------------
@@ -197,7 +212,6 @@ export class SchemaEditor extends LitElement {
     try {
       const config = await this.api.saveSchema(this._draft);
       this._emit("config-changed", config);
-      await this._loadTimeline();
     } catch (err) {
       this._emit("panel-error", String(err));
     }
@@ -209,7 +223,7 @@ export class SchemaEditor extends LitElement {
 
   private _patchSchema(patch: Partial<Schema>): void {
     this._draft = { ...this._draft, ...patch };
-    this._scheduleSave();
+    this._afterEdit();
   }
 
   private _patchLight(entityId: string, patch: Partial<LightConfig>): void {
@@ -218,7 +232,7 @@ export class SchemaEditor extends LitElement {
       ...this._draft,
       lights: { ...this._draft.lights, [entityId]: next },
     };
-    this._scheduleSave();
+    this._afterEdit();
   }
 
   private _setCell(ref: CellRef, cell: HourCell): void {
@@ -261,8 +275,7 @@ export class SchemaEditor extends LitElement {
             .selected=${this._sel?.kind === "cell" ? this._sel.ref : null}
             .selectedRow=${this._selectedRow}
             .previewHour=${this._previewHour}
-            @select-cell=${(e: CustomEvent<CellRef>) =>
-              (this._sel = { kind: "cell", ref: e.detail })}
+            @select-cell=${(e: CustomEvent<CellRef>) => this._onSelectCell(e.detail)}
             @select-light=${(e: CustomEvent<string>) =>
               (this._sel = { kind: "light", entityId: e.detail })}
             @select-sun=${() => (this._sel = { kind: "sun" })}
@@ -398,10 +411,18 @@ export class SchemaEditor extends LitElement {
     if (this.preview) this._sendPreview();
   }
 
+  // Selecting an hour cell opens its editor and moves the playhead/preview to
+  // that hour.
+  private _onSelectCell(ref: CellRef): void {
+    this._sel = { kind: "cell", ref };
+    this._previewHour = ref.hour;
+    if (this.preview) this._sendPreview();
+  }
+
   private _sendPreview(): void {
     window.clearTimeout(this._previewTimer);
     this._previewTimer = window.setTimeout(() => {
-      void this.api.preview(this._draft.id, this._previewHour, true);
+      void this.api.preview(this._draft, this._previewHour, true);
     }, 150);
   }
 

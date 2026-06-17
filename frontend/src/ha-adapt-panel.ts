@@ -136,7 +136,6 @@ export class HaAdaptPanel extends LitElement {
         >
           Preview
         </button>
-        <button class="btn ghost" @click=${this._applyNow}>Apply now</button>
       </header>
 
       ${this._error
@@ -164,10 +163,6 @@ export class HaAdaptPanel extends LitElement {
   private async _onDelete(e: CustomEvent<string>): Promise<void> {
     this._selectedId = this._config!.active_schema_id;
     await this._run(this._api!.deleteSchema(e.detail));
-  }
-
-  private async _applyNow(): Promise<void> {
-    await this._run(this._api!.apply());
   }
 
   private async _run(promise: Promise<ConfigPayload>): Promise<void> {

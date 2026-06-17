@@ -83,6 +83,9 @@ async def async_setup_interceptor(
             return
         if event.data.get("service") != SERVICE_TURN_ON:
             return
+        # Never treat our own adaptation writes as a manual override.
+        if coordinator.is_our_context(event.context.id):
+            return
 
         service_data = event.data.get("service_data") or {}
         if not any(key in service_data for key in EXPLICIT_KEYS):

@@ -146,6 +146,21 @@ def test_explicit_cell_overrides_and_interpolates():
     assert halfway.color_temp_kelvin == pytest.approx(3500, abs=5)
 
 
+def test_target_changed_thresholds():
+    target = engine.Target(brightness_pct=50, color_temp_kelvin=3000)
+    # 50% -> ~128 on the 0-255 scale.
+    assert engine.target_changed(target, 130, 3050) is False  # within thresholds
+    assert engine.target_changed(target, 200, 3050) is True  # brightness diverges
+    assert engine.target_changed(target, 130, 3200) is True  # color temp diverges
+
+
+def test_target_changed_no_baseline_or_missing_actuals():
+    target = engine.Target(brightness_pct=50, color_temp_kelvin=3000)
+    assert engine.target_changed(None, 255, 6500) is False  # no baseline
+    # Missing actuals (e.g. a settling/transition update) are not divergence.
+    assert engine.target_changed(target, None, None) is False
+
+
 def test_explicit_cell_is_clamped_to_light_range():
     base = dt.datetime(2026, 6, 14, tzinfo=UTC)
     drives = _sun_drives(SunConfig(), base)

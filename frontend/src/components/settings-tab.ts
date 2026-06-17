@@ -22,11 +22,6 @@ export class SettingsTab extends TabBase {
           save({ transition: v })
         )}
         ${numberField(
-          "Initial transition (s)",
-          s.initial_transition,
-          (v) => save({ initial_transition: v })
-        )}
-        ${numberField(
           "Auto-reset override (s)",
           s.autoreset_control,
           (v) => save({ autoreset_control: v })

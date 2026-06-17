@@ -238,10 +238,18 @@ async def ws_set_manual_control(hass, connection, msg) -> None:
     connection.send_result(msg["id"], _config_payload(hass, coordinator))
 
 
+def _resolve_schema(coordinator: AdaptCoordinator, msg) -> Schema | None:
+    """The inline draft ``schema`` if given, else the stored one by id."""
+    if msg.get("schema"):
+        return Schema.from_dict(msg["schema"])
+    return coordinator.data.schemas.get(msg.get("schema_id"))
+
+
 @websocket_api.websocket_command(
     {
         vol.Required("type"): "ha_adapt/timeline",
-        vol.Required("schema_id"): str,
+        vol.Optional("schema_id"): str,
+        vol.Optional("schema"): dict,
     }
 )
 @websocket_api.async_response
@@ -249,7 +257,7 @@ async def ws_timeline(hass, connection, msg) -> None:
     coordinator = _error_if_not_ready(connection, msg)
     if coordinator is None:
         return
-    schema = coordinator.data.schemas.get(msg["schema_id"])
+    schema = _resolve_schema(coordinator, msg)
     if schema is None:
         connection.send_error(msg["id"], "not_found", "Unknown schema")
         return
@@ -259,7 +267,8 @@ async def ws_timeline(hass, connection, msg) -> None:
 @websocket_api.websocket_command(
     {
         vol.Required("type"): "ha_adapt/preview",
-        vol.Required("schema_id"): str,
+        vol.Optional("schema_id"): str,
+        vol.Optional("schema"): dict,
         vol.Required("hour"): vol.Coerce(float),
         vol.Optional("apply", default=False): bool,
     }
@@ -269,9 +278,8 @@ async def ws_preview(hass, connection, msg) -> None:
     coordinator = _error_if_not_ready(connection, msg)
     if coordinator is None:
         return
-    targets = await coordinator.async_preview(
-        msg["schema_id"], msg["hour"], msg["apply"]
-    )
+    schema = _resolve_schema(coordinator, msg) or coordinator.data.active_schema
+    targets = await coordinator.async_preview(schema, msg["hour"], msg["apply"])
     connection.send_result(msg["id"], {"targets": targets})
 
 

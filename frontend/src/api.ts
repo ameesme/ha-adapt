@@ -49,16 +49,14 @@ export class HaAdaptApi {
     });
   }
 
-  timeline(schemaId: string): Promise<TimelineData> {
-    return this.send("ha_adapt/timeline", { schema_id: schemaId });
+  // Pass the (possibly unsaved) draft schema so the timeline/preview reflect
+  // edits live, without persisting on every change.
+  timeline(schema: Schema): Promise<TimelineData> {
+    return this.send("ha_adapt/timeline", { schema });
   }
 
-  preview(schemaId: string, hour: number, apply: boolean): Promise<PreviewResult> {
-    return this.send("ha_adapt/preview", {
-      schema_id: schemaId,
-      hour,
-      apply,
-    });
+  preview(schema: Schema, hour: number, apply: boolean): Promise<PreviewResult> {
+    return this.send("ha_adapt/preview", { schema, hour, apply });
   }
 
   apply(entityId?: string): Promise<ConfigPayload> {

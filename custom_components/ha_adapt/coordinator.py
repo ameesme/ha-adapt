@@ -19,9 +19,13 @@ from datetime import datetime, timedelta
 from functools import partial
 
 from homeassistant.components.light import (
+    ATTR_BRIGHTNESS,
     ATTR_BRIGHTNESS_PCT,
     ATTR_COLOR_TEMP_KELVIN,
+    ATTR_RGB_COLOR,
+    ATTR_SUPPORTED_COLOR_MODES,
     ATTR_TRANSITION,
+    ColorMode,
 )
 from homeassistant.components.light import (
     DOMAIN as LIGHT_DOMAIN,
@@ -88,9 +92,12 @@ class AdaptCoordinator:
         self._unsub_state: Callable[[], None] | None = None
         self._extra_unsubs: list[Callable[[], None]] = []
 
+        # Serialises full adaptation passes so they can't overlap.
+        self._adapt_lock = asyncio.Lock()
+
         # Context ids of service calls we made, so we can tell our own writes
         # apart from manual changes. Bounded to avoid unbounded growth.
-        self._our_contexts: deque[str] = deque(maxlen=256)
+        self._our_contexts: deque[str] = deque(maxlen=1024)
         self._our_context_set: set[str] = set()
 
     # --- configuration accessors --------------------------------------------
@@ -199,11 +206,18 @@ class AdaptCoordinator:
 
     @callback
     def _handle_interval(self, _now: datetime) -> None:
+        if self._adapt_lock.locked():
+            return  # previous pass still running; skip this tick
         self.hass.async_create_task(self.async_adapt_all())
 
     async def async_adapt_all(self, force: bool = False) -> None:
-        for entity_id in self._lights:
-            await self.async_adapt_one(entity_id, force=force)
+        async with self._adapt_lock:
+            now = dt_util.utcnow()
+            drives = self._sun_drives(self.data.active_schema.sun, now)
+            for entity_id in self._lights:
+                await self.async_adapt_one(
+                    entity_id, force=force, now=now, drives=drives
+                )
 
     async def async_apply(
         self, entity_ids: list[str] | None = None, force: bool = True
@@ -214,7 +228,13 @@ class AdaptCoordinator:
             if entity_id in self._runtime:
                 await self.async_adapt_one(entity_id, force=force)
 
-    async def async_adapt_one(self, entity_id: str, force: bool = False) -> None:
+    async def async_adapt_one(
+        self,
+        entity_id: str,
+        force: bool = False,
+        now: datetime | None = None,
+        drives: list[DriveSignal] | None = None,
+    ) -> None:
         if not self.enabled:
             return
         rt = self._runtime.get(entity_id)
@@ -225,8 +245,9 @@ class AdaptCoordinator:
         state = self.hass.states.get(entity_id)
         if state is None or state.state != STATE_ON:
             return  # never turn a light on just to adapt it
-        now = dt_util.utcnow()
-        target = self._compute_target(entity_id, now)
+        if now is None:
+            now = dt_util.utcnow()
+        target = self._compute_target(entity_id, now, drives)
         if target.is_empty:
             return
         light_cfg = self.data.active_schema.light_config(entity_id)
@@ -235,9 +256,15 @@ class AdaptCoordinator:
         )
         rt.last_target = target
 
-    def _compute_target(self, entity_id: str, now: datetime) -> Target:
+    def _compute_target(
+        self,
+        entity_id: str,
+        now: datetime,
+        drives: list[DriveSignal] | None = None,
+    ) -> Target:
         schema = self.data.active_schema
-        drives = self._sun_drives(schema.sun, now)
+        if drives is None:
+            drives = self._sun_drives(schema.sun, now)
         light_cfg = schema.light_config(entity_id)
         return engine.light_target(light_cfg, drives, _local_hour(now))
 
@@ -256,29 +283,50 @@ class AdaptCoordinator:
 
     # --- applying values to lights ------------------------------------------
 
+    def _supported_modes(self, entity_id: str) -> tuple[bool, bool]:
+        """(supports_brightness, supports_color_temp) for ``entity_id``."""
+        state = self.hass.states.get(entity_id)
+        if state is None:
+            return True, True
+        modes = state.attributes.get(ATTR_SUPPORTED_COLOR_MODES)
+        if not modes:
+            # Capabilities not reported yet — control brightness, skip color
+            # temp so we don't warn on lights that don't support it.
+            return True, False
+        modes = set(modes)
+        supports_color = ColorMode.COLOR_TEMP in modes
+        supports_brightness = bool(
+            modes - {ColorMode.ONOFF, ColorMode.UNKNOWN}
+        )
+        return supports_brightness, supports_color
+
     async def _apply_light(
         self, entity_id: str, light_cfg: LightConfig, target: Target, transition: float
     ) -> None:
+        supports_brightness, supports_color = self._supported_modes(entity_id)
+        brightness = target.brightness_pct if supports_brightness else None
+        color_temp = target.color_temp_kelvin if supports_color else None
+        if brightness is None and color_temp is None:
+            return  # nothing this light can accept
+
         base = {ATTR_ENTITY_ID: entity_id, ATTR_TRANSITION: transition}
-        has_both = (
-            target.brightness_pct is not None
-            and target.color_temp_kelvin is not None
-        )
-        if light_cfg.separate_turn_on_commands and has_both:
+        if (
+            light_cfg.separate_turn_on_commands
+            and brightness is not None
+            and color_temp is not None
+        ):
             # IKEA-style: brightness and color in two separate calls.
-            await self._turn_on({**base, ATTR_BRIGHTNESS_PCT: target.brightness_pct})
+            await self._turn_on({**base, ATTR_BRIGHTNESS_PCT: brightness})
             delay = self.settings.send_split_delay / 1000.0
             if delay:
                 await asyncio.sleep(delay)
-            await self._turn_on(
-                {**base, ATTR_COLOR_TEMP_KELVIN: target.color_temp_kelvin}
-            )
+            await self._turn_on({**base, ATTR_COLOR_TEMP_KELVIN: color_temp})
             return
         data = dict(base)
-        if target.brightness_pct is not None:
-            data[ATTR_BRIGHTNESS_PCT] = target.brightness_pct
-        if target.color_temp_kelvin is not None:
-            data[ATTR_COLOR_TEMP_KELVIN] = target.color_temp_kelvin
+        if brightness is not None:
+            data[ATTR_BRIGHTNESS_PCT] = brightness
+        if color_temp is not None:
+            data[ATTR_COLOR_TEMP_KELVIN] = color_temp
         await self._turn_on(data)
 
     async def _turn_on(self, data: dict) -> None:
@@ -294,6 +342,10 @@ class AdaptCoordinator:
             self._our_context_set.discard(dq[0])
         dq.append(context_id)
         self._our_context_set.add(context_id)
+
+    def is_our_context(self, context_id: str | None) -> bool:
+        """Whether ``context_id`` belongs to one of our own service calls."""
+        return context_id is not None and context_id in self._our_context_set
 
     # --- sun events (astral + per-sun time overrides) -----------------------
 
@@ -374,9 +426,30 @@ class AdaptCoordinator:
                 self.hass.async_create_task(self.async_adapt_one(entity_id))
             return
 
-        # Changed while already on by something other than us -> manual control.
-        if self.settings.take_over_control:
+        # Changed while already on by something other than us. Only treat it as
+        # a manual override when the values meaningfully diverge from what we
+        # last applied — so settled/transition/polling updates don't trip it.
+        if self.settings.take_over_control and self._is_significant_change(
+            entity_id, new_state
+        ):
             self._set_manual_control(entity_id, True)
+
+    def _is_significant_change(self, entity_id: str, new_state) -> bool:
+        rt = self._runtime.get(entity_id)
+        last = rt.last_target if rt else None
+        attrs = new_state.attributes
+        brightness = attrs.get(ATTR_BRIGHTNESS)  # 0-255 or None
+        color_temp = attrs.get(ATTR_COLOR_TEMP_KELVIN)  # Kelvin or None
+        if engine.target_changed(last, brightness, color_temp):
+            return True
+        # We drive color temperature; if the light left color-temp mode for an
+        # explicit RGB colour, that's a manual override.
+        return bool(
+            last is not None
+            and last.color_temp_kelvin is not None
+            and color_temp is None
+            and attrs.get(ATTR_RGB_COLOR) is not None
+        )
 
     @callback
     def note_manual_turn_on(self, entity_id: str) -> None:
@@ -449,10 +522,9 @@ class AdaptCoordinator:
         return {"sun": sun, "lights": lights}
 
     async def async_preview(
-        self, schema_id: str, hour: float, apply: bool
+        self, schema: Schema, hour: float, apply: bool
     ) -> dict[str, dict]:
         """Compute (and optionally apply) targets at a simulated ``hour``."""
-        schema = self.data.schemas.get(schema_id) or self.data.active_schema
         drives = self._sun_drives(schema.sun, dt_util.utcnow())
         targets: dict[str, dict] = {}
         for entity_id in self._lights:
