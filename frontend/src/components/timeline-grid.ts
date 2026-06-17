@@ -73,15 +73,13 @@ export class TimelineGrid extends LitElement {
         background: var(--accent-soft);
         color: var(--accent-strong);
       }
-      .section-head {
-        position: sticky;
-        left: 0;
-        font-size: 0.68rem;
+      .label.section-label {
         text-transform: uppercase;
         letter-spacing: 0.06em;
+        font-size: 0.68rem;
         font-weight: 700;
         color: var(--text-soft);
-        padding: 10px 12px 2px;
+        padding-top: 8px;
       }
       .hourhead {
         font-size: 0.7rem;
@@ -144,9 +142,6 @@ export class TimelineGrid extends LitElement {
           background: var(--bg);
           padding: 0 6px;
         }
-        .section-head {
-          padding-left: 6px;
-        }
       }
     `,
   ];
@@ -169,7 +164,9 @@ export class TimelineGrid extends LitElement {
           ${this._scrubRow()}
           ${this._headerRow(nowHour)}
           ${this._sunRow(nowHour)}
-          <div class="section-head">Lights</div>
+          <div class="gridrow">
+            <div class="label section-label">Lights</div>
+          </div>
           ${this.lights.map((light) => this._lightRow(light, nowHour))}
         </div>
       </div>
