@@ -86,6 +86,7 @@ export class SchemaEditor extends LitElement {
       }
       /* The side panel is the inspector card: full height. */
       .side {
+        position: relative;
         align-self: stretch;
         display: flex;
         flex-direction: column;
@@ -100,19 +101,24 @@ export class SchemaEditor extends LitElement {
         margin: 0 0 4px;
         font-size: 1.05rem;
         font-weight: 650;
+        padding-right: 28px;
       }
-      .settings-below {
-        margin-top: 16px;
-      }
-      .settings-below > summary {
-        cursor: pointer;
-        font-weight: 650;
+      .close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        border: none;
+        background: transparent;
         color: var(--text-soft);
-        padding: 6px 2px;
+        font-size: 1.1rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
       }
-      .settings-below ha-adapt-settings-tab {
-        display: block;
-        padding: 10px 2px 4px;
+      .close:hover {
+        color: var(--accent-strong);
+        background: var(--accent-soft);
       }
       @media (max-width: 960px) {
         .layout {
@@ -283,16 +289,19 @@ export class SchemaEditor extends LitElement {
           ></ha-adapt-timeline-grid>
         </div>
 
-        <div class="side">${this._renderContext()}</div>
+        <div class="side">
+          ${this._sel
+            ? html`<button
+                class="close"
+                title="Close"
+                @click=${() => (this._sel = null)}
+              >
+                ✕
+              </button>`
+            : nothing}
+          ${this._renderContext()}
+        </div>
       </div>
-
-      <details class="settings-below">
-        <summary>Global settings</summary>
-        <ha-adapt-settings-tab
-          .config=${this.config}
-          .api=${this.api}
-        ></ha-adapt-settings-tab>
-      </details>
     `;
   }
 
@@ -315,9 +324,11 @@ export class SchemaEditor extends LitElement {
     }
     if (sel?.kind === "light") return this._renderLightEditor(sel.entityId);
     if (sel?.kind === "cell") return this._renderCellEditor(sel.ref);
-    return html`<div class="empty">
-      Click the ☀️ sun row, a light, or an hour cell to edit it here.
-    </div>`;
+    return html`<h2>Global settings</h2>
+      <ha-adapt-settings-tab
+        .config=${this.config}
+        .api=${this.api}
+      ></ha-adapt-settings-tab>`;
   }
 
   private _renderCellEditor(ref: CellRef): TemplateResult {
@@ -341,14 +352,13 @@ export class SchemaEditor extends LitElement {
       ${rangeField("Color temp", colorTemp, KELVIN_MIN, KELVIN_MAX, 50, "K", (v) =>
         this._setCell(ref, { brightness, color_temp: v })
       )}
-      <div class="actions">
-        ${explicit
-          ? html`<button class="btn ghost" @click=${() => this._setCell(ref, null)}>
+      ${explicit
+        ? html`<div class="actions">
+            <button class="btn ghost" @click=${() => this._setCell(ref, null)}>
               Use sun (clear)
-            </button>`
-          : nothing}
-        <button class="btn ghost" @click=${() => (this._sel = null)}>Close</button>
-      </div>
+            </button>
+          </div>`
+        : nothing}
     `;
   }
 
@@ -387,8 +397,6 @@ export class SchemaEditor extends LitElement {
           cfg.separate_turn_on_commands,
           (v) => this._patchLight(entityId, { separate_turn_on_commands: v })
         )}
-        <span class="grow"></span>
-        <button class="btn ghost" @click=${() => (this._sel = null)}>Close</button>
       </div>
     `;
   }

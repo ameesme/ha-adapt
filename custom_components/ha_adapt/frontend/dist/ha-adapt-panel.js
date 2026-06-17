@@ -1456,16 +1456,17 @@ let g = class extends v {
           ></ha-adapt-timeline-grid>
         </div>
 
-        <div class="side">${this._renderContext()}</div>
+        <div class="side">
+          ${this._sel ? h`<button
+                class="close"
+                title="Close"
+                @click=${() => this._sel = null}
+              >
+                ✕
+              </button>` : d}
+          ${this._renderContext()}
+        </div>
       </div>
-
-      <details class="settings-below">
-        <summary>Global settings</summary>
-        <ha-adapt-settings-tab
-          .config=${this.config}
-          .api=${this.api}
-        ></ha-adapt-settings-tab>
-      </details>
     `;
   }
   get _selectedRow() {
@@ -1477,9 +1478,11 @@ let g = class extends v {
     return e?.kind === "sun" ? h`<ha-adapt-sun-config
         .sun=${this._draft.sun}
         @sun-changed=${(t) => this._patchSchema({ sun: t.detail })}
-      ></ha-adapt-sun-config>` : e?.kind === "light" ? this._renderLightEditor(e.entityId) : e?.kind === "cell" ? this._renderCellEditor(e.ref) : h`<div class="empty">
-      Click the ☀️ sun row, a light, or an hour cell to edit it here.
-    </div>`;
+      ></ha-adapt-sun-config>` : e?.kind === "light" ? this._renderLightEditor(e.entityId) : e?.kind === "cell" ? this._renderCellEditor(e.ref) : h`<h2>Global settings</h2>
+      <ha-adapt-settings-tab
+        .config=${this.config}
+        .api=${this.api}
+      ></ha-adapt-settings-tab>`;
   }
   _renderCellEditor(e) {
     const t = this.config.lights.find((o) => o.entity_id === e.entityId), s = this._lightCfg(e.entityId).hours[e.hour], i = this._timeline?.lights[e.entityId]?.[e.hour], r = s?.brightness ?? i?.brightness ?? 50, n = s?.color_temp ?? i?.color_temp ?? 3e3;
@@ -1508,12 +1511,11 @@ let g = class extends v {
       "K",
       (o) => this._setCell(e, { brightness: r, color_temp: o })
     )}
-      <div class="actions">
-        ${s ? h`<button class="btn ghost" @click=${() => this._setCell(e, null)}>
+      ${s ? h`<div class="actions">
+            <button class="btn ghost" @click=${() => this._setCell(e, null)}>
               Use sun (clear)
-            </button>` : d}
-        <button class="btn ghost" @click=${() => this._sel = null}>Close</button>
-      </div>
+            </button>
+          </div>` : d}
     `;
   }
   _renderLightEditor(e) {
@@ -1562,8 +1564,6 @@ let g = class extends v {
       s.separate_turn_on_commands,
       (i) => this._patchLight(e, { separate_turn_on_commands: i })
     )}
-        <span class="grow"></span>
-        <button class="btn ghost" @click=${() => this._sel = null}>Close</button>
       </div>
     `;
   }
@@ -1631,6 +1631,7 @@ g.styles = [
       }
       /* The side panel is the inspector card: full height. */
       .side {
+        position: relative;
         align-self: stretch;
         display: flex;
         flex-direction: column;
@@ -1645,19 +1646,24 @@ g.styles = [
         margin: 0 0 4px;
         font-size: 1.05rem;
         font-weight: 650;
+        padding-right: 28px;
       }
-      .settings-below {
-        margin-top: 16px;
-      }
-      .settings-below > summary {
-        cursor: pointer;
-        font-weight: 650;
+      .close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        border: none;
+        background: transparent;
         color: var(--text-soft);
-        padding: 6px 2px;
+        font-size: 1.1rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 6px;
       }
-      .settings-below ha-adapt-settings-tab {
-        display: block;
-        padding: 10px 2px 4px;
+      .close:hover {
+        color: var(--accent-strong);
+        background: var(--accent-soft);
       }
       @media (max-width: 960px) {
         .layout {
