@@ -47,12 +47,17 @@ export class SchemaEditor extends LitElement {
       .head {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 10px;
         flex-wrap: wrap;
         margin-bottom: 14px;
       }
+      .app-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin: 0;
+      }
       input.name {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: 700;
         color: var(--text);
         border: none;
@@ -60,17 +65,38 @@ export class SchemaEditor extends LitElement {
         background: transparent;
         border-radius: 0;
         padding: 4px 2px;
-        width: 100%;
-        max-width: 360px;
+        min-width: 0;
+        flex: 0 1 260px;
       }
       input.name:focus {
         outline: none;
         border-bottom-color: var(--accent);
       }
-      .head-actions {
-        display: flex;
-        gap: 10px;
+      .switcher {
+        position: relative;
+        display: inline-flex;
         align-items: center;
+        color: var(--text-soft);
+      }
+      .switcher .chev {
+        width: 18px;
+        height: 18px;
+        pointer-events: none;
+      }
+      .switcher select {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .grow {
+        flex: 1;
+      }
+      @media (max-width: 960px) {
+        .app-title {
+          display: none;
+        }
       }
       .layout {
         display: grid;
@@ -84,15 +110,18 @@ export class SchemaEditor extends LitElement {
       .side {
         min-width: 0;
       }
-      /* The side panel is the inspector card: full height. */
+      /* The side holds global settings flat by default; when something is
+         selected it becomes a temporary editing card. */
       .side {
         position: relative;
         align-self: stretch;
         display: flex;
         flex-direction: column;
         gap: 10px;
+      }
+      .side.editing {
         background: var(--surface);
-        border: 1px solid var(--border);
+        border: 1px solid var(--accent);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         padding: 18px;
@@ -124,8 +153,8 @@ export class SchemaEditor extends LitElement {
         .layout {
           grid-template-columns: minmax(0, 1fr);
         }
-        /* Flatten the side inspector on mobile (no second horizontal padding). */
-        .side {
+        /* Flatten the editing card on mobile (no second horizontal padding). */
+        .side.editing {
           padding-left: 0;
           padding-right: 0;
           border: none;
@@ -253,24 +282,58 @@ export class SchemaEditor extends LitElement {
   override render(): TemplateResult {
     return html`
       <div class="head">
+        <h1 class="app-title">Adaptive Lighting</h1>
         <input
           class="name"
           .value=${this._draft.name}
           @input=${(e: Event) =>
             this._patchSchema({ name: (e.target as HTMLInputElement).value })}
         />
-        <div class="head-actions">
-          ${this._active
-            ? html`<span class="badge">Active</span>`
-            : html`<button class="btn ghost" @click=${this._setActive}>
-                Set active
-              </button>`}
-          ${this._draft.id !== "default"
-            ? html`<button class="btn danger" @click=${this._delete}>
-                Delete
-              </button>`
-            : nothing}
+        <div class="switcher" title="Switch schema">
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M8 10l4-4 4 4M8 14l4 4 4-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <select
+            @change=${(e: Event) =>
+              this._emit("schema-select", (e.target as HTMLSelectElement).value)}
+          >
+            ${Object.values(this.config.schemas).map(
+              (s) => html`<option
+                value=${s.id}
+                ?selected=${s.id === this.schema.id}
+              >
+                ${s.name}${s.id === this.config.active_schema_id
+                  ? " (active)"
+                  : ""}
+              </option>`
+            )}
+          </select>
         </div>
+        <span class="grow"></span>
+        <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
+          + New
+        </button>
+        <button
+          class="btn ${this.preview ? "" : "ghost"}"
+          @click=${() => this._emit("preview-toggle", !this.preview)}
+        >
+          Preview
+        </button>
+        ${this._active
+          ? nothing
+          : html`<button class="btn ghost" @click=${this._setActive}>
+              Set active
+            </button>`}
+        ${this._draft.id !== "default"
+          ? html`<button class="btn danger" @click=${this._delete}>Delete</button>`
+          : nothing}
       </div>
 
       <div class="layout">
@@ -289,7 +352,7 @@ export class SchemaEditor extends LitElement {
           ></ha-adapt-timeline-grid>
         </div>
 
-        <div class="side">
+        <div class="side ${this._sel ? "editing" : ""}">
           ${this._sel
             ? html`<button
                 class="close"

@@ -66,6 +66,21 @@ export class TimelineGrid extends LitElement {
       .label.clickable {
         cursor: pointer;
       }
+      .label .lname {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .label .cog {
+        width: 14px;
+        height: 14px;
+        flex: none;
+        margin-left: auto;
+        opacity: 0.4;
+      }
+      .label.clickable:hover .cog {
+        opacity: 0.9;
+      }
       .sunrow .label {
         color: var(--accent-strong);
       }
@@ -215,7 +230,8 @@ export class TimelineGrid extends LitElement {
         title="Edit the sun"
         @click=${() => this._emit("select-sun", null)}
       >
-        ☀️ Sun
+        <span class="lname">☀️ Sun</span>
+        ${this._cogIcon()}
       </div>
       ${HOURS.map((h) =>
         this._cell(row[h], h === nowHour, "readonly", false, false)
@@ -232,7 +248,8 @@ export class TimelineGrid extends LitElement {
         title="Edit light range"
         @click=${() => this._emit("select-light", light.entity_id)}
       >
-        ${light.name}
+        <span class="lname">${light.name}</span>
+        ${this._cogIcon()}
       </div>
       ${HOURS.map((h) => {
         const cell = row[h];
@@ -275,6 +292,15 @@ export class TimelineGrid extends LitElement {
     >
       <div class="fill" style="height:${brightness}%;background:${color}"></div>
     </div>`;
+  }
+
+  private _cogIcon(): TemplateResult {
+    return html`<svg class="cog" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7 7 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.31 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96a7 7 0 0 0 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54a7 7 0 0 0 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"
+      />
+    </svg>`;
   }
 
   private _emit(type: string, detail: unknown): void {

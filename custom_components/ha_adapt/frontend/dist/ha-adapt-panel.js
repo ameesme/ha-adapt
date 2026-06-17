@@ -45,7 +45,7 @@ const Pt = (e) => new bt(typeof e == "string" ? e : e + "", void 0, st), H = (e,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Tt, defineProperty: Mt, getOwnPropertyDescriptor: Ot, getOwnPropertyNames: Ht, getOwnPropertySymbols: Rt, getPrototypeOf: Ut } = Object, J = globalThis, ct = J.trustedTypes, Nt = ct ? ct.emptyScript : "", zt = J.reactiveElementPolyfillSupport, N = (e, t) => e, W = { toAttribute(e, t) {
+const { is: Mt, defineProperty: Tt, getOwnPropertyDescriptor: Ot, getOwnPropertyNames: Ht, getOwnPropertySymbols: Rt, getPrototypeOf: Ut } = Object, J = globalThis, ct = J.trustedTypes, Nt = ct ? ct.emptyScript : "", zt = J.reactiveElementPolyfillSupport, N = (e, t) => e, W = { toAttribute(e, t) {
   switch (t) {
     case Boolean:
       e = e ? Nt : null;
@@ -73,9 +73,9 @@ const { is: Tt, defineProperty: Mt, getOwnPropertyDescriptor: Ot, getOwnProperty
       }
   }
   return s;
-} }, it = (e, t) => !Tt(e, t), dt = { attribute: !0, type: String, converter: W, reflect: !1, useDefault: !1, hasChanged: it };
+} }, it = (e, t) => !Mt(e, t), dt = { attribute: !0, type: String, converter: W, reflect: !1, useDefault: !1, hasChanged: it };
 Symbol.metadata ??= Symbol("metadata"), J.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
-let T = class extends HTMLElement {
+let M = class extends HTMLElement {
   static addInitializer(t) {
     this._$Ei(), (this.l ??= []).push(t);
   }
@@ -85,7 +85,7 @@ let T = class extends HTMLElement {
   static createProperty(t, s = dt) {
     if (s.state && (s.attribute = !1), this._$Ei(), this.prototype.hasOwnProperty(t) && ((s = Object.create(s)).wrapped = !0), this.elementProperties.set(t, s), !s.noAccessor) {
       const i = Symbol(), r = this.getPropertyDescriptor(t, i, s);
-      r !== void 0 && Mt(this.prototype, t, r);
+      r !== void 0 && Tt(this.prototype, t, r);
     }
   }
   static getPropertyDescriptor(t, s, i) {
@@ -256,7 +256,7 @@ let T = class extends HTMLElement {
   firstUpdated(t) {
   }
 };
-T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[N("elementProperties")] = /* @__PURE__ */ new Map(), T[N("finalized")] = /* @__PURE__ */ new Map(), zt?.({ ReactiveElement: T }), (J.reactiveElementVersions ??= []).push("2.1.2");
+M.elementStyles = [], M.shadowRootOptions = { mode: "open" }, M[N("elementProperties")] = /* @__PURE__ */ new Map(), M[N("finalized")] = /* @__PURE__ */ new Map(), zt?.({ ReactiveElement: M }), (J.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
@@ -264,7 +264,7 @@ T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[N("elementProper
  */
 const rt = globalThis, pt = (e) => e, Z = rt.trustedTypes, ut = Z ? Z.createPolicy("lit-html", { createHTML: (e) => e }) : void 0, wt = "$lit$", y = `lit$${Math.random().toFixed(9).slice(2)}$`, yt = "?" + y, It = `<${yt}>`, P = document, L = () => P.createComment(""), D = (e) => e === null || typeof e != "object" && typeof e != "function", nt = Array.isArray, Lt = (e) => nt(e) || typeof e?.[Symbol.iterator] == "function", Q = `[ 	
 \f\r]`, U = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, _t = /-->/g, gt = />/g, S = RegExp(`>|${Q}(?:([^\\s"'>=/]+)(${Q}*=${Q}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ft = /'/g, mt = /"/g, xt = /^(?:script|style|textarea|title)$/i, Dt = (e) => (t, ...s) => ({ _$litType$: e, strings: t, values: s }), h = Dt(1), M = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), vt = /* @__PURE__ */ new WeakMap(), E = P.createTreeWalker(P, 129);
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ft = /'/g, mt = /"/g, xt = /^(?:script|style|textarea|title)$/i, Dt = (e) => (t, ...s) => ({ _$litType$: e, strings: t, values: s }), h = Dt(1), T = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), vt = /* @__PURE__ */ new WeakMap(), E = P.createTreeWalker(P, 129);
 function At(e, t) {
   if (!nt(e) || !e.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return ut !== void 0 ? ut.createHTML(t) : t;
@@ -319,7 +319,7 @@ class j {
   }
 }
 function O(e, t, s = e, i) {
-  if (t === M) return t;
+  if (t === T) return t;
   let r = i !== void 0 ? s._$Co?.[i] : s._$Cl;
   const n = D(t) ? void 0 : t._$litDirective$;
   return r?.constructor !== n && (r?._$AO?.(!1), n === void 0 ? r = void 0 : (r = new n(e), r._$AT(e, s, i)), i !== void 0 ? (s._$Co ??= [])[i] = r : s._$Cl = r), r !== void 0 && (t = O(e, r._$AS(e, t.values), r, i)), t;
@@ -371,7 +371,7 @@ class B {
     return this._$AB;
   }
   _$AI(t, s = this) {
-    t = O(this, t, s), D(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== M && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : Lt(t) ? this.k(t) : this._(t);
+    t = O(this, t, s), D(t) ? t === d || t == null || t === "" ? (this._$AH !== d && this._$AR(), this._$AH = d) : t !== this._$AH && t !== T && this._(t) : t._$litType$ !== void 0 ? this.$(t) : t.nodeType !== void 0 ? this.T(t) : Lt(t) ? this.k(t) : this._(t);
   }
   O(t) {
     return this._$AA.parentNode.insertBefore(t, this._$AB);
@@ -424,11 +424,11 @@ class X {
   _$AI(t, s = this, i, r) {
     const n = this.strings;
     let o = !1;
-    if (n === void 0) t = O(this, t, s, 0), o = !D(t) || t !== this._$AH && t !== M, o && (this._$AH = t);
+    if (n === void 0) t = O(this, t, s, 0), o = !D(t) || t !== this._$AH && t !== T, o && (this._$AH = t);
     else {
       const l = t;
       let a, p;
-      for (t = n[0], a = 0; a < n.length - 1; a++) p = O(this, l[i + a], s, a), p === M && (p = this._$AH[a]), o ||= !D(p) || p !== this._$AH[a], p === d ? t = d : t !== d && (t += (p ?? "") + n[a + 1]), this._$AH[a] = p;
+      for (t = n[0], a = 0; a < n.length - 1; a++) p = O(this, l[i + a], s, a), p === T && (p = this._$AH[a]), o ||= !D(p) || p !== this._$AH[a], p === d ? t = d : t !== d && (t += (p ?? "") + n[a + 1]), this._$AH[a] = p;
     }
     o && !r && this.j(t);
   }
@@ -457,7 +457,7 @@ class Vt extends X {
     super(t, s, i, r, n), this.type = 5;
   }
   _$AI(t, s = this) {
-    if ((t = O(this, t, s, 0) ?? d) === M) return;
+    if ((t = O(this, t, s, 0) ?? d) === T) return;
     const i = this._$AH, r = t === d && i !== d || t.capture !== i.capture || t.once !== i.once || t.passive !== i.passive, n = t !== d && (i === d || r);
     r && this.element.removeEventListener(this.name, this, i), n && this.element.addEventListener(this.name, this, t), this._$AH = t;
   }
@@ -493,7 +493,7 @@ const Zt = (e, t, s) => {
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const ot = globalThis;
-class v extends T {
+class v extends M {
   constructor() {
     super(...arguments), this.renderOptions = { host: this }, this._$Do = void 0;
   }
@@ -512,7 +512,7 @@ class v extends T {
     super.disconnectedCallback(), this._$Do?.setConnected(!1);
   }
   render() {
-    return M;
+    return T;
   }
 }
 v._$litElement$ = !0, v.finalized = !0, ot.litElementHydrateSupport?.({ LitElement: v });
@@ -974,7 +974,8 @@ let x = class extends v {
         title="Edit the sun"
         @click=${() => this._emit("select-sun", null)}
       >
-        ☀️ Sun
+        <span class="lname">☀️ Sun</span>
+        ${this._cogIcon()}
       </div>
       ${Y.map(
       (i) => this._cell(t[i], i === e, "readonly", !1, !1)
@@ -989,7 +990,8 @@ let x = class extends v {
         title="Edit light range"
         @click=${() => this._emit("select-light", e.entity_id)}
       >
-        ${e.name}
+        <span class="lname">${e.name}</span>
+        ${this._cogIcon()}
       </div>
       ${Y.map((r) => {
       const n = s[r], o = this.selected?.entityId === e.entity_id && this.selected?.hour === r;
@@ -1019,6 +1021,14 @@ let x = class extends v {
     >
       <div class="fill" style="height:${o}%;background:${l}"></div>
     </div>`;
+  }
+  _cogIcon() {
+    return h`<svg class="cog" viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="currentColor"
+        d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7 7 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.31 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96a7 7 0 0 0 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54a7 7 0 0 0 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"
+      />
+    </svg>`;
   }
   _emit(e, t) {
     this.dispatchEvent(
@@ -1073,6 +1083,21 @@ x.styles = [
       }
       .label.clickable {
         cursor: pointer;
+      }
+      .label .lname {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .label .cog {
+        width: 14px;
+        height: 14px;
+        flex: none;
+        margin-left: auto;
+        opacity: 0.4;
+      }
+      .label.clickable:hover .cog {
+        opacity: 0.9;
       }
       .sunrow .label {
         color: var(--accent-strong);
@@ -1426,19 +1451,50 @@ let g = class extends v {
   render() {
     return h`
       <div class="head">
+        <h1 class="app-title">Adaptive Lighting</h1>
         <input
           class="name"
           .value=${this._draft.name}
           @input=${(e) => this._patchSchema({ name: e.target.value })}
         />
-        <div class="head-actions">
-          ${this._active ? h`<span class="badge">Active</span>` : h`<button class="btn ghost" @click=${this._setActive}>
-                Set active
-              </button>`}
-          ${this._draft.id !== "default" ? h`<button class="btn danger" @click=${this._delete}>
-                Delete
-              </button>` : d}
+        <div class="switcher" title="Switch schema">
+          <svg class="chev" viewBox="0 0 24 24" aria-hidden="true">
+            <path
+              d="M8 10l4-4 4 4M8 14l4 4 4-4"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+          <select
+            @change=${(e) => this._emit("schema-select", e.target.value)}
+          >
+            ${Object.values(this.config.schemas).map(
+      (e) => h`<option
+                value=${e.id}
+                ?selected=${e.id === this.schema.id}
+              >
+                ${e.name}${e.id === this.config.active_schema_id ? " (active)" : ""}
+              </option>`
+    )}
+          </select>
         </div>
+        <span class="grow"></span>
+        <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
+          + New
+        </button>
+        <button
+          class="btn ${this.preview ? "" : "ghost"}"
+          @click=${() => this._emit("preview-toggle", !this.preview)}
+        >
+          Preview
+        </button>
+        ${this._active ? d : h`<button class="btn ghost" @click=${this._setActive}>
+              Set active
+            </button>`}
+        ${this._draft.id !== "default" ? h`<button class="btn danger" @click=${this._delete}>Delete</button>` : d}
       </div>
 
       <div class="layout">
@@ -1456,7 +1512,7 @@ let g = class extends v {
           ></ha-adapt-timeline-grid>
         </div>
 
-        <div class="side">
+        <div class="side ${this._sel ? "editing" : ""}">
           ${this._sel ? h`<button
                 class="close"
                 title="Close"
@@ -1592,12 +1648,17 @@ g.styles = [
       .head {
         display: flex;
         align-items: center;
-        gap: 14px;
+        gap: 10px;
         flex-wrap: wrap;
         margin-bottom: 14px;
       }
+      .app-title {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin: 0;
+      }
       input.name {
-        font-size: 1.4rem;
+        font-size: 1.3rem;
         font-weight: 700;
         color: var(--text);
         border: none;
@@ -1605,17 +1666,38 @@ g.styles = [
         background: transparent;
         border-radius: 0;
         padding: 4px 2px;
-        width: 100%;
-        max-width: 360px;
+        min-width: 0;
+        flex: 0 1 260px;
       }
       input.name:focus {
         outline: none;
         border-bottom-color: var(--accent);
       }
-      .head-actions {
-        display: flex;
-        gap: 10px;
+      .switcher {
+        position: relative;
+        display: inline-flex;
         align-items: center;
+        color: var(--text-soft);
+      }
+      .switcher .chev {
+        width: 18px;
+        height: 18px;
+        pointer-events: none;
+      }
+      .switcher select {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .grow {
+        flex: 1;
+      }
+      @media (max-width: 960px) {
+        .app-title {
+          display: none;
+        }
       }
       .layout {
         display: grid;
@@ -1629,15 +1711,18 @@ g.styles = [
       .side {
         min-width: 0;
       }
-      /* The side panel is the inspector card: full height. */
+      /* The side holds global settings flat by default; when something is
+         selected it becomes a temporary editing card. */
       .side {
         position: relative;
         align-self: stretch;
         display: flex;
         flex-direction: column;
         gap: 10px;
+      }
+      .side.editing {
         background: var(--surface);
-        border: 1px solid var(--border);
+        border: 1px solid var(--accent);
         border-radius: var(--radius);
         box-shadow: var(--shadow);
         padding: 18px;
@@ -1669,8 +1754,8 @@ g.styles = [
         .layout {
           grid-template-columns: minmax(0, 1fr);
         }
-        /* Flatten the side inspector on mobile (no second horizontal padding). */
-        .side {
+        /* Flatten the editing card on mobile (no second horizontal padding). */
+        .side.editing {
           padding-left: 0;
           padding-right: 0;
           border: none;
@@ -1747,27 +1832,10 @@ let $ = class extends v {
       class="wrap"
       @config-changed=${this._onConfigChanged}
       @panel-error=${this._onError}
+      @preview-toggle=${(i) => this._preview = i.detail}
+      @schema-select=${(i) => this._selectedId = i.detail}
+      @schema-new=${() => void this._new()}
     >
-      <header>
-        <h1>Adaptive Lighting</h1>
-        <select
-          @change=${(i) => this._selectedId = i.target.value}
-        >
-          ${Object.values(e.schemas).map(
-      (i) => h`<option value=${i.id} ?selected=${i.id === t}>
-              ${i.name}${i.id === e.active_schema_id ? " (active)" : ""}
-            </option>`
-    )}
-        </select>
-        <button class="btn ghost" @click=${this._new}>+ New</button>
-        <button
-          class="btn ${this._preview ? "" : "ghost"}"
-          @click=${() => this._preview = !this._preview}
-        >
-          Preview
-        </button>
-      </header>
-
       ${this._error ? h`<div class="card error">${this._error}</div>` : d}
 
       ${s ? h`<ha-adapt-schema-editor
@@ -1802,23 +1870,6 @@ $.styles = [
         width: 100%;
         padding: 18px 20px 64px;
         overflow-x: clip;
-      }
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 18px;
-      }
-      header h1 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin: 0 auto 0 0;
-      }
-      header select {
-        width: auto;
-        min-width: 160px;
       }
       .error {
         border-color: var(--danger);

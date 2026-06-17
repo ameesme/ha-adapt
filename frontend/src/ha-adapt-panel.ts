@@ -23,23 +23,6 @@ export class HaAdaptPanel extends LitElement {
         padding: 18px 20px 64px;
         overflow-x: clip;
       }
-      header {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        gap: 12px;
-        flex-wrap: wrap;
-        margin-bottom: 18px;
-      }
-      header h1 {
-        font-size: 1.25rem;
-        font-weight: 700;
-        margin: 0 auto 0 0;
-      }
-      header select {
-        width: auto;
-        min-width: 160px;
-      }
       .error {
         border-color: var(--danger);
         color: var(--danger);
@@ -116,28 +99,10 @@ export class HaAdaptPanel extends LitElement {
       class="wrap"
       @config-changed=${this._onConfigChanged}
       @panel-error=${this._onError}
+      @preview-toggle=${(e: CustomEvent<boolean>) => (this._preview = e.detail)}
+      @schema-select=${(e: CustomEvent<string>) => (this._selectedId = e.detail)}
+      @schema-new=${() => void this._new()}
     >
-      <header>
-        <h1>Adaptive Lighting</h1>
-        <select
-          @change=${(e: Event) =>
-            (this._selectedId = (e.target as HTMLSelectElement).value)}
-        >
-          ${Object.values(config.schemas).map(
-            (s) => html`<option value=${s.id} ?selected=${s.id === currentId}>
-              ${s.name}${s.id === config.active_schema_id ? " (active)" : ""}
-            </option>`
-          )}
-        </select>
-        <button class="btn ghost" @click=${this._new}>+ New</button>
-        <button
-          class="btn ${this._preview ? "" : "ghost"}"
-          @click=${() => (this._preview = !this._preview)}
-        >
-          Preview
-        </button>
-      </header>
-
       ${this._error
         ? html`<div class="card error">${this._error}</div>`
         : nothing}
