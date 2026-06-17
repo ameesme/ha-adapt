@@ -118,6 +118,15 @@ export class SchemaEditor extends LitElement {
         .layout {
           grid-template-columns: minmax(0, 1fr);
         }
+        /* Flatten the side inspector on mobile (no second horizontal padding). */
+        .side {
+          padding-left: 0;
+          padding-right: 0;
+          border: none;
+          border-radius: 0;
+          box-shadow: none;
+          background: transparent;
+        }
       }
     `,
   ];

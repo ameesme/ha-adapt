@@ -88,6 +88,16 @@ export const baseStyles = css`
     .grid {
       grid-template-columns: 1fr;
     }
+    /* Flatten cards on mobile so they don't add a second horizontal padding
+       inside the panel's own padding. */
+    .card {
+      padding-left: 0;
+      padding-right: 0;
+      border: none;
+      border-radius: 0;
+      box-shadow: none;
+      background: transparent;
+    }
   }
 
   input[type="text"],
