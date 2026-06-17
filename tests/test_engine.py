@@ -115,33 +115,44 @@ def test_sun_row_has_24_entries():
 # --- per-light timeline ------------------------------------------------------
 
 
-def test_empty_light_follows_sun_scaled_to_its_range():
+def test_empty_light_follows_sun_clamped_to_its_range():
     base = dt.datetime(2026, 6, 14, tzinfo=UTC)
     sun = SunConfig()
     drives = _sun_drives(sun, base)
     light = LightConfig(min_brightness=1, max_brightness=100)
 
-    midday = engine.light_target(light, drives, 13.0)
+    midday = engine.light_target(light, sun, drives, 13.0)
     assert midday.brightness_pct == 100  # sun is at full by day
     assert midday.color_temp_kelvin >= 5400
 
-    night = engine.light_target(light, drives, 1.0)
+    night = engine.light_target(light, sun, drives, 1.0)
     assert night.brightness_pct <= 5
     assert night.color_temp_kelvin == light.min_color_temp
 
 
+def test_empty_light_clamped_below_the_sun():
+    # A light whose max is lower than the sun follows the sun but is capped.
+    base = dt.datetime(2026, 6, 14, tzinfo=UTC)
+    sun = SunConfig()
+    drives = _sun_drives(sun, base)
+    capped = LightConfig(max_brightness=40)
+    midday = engine.light_target(capped, sun, drives, 13.0)
+    assert midday.brightness_pct == 40  # sun would be 100, clamped to the light
+
+
 def test_explicit_cell_overrides_and_interpolates():
     base = dt.datetime(2026, 6, 14, tzinfo=UTC)
-    drives = _sun_drives(SunConfig(), base)
+    sun = SunConfig()
+    drives = _sun_drives(sun, base)
     light = LightConfig()
     light.hours[9] = {"brightness": 40, "color_temp": 3000}
     light.hours[10] = {"brightness": 80, "color_temp": 4000}
 
-    at_nine = engine.light_target(light, drives, 9.0)
+    at_nine = engine.light_target(light, sun, drives, 9.0)
     assert at_nine.brightness_pct == 40
     assert at_nine.color_temp_kelvin == 3000
 
-    halfway = engine.light_target(light, drives, 9.5)
+    halfway = engine.light_target(light, sun, drives, 9.5)
     assert halfway.brightness_pct == pytest.approx(60, abs=1)
     assert halfway.color_temp_kelvin == pytest.approx(3500, abs=5)
 
@@ -163,11 +174,12 @@ def test_target_changed_no_baseline_or_missing_actuals():
 
 def test_explicit_cell_is_clamped_to_light_range():
     base = dt.datetime(2026, 6, 14, tzinfo=UTC)
-    drives = _sun_drives(SunConfig(), base)
+    sun = SunConfig()
+    drives = _sun_drives(sun, base)
     light = LightConfig(
         max_brightness=100, min_color_temp=2000, max_color_temp=5500
     )
     light.hours[0] = {"brightness": 200, "color_temp": 9000}
-    target = engine.light_target(light, drives, 0.0)
+    target = engine.light_target(light, sun, drives, 0.0)
     assert target.brightness_pct == 100
     assert target.color_temp_kelvin == 5500

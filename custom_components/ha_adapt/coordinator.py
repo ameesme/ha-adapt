@@ -266,7 +266,7 @@ class AdaptCoordinator:
         if drives is None:
             drives = self._sun_drives(schema.sun, now)
         light_cfg = schema.light_config(entity_id)
-        return engine.light_target(light_cfg, drives, _local_hour(now))
+        return engine.light_target(light_cfg, schema.sun, drives, _local_hour(now))
 
     def _sun_drives(self, sun: SunConfig, now: datetime) -> list[DriveSignal]:
         """The sun's normalized drive for each of the 24 local hours of today."""
@@ -503,6 +503,7 @@ class AdaptCoordinator:
         """Per-hour values for the sun row and every light row of ``schema``."""
         now = dt_util.utcnow()
         drives = self._sun_drives(schema.sun, now)
+        sun_vals = engine.sun_values(schema.sun, drives)
         sun = [
             {"brightness": bri, "color_temp": temp}
             for bri, temp in engine.sun_row(schema.sun, drives)
@@ -510,7 +511,7 @@ class AdaptCoordinator:
         lights: dict[str, list[dict]] = {}
         for entity_id in self._lights:
             cfg = schema.light_config(entity_id)
-            anchors = engine.light_anchors(cfg, drives)
+            anchors = engine.light_anchors(cfg, sun_vals)
             lights[entity_id] = [
                 {
                     "brightness": int(round(anchors[hour][0])),
@@ -529,7 +530,7 @@ class AdaptCoordinator:
         targets: dict[str, dict] = {}
         for entity_id in self._lights:
             cfg = schema.light_config(entity_id)
-            target = engine.light_target(cfg, drives, hour)
+            target = engine.light_target(cfg, schema.sun, drives, hour)
             targets[entity_id] = {
                 "brightness_pct": target.brightness_pct,
                 "color_temp_kelvin": target.color_temp_kelvin,

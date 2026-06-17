@@ -185,37 +185,49 @@ def drive_to_values(
 # --- the 24-hour timeline ----------------------------------------------------
 
 
+def sun_values(
+    sun: SunConfig, drives: list[DriveSignal]
+) -> list[tuple[float, float]]:
+    """The sun's (brightness, colorTemp) for each hour, as floats."""
+    return [
+        drive_to_values(
+            drive,
+            sun.min_brightness,
+            sun.max_brightness,
+            sun.min_color_temp,
+            sun.max_color_temp,
+        )
+        for drive in drives
+    ]
+
+
 def sun_row(sun: SunConfig, drives: list[DriveSignal]) -> list[tuple[int, int]]:
     """The sun's own (brightness, colorTemp) for each of the 24 hours."""
-    row = []
-    for drive in drives:
-        bri, temp = drive_to_values(
-            drive, sun.min_brightness, sun.max_brightness,
-            sun.min_color_temp, sun.max_color_temp,
-        )
-        row.append((int(round(bri)), _round5(temp)))
-    return row
+    return [
+        (int(round(bri)), _round5(temp))
+        for bri, temp in sun_values(sun, drives)
+    ]
 
 
 def light_anchors(
-    light: LightConfig, drives: list[DriveSignal]
+    light: LightConfig, sun_vals: list[tuple[float, float]]
 ) -> list[tuple[float, float]]:
     """Build 24 effective (brightness, colorTemp) anchors for a light.
 
-    Explicit hour cells win (clamped to the light's range); empty cells fall
-    back to the sun, scaled into the light's range.
+    Explicit hour cells win; empty cells *follow the sun*, clamped into the
+    light's own min/max range (so a light can't run brighter/cooler than the
+    light allows, but otherwise tracks the sun rather than scaling its own
+    independent curve).
     """
     anchors: list[tuple[float, float]] = []
     for hour in range(HOURS_PER_DAY):
         cell = light.hours[hour] if hour < len(light.hours) else None
-        if cell:
-            bri = clamp(cell["brightness"], light.min_brightness, light.max_brightness)
-            temp = clamp(cell["color_temp"], light.min_color_temp, light.max_color_temp)
-        else:
-            bri, temp = drive_to_values(
-                drives[hour], light.min_brightness, light.max_brightness,
-                light.min_color_temp, light.max_color_temp,
-            )
+        source = cell if cell else {
+            "brightness": sun_vals[hour][0],
+            "color_temp": sun_vals[hour][1],
+        }
+        bri = clamp(source["brightness"], light.min_brightness, light.max_brightness)
+        temp = clamp(source["color_temp"], light.min_color_temp, light.max_color_temp)
         anchors.append((bri, temp))
     return anchors
 
@@ -234,10 +246,10 @@ def interpolate_cyclic(
 
 
 def light_target(
-    light: LightConfig, drives: list[DriveSignal], hour: float
+    light: LightConfig, sun: SunConfig, drives: list[DriveSignal], hour: float
 ) -> Target:
     """The concrete :class:`Target` for a light at fractional ``hour``."""
-    anchors = light_anchors(light, drives)
+    anchors = light_anchors(light, sun_values(sun, drives))
     bri, temp = interpolate_cyclic(anchors, hour)
     return Target(brightness_pct=int(round(bri)), color_temp_kelvin=_round5(temp))
 
