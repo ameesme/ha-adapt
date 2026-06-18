@@ -63,9 +63,10 @@ from .store import HaAdaptStore
 # follow the slider quickly instead of starting a long fade each step.
 PREVIEW_TRANSITION = 0.4
 
-# Minimum gap (seconds) between the two IKEA-style split commands, so they are
-# never collapsed together (e.g. when send_split_delay is 0 in older configs).
-MIN_SPLIT_DELAY = 0.1
+# Minimum gap (seconds) between the two IKEA-style split commands. Some
+# (IKEA/Zigbee) lights drop the second command if it arrives too soon, so keep
+# this comfortably long regardless of the stored send_split_delay.
+MIN_SPLIT_DELAY = 0.35
 
 
 @dataclass
