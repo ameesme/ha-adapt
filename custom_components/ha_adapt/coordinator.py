@@ -63,6 +63,10 @@ from .store import HaAdaptStore
 # follow the slider quickly instead of starting a long fade each step.
 PREVIEW_TRANSITION = 0.4
 
+# Minimum gap (seconds) between the two IKEA-style split commands, so they are
+# never collapsed together (e.g. when send_split_delay is 0 in older configs).
+MIN_SPLIT_DELAY = 0.1
+
 
 @dataclass
 class LightRuntime:
@@ -234,6 +238,7 @@ class AdaptCoordinator:
         force: bool = False,
         now: datetime | None = None,
         drives: list[DriveSignal] | None = None,
+        initial: bool = False,
     ) -> None:
         if not self.enabled:
             return
@@ -251,9 +256,14 @@ class AdaptCoordinator:
         if target.is_empty:
             return
         light_cfg = self.data.active_schema.light_config(entity_id)
-        await self._apply_light(
-            entity_id, light_cfg, target, self.settings.transition
+        # Turn-on, forced apply and preview-off snap quickly; the periodic
+        # interval pass eases over the longer transition.
+        transition = (
+            self.settings.initial_transition
+            if (force or initial)
+            else self.settings.transition
         )
+        await self._apply_light(entity_id, light_cfg, target, transition)
         rt.last_target = target
 
     def _compute_target(
@@ -315,11 +325,11 @@ class AdaptCoordinator:
             and brightness is not None
             and color_temp is not None
         ):
-            # IKEA-style: brightness and color in two separate calls.
+            # IKEA-style: brightness and color in two separate calls, always
+            # with a slight gap between them.
             await self._turn_on({**base, ATTR_BRIGHTNESS_PCT: brightness})
-            delay = self.settings.send_split_delay / 1000.0
-            if delay:
-                await asyncio.sleep(delay)
+            delay = max(self.settings.send_split_delay / 1000.0, MIN_SPLIT_DELAY)
+            await asyncio.sleep(delay)
             await self._turn_on({**base, ATTR_COLOR_TEMP_KELVIN: color_temp})
             return
         data = dict(base)
@@ -423,7 +433,9 @@ class AdaptCoordinator:
             # Externally turned on (e.g. physical switch): adapt unless the
             # user explicitly asked for values (the interceptor flags that).
             if not self._runtime[entity_id].manual_control:
-                self.hass.async_create_task(self.async_adapt_one(entity_id))
+                self.hass.async_create_task(
+                    self.async_adapt_one(entity_id, initial=True)
+                )
             return
 
         # Changed while already on by something other than us. Only treat it as
