@@ -70,6 +70,32 @@ def color_difference_redmean(
     return math.sqrt(red + green + blue)
 
 
+def kelvin_to_rgb(kelvin: float) -> tuple[int, int, int]:
+    """Approximate a colour temperature as RGB (Tanner Helland's algorithm).
+
+    Used so RGB-only lights (no colour-temp channel) can still follow the sun's
+    warm/cool curve; matches the panel's swatch colours.
+    """
+    temp = clamp(kelvin, 1000, 12000) / 100.0
+    if temp <= 66:
+        red = 255.0
+        green = 99.4708025861 * math.log(temp) - 161.1195681661
+    else:
+        red = 329.698727446 * (temp - 60) ** -0.1332047592
+        green = 288.1221695283 * (temp - 60) ** -0.0755148492
+    if temp >= 66:
+        blue = 255.0
+    elif temp <= 19:
+        blue = 0.0
+    else:
+        blue = 138.5177312231 * math.log(temp - 10) - 305.0447927307
+
+    def _byte(value: float) -> int:
+        return int(max(0, min(255, round(value))))
+
+    return _byte(red), _byte(green), _byte(blue)
+
+
 # --- the sun -----------------------------------------------------------------
 
 

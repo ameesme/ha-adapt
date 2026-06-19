@@ -330,12 +330,17 @@ class AdaptCoordinator:
             entity_id
         )
         brightness = target.brightness_pct if supports_brightness else None
-        # An RGB override wins on RGB-capable lights; otherwise fall back to the
-        # colour-temperature baseline.
+        # An RGB override wins on RGB-capable lights; otherwise use the
+        # colour-temperature baseline — natively if supported, else approximated
+        # as RGB so RGB-only lights still follow the sun.
         if target.rgb_color is not None and supports_rgb:
             color = {ATTR_RGB_COLOR: list(target.rgb_color)}
         elif target.color_temp_kelvin is not None and supports_color:
             color = {ATTR_COLOR_TEMP_KELVIN: target.color_temp_kelvin}
+        elif target.color_temp_kelvin is not None and supports_rgb:
+            color = {
+                ATTR_RGB_COLOR: list(engine.kelvin_to_rgb(target.color_temp_kelvin))
+            }
         else:
             color = {}
         if brightness is None and not color:

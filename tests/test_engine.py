@@ -58,6 +58,14 @@ def test_color_difference_redmean():
     assert engine.color_difference_redmean((0, 0, 0), (255, 255, 255)) > 0
 
 
+def test_kelvin_to_rgb_warm_vs_cool():
+    warm = engine.kelvin_to_rgb(2000)
+    cool = engine.kelvin_to_rgb(6500)
+    assert all(0 <= c <= 255 for c in warm + cool)
+    assert warm[0] >= warm[2]  # warm: red >= blue
+    assert cool[2] >= warm[2]  # cooler has more blue
+
+
 # --- sun snapshot ------------------------------------------------------------
 
 
