@@ -277,7 +277,12 @@ export class TimelineGrid extends LitElement {
     onClick?: () => void
   ): TemplateResult {
     const brightness = cell ? cell.brightness : 0;
-    const color = cell ? kelvinToCss(cell.color_temp) : "transparent";
+    const rgb = cell && "rgb_color" in cell ? cell.rgb_color : null;
+    const color = !cell
+      ? "transparent"
+      : rgb
+        ? `rgb(${rgb[0]}, ${rgb[1]}, ${rgb[2]})`
+        : kelvinToCss(cell.color_temp);
     const classes = [
       "cell",
       extra,

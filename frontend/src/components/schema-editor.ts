@@ -24,6 +24,8 @@ import {
   KELVIN_MIN,
   currentHour,
   defaultLightConfig,
+  hexToRgb,
+  rgbToHex,
 } from "../utils";
 import type { CellRef } from "./timeline-grid";
 import "./timeline-grid";
@@ -92,6 +94,15 @@ export class SchemaEditor extends LitElement {
       }
       .grow {
         flex: 1;
+      }
+      input[type="color"] {
+        width: 52px;
+        height: 34px;
+        padding: 2px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--surface);
+        cursor: pointer;
       }
       @media (max-width: 960px) {
         .app-title {
@@ -400,6 +411,14 @@ export class SchemaEditor extends LitElement {
     const effective = this._timeline?.lights[ref.entityId]?.[ref.hour];
     const brightness = explicit?.brightness ?? effective?.brightness ?? 50;
     const colorTemp = explicit?.color_temp ?? effective?.color_temp ?? 3000;
+    const rgb = explicit?.rgb_color ?? null;
+    const setCell = (patch: Partial<NonNullable<HourCell>>) =>
+      this._setCell(ref, {
+        brightness,
+        color_temp: colorTemp,
+        rgb_color: rgb,
+        ...patch,
+      });
     return html`
       <h2>
         ${light?.name ?? ref.entityId} · ${String(ref.hour).padStart(2, "0")}:00
@@ -410,11 +429,36 @@ export class SchemaEditor extends LitElement {
           : "Following the sun — set a value to override."}
       </p>
       ${rangeField("Brightness", brightness, 1, 100, 1, "%", (v) =>
-        this._setCell(ref, { brightness: v, color_temp: colorTemp })
+        setCell({ brightness: v })
       )}
       ${rangeField("Color temp", colorTemp, KELVIN_MIN, KELVIN_MAX, 50, "K", (v) =>
-        this._setCell(ref, { brightness, color_temp: v })
+        setCell({ color_temp: v })
       )}
+      ${light?.supports_rgb
+        ? html`<label class="toggle">
+              <input
+                type="checkbox"
+                .checked=${rgb !== null}
+                @change=${(e: Event) =>
+                  setCell({
+                    rgb_color: (e.target as HTMLInputElement).checked
+                      ? rgb ?? [255, 255, 255]
+                      : null,
+                  })}
+              />
+              RGB colour (overrides temp)
+            </label>
+            ${rgb !== null
+              ? html`<input
+                  type="color"
+                  .value=${rgbToHex(rgb)}
+                  @input=${(e: Event) =>
+                    setCell({
+                      rgb_color: hexToRgb((e.target as HTMLInputElement).value),
+                    })}
+                />`
+              : nothing}`
+        : nothing}
       ${explicit
         ? html`<div class="actions">
             <button class="btn ghost" @click=${() => this._setCell(ref, null)}>

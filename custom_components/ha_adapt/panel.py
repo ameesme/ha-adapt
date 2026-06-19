@@ -88,6 +88,7 @@ def _lights_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> list[
                 "name": state.name if state else entity_id,
                 "state": state.state if state else "unavailable",
                 "manual_control": coordinator.is_manual(entity_id),
+                "supports_rgb": coordinator.supports_rgb(entity_id),
                 "target": {
                     "brightness_pct": target.brightness_pct,
                     "color_temp_kelvin": target.color_temp_kelvin,

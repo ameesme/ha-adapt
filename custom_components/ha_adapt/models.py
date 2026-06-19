@@ -42,14 +42,25 @@ from .const import (
 )
 
 # An hour cell is either None (fall back to the sun) or a mapping with explicit
-# "brightness" (percent) and "color_temp" (Kelvin).
-HourCell = dict[str, int] | None
+# "brightness" (percent), "color_temp" (Kelvin), and an optional "rgb_color"
+# ([r, g, b]) that overrides the colour temperature for RGB-capable lights.
+HourCell = dict[str, Any] | None
 
 
 def _coerce(cls: type, data: dict[str, Any]) -> dict[str, Any]:
     """Keep only keys that are valid fields of ``cls``."""
     valid = {f.name for f in fields(cls)}
     return {k: v for k, v in data.items() if k in valid}
+
+
+def _normalize_rgb(value: Any) -> list[int] | None:
+    """Return a clamped [r, g, b] list, or None if not a valid triple."""
+    if not isinstance(value, (list, tuple)) or len(value) != 3:
+        return None
+    try:
+        return [max(0, min(255, int(c))) for c in value]
+    except (ValueError, TypeError):
+        return None
 
 
 def _normalize_hours(hours: list[Any] | None) -> list[HourCell]:
@@ -59,10 +70,14 @@ def _normalize_hours(hours: list[Any] | None) -> list[HourCell]:
         if i >= HOURS_PER_DAY:
             break
         if isinstance(cell, dict) and "brightness" in cell and "color_temp" in cell:
-            result[i] = {
+            normalized: dict[str, Any] = {
                 "brightness": int(cell["brightness"]),
                 "color_temp": int(cell["color_temp"]),
             }
+            rgb = _normalize_rgb(cell.get("rgb_color"))
+            if rgb is not None:
+                normalized["rgb_color"] = rgb
+            result[i] = normalized
     return result
 
 

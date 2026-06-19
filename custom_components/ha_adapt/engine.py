@@ -93,14 +93,23 @@ class DriveSignal:
 
 @dataclass
 class Target:
-    """Concrete values to send to a light. ``None`` means "don't set"."""
+    """Concrete values to send to a light. ``None`` means "don't set".
+
+    ``color_temp_kelvin`` is always the baseline; ``rgb_color`` (when set)
+    overrides it for RGB-capable lights.
+    """
 
     brightness_pct: int | None
     color_temp_kelvin: int | None
+    rgb_color: tuple[int, int, int] | None = None
 
     @property
     def is_empty(self) -> bool:
-        return self.brightness_pct is None and self.color_temp_kelvin is None
+        return (
+            self.brightness_pct is None
+            and self.color_temp_kelvin is None
+            and self.rgb_color is None
+        )
 
 
 def sun_snapshot(now: datetime, events: list[tuple[datetime, str]]) -> SunSnapshot:
@@ -209,40 +218,70 @@ def sun_row(sun: SunConfig, drives: list[DriveSignal]) -> list[tuple[int, int]]:
     ]
 
 
+RgbColor = tuple[int, int, int]
+# (brightness, colorTemp, rgb|None) for one hour.
+Anchor = tuple[float, float, RgbColor | None]
+
+
 def light_anchors(
     light: LightConfig, sun_vals: list[tuple[float, float]]
-) -> list[tuple[float, float]]:
-    """Build 24 effective (brightness, colorTemp) anchors for a light.
+) -> list[Anchor]:
+    """Build 24 effective (brightness, colorTemp, rgb) anchors for a light.
 
-    Explicit hour cells win; empty cells *follow the sun*, clamped into the
-    light's own min/max range (so a light can't run brighter/cooler than the
-    light allows, but otherwise tracks the sun rather than scaling its own
-    independent curve).
+    Explicit hour cells win (and may carry an ``rgb_color`` override); empty
+    cells *follow the sun*, clamped into the light's own min/max range (so a
+    light can't run brighter/cooler than it allows, but otherwise tracks the
+    sun rather than scaling its own independent curve).
     """
-    anchors: list[tuple[float, float]] = []
+    anchors: list[Anchor] = []
     for hour in range(HOURS_PER_DAY):
         cell = light.hours[hour] if hour < len(light.hours) else None
-        source = cell if cell else {
-            "brightness": sun_vals[hour][0],
-            "color_temp": sun_vals[hour][1],
-        }
-        bri = clamp(source["brightness"], light.min_brightness, light.max_brightness)
-        temp = clamp(source["color_temp"], light.min_color_temp, light.max_color_temp)
-        anchors.append((bri, temp))
+        if cell:
+            bri = clamp(cell["brightness"], light.min_brightness, light.max_brightness)
+            temp = clamp(cell["color_temp"], light.min_color_temp, light.max_color_temp)
+            raw = cell.get("rgb_color")
+            rgb: RgbColor | None = (
+                (int(raw[0]), int(raw[1]), int(raw[2])) if raw else None
+            )
+        else:
+            bri = clamp(
+                sun_vals[hour][0], light.min_brightness, light.max_brightness
+            )
+            temp = clamp(
+                sun_vals[hour][1], light.min_color_temp, light.max_color_temp
+            )
+            rgb = None
+        anchors.append((bri, temp, rgb))
     return anchors
 
 
+def _interp_rgb(
+    rgb0: RgbColor | None, rgb1: RgbColor | None, frac: float
+) -> RgbColor | None:
+    """Lerp two RGB anchors; for a mixed pair snap to the nearer anchor."""
+    if rgb0 is not None and rgb1 is not None:
+        return (
+            int(round(lerp(rgb0[0], rgb1[0], frac))),
+            int(round(lerp(rgb0[1], rgb1[1], frac))),
+            int(round(lerp(rgb0[2], rgb1[2], frac))),
+        )
+    if rgb0 is None and rgb1 is None:
+        return None
+    return rgb0 if frac < 0.5 else rgb1
+
+
 def interpolate_cyclic(
-    anchors: list[tuple[float, float]], hour: float
-) -> tuple[float, float]:
-    """Interpolate (brightness, colorTemp) at fractional ``hour`` over 24h."""
+    anchors: list[Anchor], hour: float
+) -> tuple[float, float, RgbColor | None]:
+    """Interpolate (brightness, colorTemp, rgb) at fractional ``hour`` over 24h."""
     hour = hour % HOURS_PER_DAY
     h0 = int(math.floor(hour)) % HOURS_PER_DAY
     h1 = (h0 + 1) % HOURS_PER_DAY
     frac = hour - math.floor(hour)
     bri = lerp(anchors[h0][0], anchors[h1][0], frac)
     temp = lerp(anchors[h0][1], anchors[h1][1], frac)
-    return bri, temp
+    rgb = _interp_rgb(anchors[h0][2], anchors[h1][2], frac)
+    return bri, temp, rgb
 
 
 def light_target(
@@ -250,8 +289,12 @@ def light_target(
 ) -> Target:
     """The concrete :class:`Target` for a light at fractional ``hour``."""
     anchors = light_anchors(light, sun_values(sun, drives))
-    bri, temp = interpolate_cyclic(anchors, hour)
-    return Target(brightness_pct=int(round(bri)), color_temp_kelvin=_round5(temp))
+    bri, temp, rgb = interpolate_cyclic(anchors, hour)
+    return Target(
+        brightness_pct=int(round(bri)),
+        color_temp_kelvin=_round5(temp),
+        rgb_color=rgb,
+    )
 
 
 def target_changed(

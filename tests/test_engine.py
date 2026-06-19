@@ -183,3 +183,42 @@ def test_explicit_cell_is_clamped_to_light_range():
     target = engine.light_target(light, sun, drives, 0.0)
     assert target.brightness_pct == 100
     assert target.color_temp_kelvin == 5500
+
+
+def test_rgb_cell_overrides_temperature():
+    base = dt.datetime(2026, 6, 14, tzinfo=UTC)
+    sun = SunConfig()
+    drives = _sun_drives(sun, base)
+    light = LightConfig()
+    light.hours[12] = {"brightness": 80, "color_temp": 3000, "rgb_color": [10, 20, 30]}
+
+    at_twelve = engine.light_target(light, sun, drives, 12.0)
+    assert at_twelve.rgb_color == (10, 20, 30)  # rgb overrides
+    assert at_twelve.color_temp_kelvin is not None  # baseline still present
+    assert at_twelve.brightness_pct == 80
+
+
+def test_rgb_interpolates_between_two_rgb_hours():
+    base = dt.datetime(2026, 6, 14, tzinfo=UTC)
+    sun = SunConfig()
+    drives = _sun_drives(sun, base)
+    light = LightConfig()
+    light.hours[10] = {"brightness": 50, "color_temp": 3000, "rgb_color": [0, 0, 0]}
+    light.hours[11] = {
+        "brightness": 50,
+        "color_temp": 3000,
+        "rgb_color": [100, 200, 50],
+    }
+    mid = engine.light_target(light, sun, drives, 10.5)
+    assert mid.rgb_color == (50, 100, 25)
+
+
+def test_rgb_snaps_for_mixed_neighbours():
+    base = dt.datetime(2026, 6, 14, tzinfo=UTC)
+    sun = SunConfig()
+    drives = _sun_drives(sun, base)
+    light = LightConfig()
+    light.hours[12] = {"brightness": 50, "color_temp": 3000, "rgb_color": [1, 2, 3]}
+    # Just past the rgb hour -> still rgb (nearer); well after -> no rgb (temp).
+    assert engine.light_target(light, sun, drives, 12.2).rgb_color == (1, 2, 3)
+    assert engine.light_target(light, sun, drives, 12.8).rgb_color is None

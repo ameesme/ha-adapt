@@ -68,6 +68,24 @@ export function hourLabel(hour: number): string {
   return String(hour).padStart(2, "0");
 }
 
+export function rgbToHex(rgb: [number, number, number]): string {
+  return (
+    "#" +
+    rgb
+      .map((c) => Math.max(0, Math.min(255, Math.round(c))).toString(16).padStart(2, "0"))
+      .join("")
+  );
+}
+
+export function hexToRgb(hex: string): [number, number, number] {
+  const v = hex.replace("#", "");
+  return [
+    parseInt(v.slice(0, 2), 16) || 0,
+    parseInt(v.slice(2, 4), 16) || 0,
+    parseInt(v.slice(4, 6), 16) || 0,
+  ];
+}
+
 // Fractional local hour-of-day right now (e.g. 14.5 at 14:30).
 export function currentHour(): number {
   const now = new Date();

@@ -68,6 +68,17 @@ PREVIEW_TRANSITION = 0.4
 # this comfortably long regardless of the stored send_split_delay.
 MIN_SPLIT_DELAY = 0.35
 
+# Colour modes that accept an rgb_color (HA converts to the light's mode).
+_RGB_MODES = frozenset(
+    {
+        ColorMode.RGB,
+        ColorMode.RGBW,
+        ColorMode.RGBWW,
+        ColorMode.HS,
+        ColorMode.XY,
+    }
+)
+
 
 @dataclass
 class LightRuntime:
@@ -294,50 +305,55 @@ class AdaptCoordinator:
 
     # --- applying values to lights ------------------------------------------
 
-    def _supported_modes(self, entity_id: str) -> tuple[bool, bool]:
-        """(supports_brightness, supports_color_temp) for ``entity_id``."""
+    def _supported_modes(self, entity_id: str) -> tuple[bool, bool, bool]:
+        """(supports_brightness, supports_color_temp, supports_rgb)."""
         state = self.hass.states.get(entity_id)
         if state is None:
-            return True, True
+            return True, True, False
         modes = state.attributes.get(ATTR_SUPPORTED_COLOR_MODES)
         if not modes:
-            # Capabilities not reported yet — control brightness, skip color
-            # temp so we don't warn on lights that don't support it.
-            return True, False
+            # Capabilities not reported yet — control brightness, skip colour
+            # so we don't warn on lights that don't support it.
+            return True, False, False
         modes = set(modes)
         supports_color = ColorMode.COLOR_TEMP in modes
+        supports_rgb = bool(modes & _RGB_MODES)
         supports_brightness = bool(
             modes - {ColorMode.ONOFF, ColorMode.UNKNOWN}
         )
-        return supports_brightness, supports_color
+        return supports_brightness, supports_color, supports_rgb
 
     async def _apply_light(
         self, entity_id: str, light_cfg: LightConfig, target: Target, transition: float
     ) -> None:
-        supports_brightness, supports_color = self._supported_modes(entity_id)
+        supports_brightness, supports_color, supports_rgb = self._supported_modes(
+            entity_id
+        )
         brightness = target.brightness_pct if supports_brightness else None
-        color_temp = target.color_temp_kelvin if supports_color else None
-        if brightness is None and color_temp is None:
+        # An RGB override wins on RGB-capable lights; otherwise fall back to the
+        # colour-temperature baseline.
+        if target.rgb_color is not None and supports_rgb:
+            color = {ATTR_RGB_COLOR: list(target.rgb_color)}
+        elif target.color_temp_kelvin is not None and supports_color:
+            color = {ATTR_COLOR_TEMP_KELVIN: target.color_temp_kelvin}
+        else:
+            color = {}
+        if brightness is None and not color:
             return  # nothing this light can accept
 
         base = {ATTR_ENTITY_ID: entity_id, ATTR_TRANSITION: transition}
-        if (
-            light_cfg.separate_turn_on_commands
-            and brightness is not None
-            and color_temp is not None
-        ):
-            # IKEA-style: brightness and color in two separate calls, always
+        if light_cfg.separate_turn_on_commands and brightness is not None and color:
+            # IKEA-style: brightness and colour in two separate calls, always
             # with a slight gap between them.
             await self._turn_on({**base, ATTR_BRIGHTNESS_PCT: brightness})
             delay = max(self.settings.send_split_delay / 1000.0, MIN_SPLIT_DELAY)
             await asyncio.sleep(delay)
-            await self._turn_on({**base, ATTR_COLOR_TEMP_KELVIN: color_temp})
+            await self._turn_on({**base, **color})
             return
         data = dict(base)
         if brightness is not None:
             data[ATTR_BRIGHTNESS_PCT] = brightness
-        if color_temp is not None:
-            data[ATTR_COLOR_TEMP_KELVIN] = color_temp
+        data.update(color)
         await self._turn_on(data)
 
     async def _turn_on(self, data: dict) -> None:
@@ -506,6 +522,10 @@ class AdaptCoordinator:
         rt = self._runtime.get(entity_id)
         return bool(rt and rt.manual_control)
 
+    def supports_rgb(self, entity_id: str) -> bool:
+        """Whether the light can take an RGB colour (for the web-ui editor)."""
+        return self._supported_modes(entity_id)[2]
+
     def compute_preview(self, entity_id: str) -> Target:
         """Return what we *would* apply right now (for the web-ui preview)."""
         return self._compute_target(entity_id, dt_util.utcnow())
@@ -529,6 +549,9 @@ class AdaptCoordinator:
                 {
                     "brightness": int(round(anchors[hour][0])),
                     "color_temp": int(round(anchors[hour][1] / 5) * 5),
+                    "rgb_color": (
+                        list(anchors[hour][2]) if anchors[hour][2] else None
+                    ),
                     "explicit": cfg.hours[hour] is not None,
                 }
                 for hour in range(HOURS_PER_DAY)

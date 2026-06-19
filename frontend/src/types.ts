@@ -19,7 +19,13 @@ export interface SunConfig {
 }
 
 // An hour cell is either an explicit override or null (follow the sun).
-export type HourCell = { brightness: number; color_temp: number } | null;
+// rgb_color (when set) overrides color_temp for RGB-capable lights.
+export type RgbColor = [number, number, number];
+export type HourCell = {
+  brightness: number;
+  color_temp: number;
+  rgb_color?: RgbColor | null;
+} | null;
 
 export interface LightConfig {
   min_brightness: number;
@@ -52,6 +58,7 @@ export interface LightInfo {
   name: string;
   state: string;
   manual_control: boolean;
+  supports_rgb: boolean;
   target: { brightness_pct: number | null; color_temp_kelvin: number | null };
 }
 
@@ -67,6 +74,7 @@ export interface ConfigPayload {
 export interface TimelineCell {
   brightness: number;
   color_temp: number;
+  rgb_color: RgbColor | null;
   explicit: boolean;
 }
 
