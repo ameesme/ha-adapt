@@ -4,15 +4,15 @@ import { defineConfig } from "vite";
 // The bundle (lit included) is written into the Python component so Home
 // Assistant can serve it directly — no Node toolchain at install time.
 //
-// `npm run dev` instead serves the panel with hot-reload; point Home Assistant
-// at it with HA_ADAPT_DEV_URL=http://localhost:5173/src/ha-adapt-panel.ts
-// (see README → Development).
+// `npm run dev` instead serves the standalone dev harness (frontend/index.html
+// + frontend/dev/), which runs the panel against an in-memory mock backend with
+// fake lights — no Home Assistant needed. See README → Development.
 export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
-    host: true,
-    cors: true, // HA loads the module cross-origin from the dev server
+    host: true, // reachable from another device on the network
+    open: true, // pop open the dev harness on start
   },
   build: {
     target: "es2021",

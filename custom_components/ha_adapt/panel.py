@@ -8,7 +8,6 @@ coordinator so the running adaptation reflects changes immediately.
 from __future__ import annotations
 
 import hashlib
-import logging
 import os
 
 from homeassistant.components import frontend, websocket_api
@@ -27,13 +26,6 @@ from .const import (
 from .coordinator import AdaptCoordinator, get_coordinator
 from .models import GlobalSettings, Schema, StoreData
 
-_LOGGER = logging.getLogger(__name__)
-
-# Set this env var to a Vite dev-server URL (e.g.
-# http://localhost:5173/src/ha-adapt-panel.ts) to load the panel with
-# hot-reload instead of the built bundle. See README → Development.
-DEV_URL_ENV = "HA_ADAPT_DEV_URL"
-
 
 def _bundle_token(path: str) -> str:
     """Short content hash of the built bundle, for cache-busting the panel URL."""
@@ -48,28 +40,15 @@ async def async_setup_panel(
     hass: HomeAssistant, coordinator: AdaptCoordinator
 ) -> None:
     """Serve the bundle, register the sidebar panel, and the WS commands."""
-    dev_url = os.environ.get(DEV_URL_ENV)
-    if dev_url:
-        # Dev mode: load the panel from a Vite dev server (hot-reload). The
-        # browser fetches this URL, so localhost points at the dev machine.
-        _LOGGER.warning(
-            "HA Adapt: serving the panel from dev server %s (set by %s)",
-            dev_url,
-            DEV_URL_ENV,
-        )
-        module_url = dev_url
-        trust_external = True
-    else:
-        js_path = os.path.join(
-            os.path.dirname(__file__), "frontend", "dist", "ha-adapt-panel.js"
-        )
-        await hass.http.async_register_static_paths(
-            [StaticPathConfig(PANEL_STATIC_PATH, js_path, False)]
-        )
-        # Hash the bundle so the browser always fetches a new build.
-        token = await hass.async_add_executor_job(_bundle_token, js_path)
-        module_url = f"{PANEL_STATIC_PATH}?v={token}"
-        trust_external = False
+    js_path = os.path.join(
+        os.path.dirname(__file__), "frontend", "dist", "ha-adapt-panel.js"
+    )
+    await hass.http.async_register_static_paths(
+        [StaticPathConfig(PANEL_STATIC_PATH, js_path, False)]
+    )
+    # Hash the bundle so the browser always fetches a new build.
+    token = await hass.async_add_executor_job(_bundle_token, js_path)
+    module_url = f"{PANEL_STATIC_PATH}?v={token}"
 
     frontend.async_register_built_in_panel(
         hass,
@@ -82,7 +61,7 @@ async def async_setup_panel(
             "_panel_custom": {
                 "name": PANEL_ELEMENT,
                 "embed_iframe": False,
-                "trust_external": trust_external,
+                "trust_external": False,
                 "module_url": module_url,
             }
         },
