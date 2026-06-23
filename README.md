@@ -12,9 +12,6 @@ to [`basnijholt/adaptive-lighting`](https://github.com/basnijholt/adaptive-light
 but everything except the list of controlled lights is configured from a warm,
 purpose-built **web-ui panel** in the sidebar.
 
-> Status: early (v0.1). Core engine, control loop, and panel are in place.
-> Light-sensor scaling UI and the sun graphs are planned.
-
 ## Highlights
 
 - **Schemas are timelines.** A schema covers *all* your lights. It has a

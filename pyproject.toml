@@ -1,6 +1,6 @@
 [project]
 name = "ha-adapt"
-version = "0.1.0"
+version = "1.0.0"
 description = "Adaptive lighting for Home Assistant with a web-ui configuration panel."
 readme = "README.md"
 requires-python = ">=3.11"
