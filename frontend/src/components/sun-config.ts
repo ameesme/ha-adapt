@@ -1,4 +1,4 @@
-import { LitElement, html, css, type TemplateResult } from "lit";
+import { LitElement, html, css, nothing, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import { numberField, rangeField, timeField } from "../form-fields";
@@ -73,6 +73,12 @@ export class SunConfigEditor extends LitElement {
           this._patch({ ramp_light: v })
         )}
       </div>
+      ${s.min_brightness <= 0
+        ? html`<p class="warn">
+            At 0% lights following the sun can turn off at night, and adaptation
+            won't turn them back on automatically.
+          </p>`
+        : nothing}
     `;
   }
 

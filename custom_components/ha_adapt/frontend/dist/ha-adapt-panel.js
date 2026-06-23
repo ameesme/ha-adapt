@@ -677,7 +677,7 @@ const te = H`
 
   /* Sub-heading shown directly under an editor's title (e.g. a light's area). */
   .subtitle {
-    margin: -2px 0 10px;
+    margin: -6px 0 10px;
     color: var(--text-soft);
     font-size: 0.82rem;
   }
@@ -1369,6 +1369,10 @@ let J = class extends v {
       (t) => this._patch({ ramp_light: t })
     )}
       </div>
+      ${e.min_brightness <= 0 ? c`<p class="warn">
+            At 0% lights following the sun can turn off at night, and adaptation
+            won't turn them back on automatically.
+          </p>` : h}
     `;
   }
   _patch(e) {

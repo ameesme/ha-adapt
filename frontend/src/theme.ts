@@ -71,7 +71,7 @@ export const baseStyles = css`
 
   /* Sub-heading shown directly under an editor's title (e.g. a light's area). */
   .subtitle {
-    margin: -2px 0 10px;
+    margin: -6px 0 10px;
     color: var(--text-soft);
     font-size: 0.82rem;
   }
