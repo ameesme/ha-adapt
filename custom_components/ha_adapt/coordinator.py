@@ -253,6 +253,31 @@ class AdaptCoordinator:
                 await self.async_adapt_one(
                     entity_id, force=force, allow_turn_on=turn_on
                 )
+            else:
+                await self._apply_external(entity_id, allow_turn_on=turn_on)
+
+    async def _apply_external(self, entity_id: str, allow_turn_on: bool) -> None:
+        """Apply the sun default to a light that isn't one of ours.
+
+        Used when the apply service names a light we don't control: there's no
+        per-light config, so it follows the active schema's sun (a default
+        :class:`LightConfig`). No manual-override tracking is kept for it.
+        """
+        state = self.hass.states.get(entity_id)
+        if state is None:
+            return
+        target = self._compute_target(entity_id, dt_util.utcnow())
+        if target.is_empty:
+            return
+        light_cfg = self.data.active_schema.light_config(entity_id)
+        await self._drive_light(
+            entity_id,
+            light_cfg,
+            target,
+            state.state == STATE_ON,
+            self.settings.initial_transition,
+            allow_turn_on,
+        )
 
     async def async_adapt_one(
         self,
@@ -273,7 +298,6 @@ class AdaptCoordinator:
         state = self.hass.states.get(entity_id)
         if state is None:
             return
-        is_on = state.state == STATE_ON
         if now is None:
             now = dt_util.utcnow()
         target = self._compute_target(entity_id, now, drives)
@@ -287,17 +311,15 @@ class AdaptCoordinator:
             if (force or initial)
             else self.settings.transition
         )
-        # A scheduled 0% brightness means "off": switch the light off if it is
-        # on, and never switch it on for it. It will not come back automatically.
-        if target.brightness_pct is not None and target.brightness_pct <= 0:
-            if is_on:
-                await self._turn_off(entity_id, transition)
-                rt.last_target = target
-            return
-        if not is_on and not allow_turn_on:
-            return  # never turn a light on just to adapt it
-        await self._apply_light(entity_id, light_cfg, target, transition)
-        rt.last_target = target
+        if await self._drive_light(
+            entity_id,
+            light_cfg,
+            target,
+            state.state == STATE_ON,
+            transition,
+            allow_turn_on,
+        ):
+            rt.last_target = target
 
     def _compute_target(
         self,
@@ -399,6 +421,31 @@ class AdaptCoordinator:
             blocking=False,
             context=context,
         )
+
+    async def _drive_light(
+        self,
+        entity_id: str,
+        light_cfg: LightConfig,
+        target: Target,
+        is_on: bool,
+        transition: float,
+        allow_turn_on: bool,
+    ) -> bool:
+        """Realise ``target`` on a light. Returns whether we acted on it.
+
+        A scheduled 0% brightness means "off": switch the light off if it is on,
+        and never switch it on for it (it won't come back automatically).
+        Otherwise set the values, turning an off light on only when allowed.
+        """
+        if target.brightness_pct is not None and target.brightness_pct <= 0:
+            if is_on:
+                await self._turn_off(entity_id, transition)
+                return True
+            return False
+        if not is_on and not allow_turn_on:
+            return False  # never turn a light on just to adapt it
+        await self._apply_light(entity_id, light_cfg, target, transition)
+        return True
 
     def _remember_context(self, context_id: str) -> None:
         dq = self._our_contexts
