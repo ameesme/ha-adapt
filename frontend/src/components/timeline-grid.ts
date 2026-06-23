@@ -26,56 +26,61 @@ export class TimelineGrid extends LitElement {
         height: 100%;
       }
       .card {
-        height: 100%;
         box-sizing: border-box;
       }
       .scroll {
-        overflow-x: auto;
         max-width: 100%;
         padding-bottom: 6px;
       }
       .rows {
         display: flex;
         flex-direction: column;
-        gap: 2px;
-        min-width: max-content;
+        gap: 1px;
       }
       .gridrow {
         display: grid;
-        grid-template-columns: 140px repeat(24, 30px);
-        gap: 2px;
+        grid-template-columns: 100px repeat(24, 1fr);
+        gap: 1px;
         align-items: center;
       }
       .label {
-        position: sticky;
-        left: 0;
         z-index: 3;
         align-self: stretch;
         display: flex;
         align-items: center;
-        gap: 8px;
-        background: var(--surface);
+        gap: 4px;
         font-size: 0.82rem;
         font-weight: 600;
         color: var(--text);
         white-space: nowrap;
         overflow: hidden;
-        padding: 0 12px;
-        box-shadow: 1px 0 0 var(--border);
+        padding-right: 4px;
+      }
+      .label .text-col {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .label .area {
+        font-size: 0.65rem;
+        font-weight: 400;
+        color: var(--text-soft);
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .label .lname {
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
       .label.clickable {
         cursor: pointer;
       }
-      .label .lname {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
       .label .cog {
-        width: 14px;
-        height: 14px;
+        width: 12px;
+        height: 12px;
         flex: none;
-        margin-left: auto;
         opacity: 0.4;
       }
       .label.clickable:hover .cog {
@@ -85,7 +90,6 @@ export class TimelineGrid extends LitElement {
         color: var(--accent-strong);
       }
       .gridrow.rowselected .label {
-        background: var(--accent-soft);
         color: var(--accent-strong);
       }
       .label.section-label {
@@ -118,14 +122,25 @@ export class TimelineGrid extends LitElement {
         font-weight: 700;
         color: var(--accent-strong);
       }
+      .now-btn {
+        background: none;
+        border: none;
+        padding: 0;
+        margin-left: auto;
+        font-size: 0.7rem;
+        color: var(--text-soft);
+        cursor: pointer;
+        text-transform: lowercase;
+      }
+      .now-btn:hover {
+        color: var(--accent-strong);
+      }
       .cell {
         position: relative;
         height: 42px;
-        border-radius: 4px;
         background: var(--surface-alt);
         overflow: hidden;
         cursor: pointer;
-        border: 1px solid var(--border);
       }
       .cell.readonly {
         cursor: default;
@@ -137,25 +152,42 @@ export class TimelineGrid extends LitElement {
         bottom: 0;
       }
       .cell.explicit {
-        border-color: var(--accent-strong);
-        box-shadow: inset 0 0 0 1px var(--accent-strong);
+        background: var(--border);
       }
       .cell.selected {
-        outline: 2px solid var(--accent-strong);
-        outline-offset: 1px;
+        border: 2px var(--accent-strong) solid;
       }
-      .cell.now {
-        border-bottom: 3px solid var(--accent);
+      .legend {
+        display: flex;
+        justify-content: flex-end;
+        gap: 16px;
+        padding-top: 10px;
+        font-size: 0.75rem;
+        color: var(--text-soft);
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .legend-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 2px;
+      }
+      .legend-dot.sun-controlled {
+        background: var(--surface-alt);
+      }
+      .legend-dot.overridden {
+        background: var(--border);
+      }
+      .legend-dot.selected {
+        background: var(--surface-alt);
+        border: 2px var(--accent-strong) solid;
       }
       @media (max-width: 960px) {
         .card {
           padding: 0;
-        }
-        /* Match the page background (the card is flat on mobile) so the sticky
-           labels and the right-side scroll cutoff blend in. */
-        .label {
-          background: var(--bg);
-          padding: 0 6px;
         }
       }
     `,
@@ -185,6 +217,11 @@ export class TimelineGrid extends LitElement {
           ${this.lights.map((light) => this._lightRow(light, nowHour))}
         </div>
       </div>
+      <div class="legend">
+        <span class="legend-item"><span class="legend-dot sun-controlled"></span>Sun-controlled</span>
+        <span class="legend-item"><span class="legend-dot overridden"></span>Overridden</span>
+        <span class="legend-item"><span class="legend-dot selected"></span>Selected</span>
+      </div>
     </div>`;
   }
 
@@ -195,6 +232,7 @@ export class TimelineGrid extends LitElement {
     return html`<div class="gridrow scrubrow">
       <div class="label">
         <span class="clock">${label}</span>
+        <button class="now-btn" @click=${this._jumpToNow} title="Jump to now">now</button>
       </div>
       <div class="track">
         <input
@@ -208,6 +246,12 @@ export class TimelineGrid extends LitElement {
         />
       </div>
     </div>`;
+  }
+
+  private _jumpToNow(): void {
+    const now = new Date();
+    const hour = now.getHours() + now.getMinutes() / 60;
+    this._emit("scrub", hour);
   }
 
   private _headerRow(nowHour: number): TemplateResult {
@@ -230,7 +274,9 @@ export class TimelineGrid extends LitElement {
         title="Edit the sun"
         @click=${() => this._emit("select-sun", null)}
       >
-        <span class="lname">☀️ Sun</span>
+        <span class="text-col">
+          <span class="lname">☀️ Sun</span>
+        </span>
         ${this._cogIcon()}
       </div>
       ${HOURS.map((h) =>
@@ -248,7 +294,10 @@ export class TimelineGrid extends LitElement {
         title="Edit light range"
         @click=${() => this._emit("select-light", light.entity_id)}
       >
-        <span class="lname">${light.name}</span>
+        <span class="text-col">
+          ${light.area_name ? html`<span class="area">${light.area_name}</span>` : ""}
+          <span class="lname">${light.name}</span>
+        </span>
         ${this._cogIcon()}
       </div>
       ${HOURS.map((h) => {

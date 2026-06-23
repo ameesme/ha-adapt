@@ -19,14 +19,15 @@ import { computeTargets, computeTimeline } from "./engine";
 interface FakeLight {
   entity_id: string;
   name: string;
+  area_name: string | null;
   supports_rgb: boolean;
 }
 
 const FAKE_LIGHTS: FakeLight[] = [
-  { entity_id: "light.living_room", name: "Living Room", supports_rgb: true },
-  { entity_id: "light.kitchen", name: "Kitchen Spots", supports_rgb: false },
-  { entity_id: "light.bedroom", name: "Bedroom", supports_rgb: true },
-  { entity_id: "light.hallway", name: "Hallway", supports_rgb: false },
+  { entity_id: "light.living_room", name: "Living Room", area_name: "Living Room", supports_rgb: true },
+  { entity_id: "light.kitchen", name: "Kitchen Spots", area_name: "Kitchen", supports_rgb: false },
+  { entity_id: "light.bedroom", name: "Bedroom", area_name: "Bedroom", supports_rgb: true },
+  { entity_id: "light.hallway", name: "Hallway", area_name: null, supports_rgb: false },
 ];
 
 const cell = (brightness: number, color_temp: number, rgb_color?: [number, number, number]): HourCell => ({
@@ -117,6 +118,7 @@ function configPayload(store: Store): ConfigPayload {
     lights: FAKE_LIGHTS.map((l) => ({
       entity_id: l.entity_id,
       name: l.name,
+      area_name: l.area_name,
       state: "on",
       manual_control: store.manual[l.entity_id] ?? false,
       supports_rgb: l.supports_rgb,

@@ -428,7 +428,7 @@ export class SchemaEditor extends LitElement {
           ? "Explicit override for this hour."
           : "Following the sun — set a value to override."}
       </p>
-      ${rangeField("Brightness", brightness, 1, 100, 1, "%", (v) =>
+      ${rangeField("Brightness", brightness, 0, 100, 1, "%", (v) =>
         setCell({ brightness: v })
       )}
       ${rangeField("Color temp", colorTemp, KELVIN_MIN, KELVIN_MAX, 50, "K", (v) =>
@@ -474,10 +474,10 @@ export class SchemaEditor extends LitElement {
     const cfg = this._lightCfg(entityId);
     return html`
       <h2>${light?.name ?? entityId}</h2>
-      ${rangeField("Min brightness", cfg.min_brightness, 1, 100, 1, "%", (v) =>
+      ${rangeField("Min brightness", cfg.min_brightness, 0, 100, 1, "%", (v) =>
         this._patchLight(entityId, { min_brightness: v })
       )}
-      ${rangeField("Max brightness", cfg.max_brightness, 1, 100, 1, "%", (v) =>
+      ${rangeField("Max brightness", cfg.max_brightness, 0, 100, 1, "%", (v) =>
         this._patchLight(entityId, { max_brightness: v })
       )}
       ${rangeField(

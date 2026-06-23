@@ -30,10 +30,10 @@ export class SunConfigEditor extends LitElement {
         The sun drives every light's fallback. Empty timeline cells follow it.
       </p>
       <div class="grid">
-        ${rangeField("Min brightness", s.min_brightness, 1, 100, 1, "%", (v) =>
+        ${rangeField("Min brightness", s.min_brightness, 0, 100, 1, "%", (v) =>
           this._patch({ min_brightness: v })
         )}
-        ${rangeField("Max brightness", s.max_brightness, 1, 100, 1, "%", (v) =>
+        ${rangeField("Max brightness", s.max_brightness, 0, 100, 1, "%", (v) =>
           this._patch({ max_brightness: v })
         )}
         ${rangeField(

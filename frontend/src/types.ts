@@ -56,6 +56,7 @@ export interface GlobalSettings {
 export interface LightInfo {
   entity_id: string;
   name: string;
+  area_name: string | null;
   state: string;
   manual_control: boolean;
   supports_rgb: boolean;

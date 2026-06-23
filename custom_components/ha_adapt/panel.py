@@ -13,6 +13,7 @@ import os
 from homeassistant.components import frontend, websocket_api
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import area_registry as ar, entity_registry as er
 import voluptuous as vol
 
 from .const import (
@@ -78,14 +79,29 @@ def async_remove_panel(hass: HomeAssistant) -> None:
 
 
 def _lights_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> list[dict]:
+    ent_reg = er.async_get(hass)
+    area_reg = ar.async_get(hass)
     lights = []
     for entity_id in coordinator.controlled_lights:
         state = hass.states.get(entity_id)
         target = coordinator.compute_preview(entity_id)
+        # Resolve area name via entity -> device -> area chain
+        area_name: str | None = None
+        if entry := ent_reg.async_get(entity_id):
+            area_id = entry.area_id
+            if area_id is None and entry.device_id:
+                from homeassistant.helpers import device_registry as dr
+
+                dev_reg = dr.async_get(hass)
+                if device := dev_reg.async_get(entry.device_id):
+                    area_id = device.area_id
+            if area_id and (area := area_reg.async_get_area(area_id)):
+                area_name = area.name
         lights.append(
             {
                 "entity_id": entity_id,
                 "name": state.name if state else entity_id,
+                "area_name": area_name,
                 "state": state.state if state else "unavailable",
                 "manual_control": coordinator.is_manual(entity_id),
                 "supports_rgb": coordinator.supports_rgb(entity_id),

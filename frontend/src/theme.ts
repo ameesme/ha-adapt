@@ -7,7 +7,7 @@ export const tokenStyles = css`
     --bg: #fbf3e9;
     --surface: #fffaf2;
     --surface-alt: #f4e8d7;
-    --border: #e6d4bc;
+    --border: #dec4a1;
     --text: #3d2c1e;
     --text-soft: #836a52;
     --accent: #c8743a;
