@@ -124,7 +124,12 @@ function lightAnchors(light: LightConfig, sunVals: [number, number][]): Anchor[]
   return HOURS.map((hour): Anchor => {
     const cell: HourCell = light.hours[hour] ?? null;
     if (cell) {
-      const bri = clamp(cell.brightness, light.min_brightness, light.max_brightness);
+      // An explicit 0 means "off" for that hour; keep it rather than clamping
+      // up to the light's minimum.
+      const bri =
+        cell.brightness <= 0
+          ? 0
+          : clamp(cell.brightness, light.min_brightness, light.max_brightness);
       const temp = clamp(cell.color_temp, light.min_color_temp, light.max_color_temp);
       const rgb = cell.rgb_color
         ? ([cell.rgb_color[0], cell.rgb_color[1], cell.rgb_color[2]] as RgbColor)

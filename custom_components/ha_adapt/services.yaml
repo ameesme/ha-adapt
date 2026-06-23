@@ -12,6 +12,15 @@ apply:
         entity:
           domain: light
           multiple: true
+    turn_on:
+      name: Turn on
+      description: >-
+        Turn lights on to their scheduled value if they are currently off. A
+        light scheduled to 0% stays off.
+      required: false
+      default: true
+      selector:
+        boolean:
 
 set_manual_control:
   name: Set manual control

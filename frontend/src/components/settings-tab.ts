@@ -2,7 +2,7 @@ import { html, type TemplateResult } from "lit";
 import { customElement } from "lit/decorators.js";
 
 import { TabBase } from "../base-tab";
-import { checkboxField, numberField } from "../form-fields";
+import { checkboxField, coordField, numberField } from "../form-fields";
 import { baseStyles } from "../theme";
 import type { GlobalSettings } from "../types";
 
@@ -31,7 +31,17 @@ export class SettingsTab extends TabBase {
           s.autoreset_control,
           (v) => save({ autoreset_control: v })
         )}
+        ${coordField("Sun latitude", s.sun_latitude, (v) =>
+          save({ sun_latitude: v })
+        )}
+        ${coordField("Sun longitude", s.sun_longitude, (v) =>
+          save({ sun_longitude: v })
+        )}
       </div>
+      <p class="muted">
+        Leave the coordinates blank to use Home Assistant's own location for sun
+        calculation.
+      </p>
       <div class="actions">
         ${checkboxField("Take over control", s.take_over_control, (v) =>
           save({ take_over_control: v })

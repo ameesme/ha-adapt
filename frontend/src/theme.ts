@@ -69,6 +69,25 @@ export const baseStyles = css`
     font-size: 0.85rem;
   }
 
+  /* Sub-heading shown directly under an editor's title (e.g. a light's area). */
+  .subtitle {
+    margin: -2px 0 10px;
+    color: var(--text-soft);
+    font-size: 0.82rem;
+  }
+
+  /* Inline caution note inside an editor. */
+  .warn {
+    margin: 10px 0 0;
+    padding: 8px 10px;
+    font-size: 0.8rem;
+    line-height: 1.35;
+    color: var(--danger);
+    background: var(--accent-soft);
+    border-left: 3px solid var(--danger);
+    border-radius: 6px;
+  }
+
   label.field {
     display: flex;
     flex-direction: column;

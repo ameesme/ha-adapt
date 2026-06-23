@@ -431,6 +431,12 @@ export class SchemaEditor extends LitElement {
       ${rangeField("Brightness", brightness, 0, 100, 1, "%", (v) =>
         setCell({ brightness: v })
       )}
+      ${brightness <= 0
+        ? html`<p class="warn">
+            At 0% this light turns off at this hour, and adaptation won't turn it
+            back on automatically.
+          </p>`
+        : nothing}
       ${rangeField("Color temp", colorTemp, KELVIN_MIN, KELVIN_MAX, 50, "K", (v) =>
         setCell({ color_temp: v })
       )}
@@ -474,9 +480,18 @@ export class SchemaEditor extends LitElement {
     const cfg = this._lightCfg(entityId);
     return html`
       <h2>${light?.name ?? entityId}</h2>
+      ${light?.area_name
+        ? html`<p class="subtitle">${light.area_name}</p>`
+        : nothing}
       ${rangeField("Min brightness", cfg.min_brightness, 0, 100, 1, "%", (v) =>
         this._patchLight(entityId, { min_brightness: v })
       )}
+      ${cfg.min_brightness <= 0
+        ? html`<p class="warn">
+            At 0% this light can turn off during the day, and adaptation won't
+            turn it back on automatically.
+          </p>`
+        : nothing}
       ${rangeField("Max brightness", cfg.max_brightness, 0, 100, 1, "%", (v) =>
         this._patchLight(entityId, { max_brightness: v })
       )}
@@ -500,7 +515,7 @@ export class SchemaEditor extends LitElement {
       )}
       <div class="actions">
         ${checkboxField(
-          "Split commands (IKEA)",
+          "Split commands",
           cfg.separate_turn_on_commands,
           (v) => this._patchLight(entityId, { separate_turn_on_commands: v })
         )}

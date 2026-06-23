@@ -32,6 +32,10 @@
         "entity_id": {
           "name": "Lights",
           "description": "Light entities to adapt. Defaults to all controlled lights."
+        },
+        "turn_on": {
+          "name": "Turn on",
+          "description": "Turn lights on to their scheduled value if they are currently off. A light scheduled to 0% stays off."
         }
       }
     },

@@ -85,6 +85,8 @@ const defaultSettings = (): GlobalSettings => ({
   autoreset_control: 0,
   take_over_control: true,
   detect_non_ha_changes: false,
+  sun_latitude: null,
+  sun_longitude: null,
 });
 
 // --- store + WS dispatch -----------------------------------------------------

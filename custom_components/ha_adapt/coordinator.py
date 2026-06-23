@@ -33,6 +33,7 @@ from homeassistant.components.light import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_ENTITY_ID,
+    SERVICE_TURN_OFF,
     SERVICE_TURN_ON,
     STATE_ON,
     SUN_EVENT_SUNRISE,
@@ -236,13 +237,22 @@ class AdaptCoordinator:
                 )
 
     async def async_apply(
-        self, entity_ids: list[str] | None = None, force: bool = True
+        self,
+        entity_ids: list[str] | None = None,
+        force: bool = True,
+        turn_on: bool = False,
     ) -> None:
-        """Public 'apply now' entry point used by the service/panel."""
+        """Public 'apply now' entry point used by the service/panel.
+
+        ``turn_on`` lets the apply service light up currently-off lights (to
+        their scheduled value); a scheduled 0% still leaves them off.
+        """
         targets = entity_ids or self._lights
         for entity_id in targets:
             if entity_id in self._runtime:
-                await self.async_adapt_one(entity_id, force=force)
+                await self.async_adapt_one(
+                    entity_id, force=force, allow_turn_on=turn_on
+                )
 
     async def async_adapt_one(
         self,
@@ -251,6 +261,7 @@ class AdaptCoordinator:
         now: datetime | None = None,
         drives: list[DriveSignal] | None = None,
         initial: bool = False,
+        allow_turn_on: bool = False,
     ) -> None:
         if not self.enabled:
             return
@@ -260,8 +271,9 @@ class AdaptCoordinator:
         if rt.manual_control and not force:
             return
         state = self.hass.states.get(entity_id)
-        if state is None or state.state != STATE_ON:
-            return  # never turn a light on just to adapt it
+        if state is None:
+            return
+        is_on = state.state == STATE_ON
         if now is None:
             now = dt_util.utcnow()
         target = self._compute_target(entity_id, now, drives)
@@ -275,6 +287,15 @@ class AdaptCoordinator:
             if (force or initial)
             else self.settings.transition
         )
+        # A scheduled 0% brightness means "off": switch the light off if it is
+        # on, and never switch it on for it. It will not come back automatically.
+        if target.brightness_pct is not None and target.brightness_pct <= 0:
+            if is_on:
+                await self._turn_off(entity_id, transition)
+                rt.last_target = target
+            return
+        if not is_on and not allow_turn_on:
+            return  # never turn a light on just to adapt it
         await self._apply_light(entity_id, light_cfg, target, transition)
         rt.last_target = target
 
@@ -368,6 +389,17 @@ class AdaptCoordinator:
             LIGHT_DOMAIN, SERVICE_TURN_ON, data, blocking=False, context=context
         )
 
+    async def _turn_off(self, entity_id: str, transition: float) -> None:
+        context = Context()
+        self._remember_context(context.id)
+        await self.hass.services.async_call(
+            LIGHT_DOMAIN,
+            SERVICE_TURN_OFF,
+            {ATTR_ENTITY_ID: entity_id, ATTR_TRANSITION: transition},
+            blocking=False,
+            context=context,
+        )
+
     def _remember_context(self, context_id: str) -> None:
         dq = self._our_contexts
         if len(dq) == dq.maxlen:
@@ -404,12 +436,32 @@ class AdaptCoordinator:
         if fixed:
             event = self._combine_local(date, fixed)
         else:
-            ha_event = SUN_EVENT_SUNRISE if is_sunrise else SUN_EVENT_SUNSET
-            event = get_astral_event_date(self.hass, ha_event, date)
-            if event is None:  # polar day/night
+            event = self._astral_event(date, is_sunrise)
+            if event is None:  # polar day/night (or no location available)
                 return None
         event = event + timedelta(seconds=offset)
         return self._apply_bounds(sun, kind, event)
+
+    def _astral_event(self, date, is_sunrise: bool) -> datetime | None:
+        """Sunrise/sunset for ``date``, from custom coordinates if configured,
+        else Home Assistant's own location."""
+        lat = self.settings.sun_latitude
+        lon = self.settings.sun_longitude
+        if lat is None or lon is None:
+            ha_event = SUN_EVENT_SUNRISE if is_sunrise else SUN_EVENT_SUNSET
+            return get_astral_event_date(self.hass, ha_event, date)
+        # Astral (bundled with Home Assistant) for an arbitrary location.
+        from astral import Observer
+        from astral.sun import sunrise, sunset
+
+        observer = Observer(latitude=lat, longitude=lon)
+        try:
+            event = (sunrise if is_sunrise else sunset)(
+                observer, date, tzinfo=dt_util.UTC
+            )
+        except ValueError:  # polar day/night at this location
+            return None
+        return dt_util.as_utc(event)
 
     def _apply_bounds(self, sun: SunConfig, kind: str, event: datetime) -> datetime:
         if kind == "sunrise":

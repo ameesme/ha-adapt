@@ -55,6 +55,7 @@ SERVICE_APPLY: Final = "apply"
 SERVICE_SET_MANUAL_CONTROL: Final = "set_manual_control"
 
 ATTR_MANUAL_CONTROL: Final = "manual_control"
+ATTR_TURN_ON: Final = "turn_on"
 
 # --- Frontend ----------------------------------------------------------------
 PANEL_URL_PATH: Final = "ha-adapt"

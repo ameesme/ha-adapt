@@ -112,6 +112,14 @@ def _lights_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> list[
                 },
             }
         )
+    # Group by area (unassigned last), then alphabetically by name.
+    lights.sort(
+        key=lambda light: (
+            light["area_name"] is None,
+            (light["area_name"] or "").casefold(),
+            light["name"].casefold(),
+        )
+    )
     return lights
 
 

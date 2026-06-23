@@ -193,6 +193,18 @@ def test_explicit_cell_is_clamped_to_light_range():
     assert target.color_temp_kelvin == 5500
 
 
+def test_explicit_zero_brightness_stays_off():
+    # An explicit 0% must not be clamped up to the light's minimum, so the
+    # coordinator can turn the light off at that hour.
+    base = dt.datetime(2026, 6, 14, tzinfo=UTC)
+    sun = SunConfig()
+    drives = _sun_drives(sun, base)
+    light = LightConfig(min_brightness=20, max_brightness=100)
+    light.hours[3] = {"brightness": 0, "color_temp": 2500}
+    target = engine.light_target(light, sun, drives, 3.0)
+    assert target.brightness_pct == 0
+
+
 def test_rgb_cell_overrides_temperature():
     base = dt.datetime(2026, 6, 14, tzinfo=UTC)
     sun = SunConfig()

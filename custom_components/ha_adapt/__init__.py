@@ -15,6 +15,7 @@ import voluptuous as vol
 
 from .const import (
     ATTR_MANUAL_CONTROL,
+    ATTR_TURN_ON,
     DOMAIN,
     PLATFORMS,
     SERVICE_APPLY,
@@ -87,9 +88,10 @@ def _async_register_services(hass: HomeAssistant) -> None:
 
     async def handle_apply(call: ServiceCall) -> None:
         entity_ids = call.data.get(ATTR_ENTITY_ID)
+        turn_on = call.data.get(ATTR_TURN_ON, True)
         coordinator = get_coordinator(hass)
         if coordinator is not None:
-            await coordinator.async_apply(entity_ids, force=True)
+            await coordinator.async_apply(entity_ids, force=True, turn_on=turn_on)
 
     async def handle_set_manual_control(call: ServiceCall) -> None:
         coordinator = get_coordinator(hass)
@@ -104,7 +106,10 @@ def _async_register_services(hass: HomeAssistant) -> None:
         SERVICE_APPLY,
         handle_apply,
         schema=vol.Schema(
-            {vol.Optional(ATTR_ENTITY_ID): cv.entity_ids}
+            {
+                vol.Optional(ATTR_ENTITY_ID): cv.entity_ids,
+                vol.Optional(ATTR_TURN_ON, default=True): cv.boolean,
+            }
         ),
     )
     hass.services.async_register(

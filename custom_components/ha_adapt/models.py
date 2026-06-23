@@ -180,13 +180,24 @@ class GlobalSettings:
     autoreset_control: int = DEFAULT_AUTORESET_CONTROL
     take_over_control: bool = True
     detect_non_ha_changes: bool = False
+    # Optional override for sun calculation; both None = use Home Assistant's
+    # configured location.
+    sun_latitude: float | None = None
+    sun_longitude: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {f.name: getattr(self, f.name) for f in fields(self)}
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> GlobalSettings:
-        return cls(**_coerce(cls, data))
+        merged = _coerce(cls, data)
+        for key in ("sun_latitude", "sun_longitude"):
+            if key in merged and merged[key] is not None:
+                try:
+                    merged[key] = float(merged[key])
+                except (TypeError, ValueError):
+                    merged[key] = None
+        return cls(**merged)
 
 
 @dataclass

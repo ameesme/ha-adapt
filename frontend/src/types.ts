@@ -51,6 +51,9 @@ export interface GlobalSettings {
   autoreset_control: number;
   take_over_control: boolean;
   detect_non_ha_changes: boolean;
+  // null = use Home Assistant's configured location for sun calculation.
+  sun_latitude: number | null;
+  sun_longitude: number | null;
 }
 
 export interface LightInfo {

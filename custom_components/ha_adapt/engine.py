@@ -263,7 +263,14 @@ def light_anchors(
     for hour in range(HOURS_PER_DAY):
         cell = light.hours[hour] if hour < len(light.hours) else None
         if cell:
-            bri = clamp(cell["brightness"], light.min_brightness, light.max_brightness)
+            # An explicit 0 means "off" for that hour; keep it rather than
+            # clamping up to the light's minimum.
+            raw_bri = cell["brightness"]
+            bri = (
+                0.0
+                if raw_bri <= 0
+                else clamp(raw_bri, light.min_brightness, light.max_brightness)
+            )
             temp = clamp(cell["color_temp"], light.min_color_temp, light.max_color_temp)
             raw = cell.get("rgb_color")
             rgb: RgbColor | None = (
