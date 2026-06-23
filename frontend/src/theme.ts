@@ -6,7 +6,7 @@ export const tokenStyles = css`
   :host {
     --bg: #fbf3e9;
     --surface: #fffaf2;
-    --surface-alt: #f4e8d7;
+    --surface-alt: #f9f0e4;
     --border: #dec4a1;
     --text: #3d2c1e;
     --text-soft: #836a52;
