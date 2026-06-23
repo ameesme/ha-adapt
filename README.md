@@ -77,7 +77,8 @@ restart Home Assistant.
    - **Settings** — `interval`, `transition`, auto-reset, etc.
 
 A master *Adaptive lighting* switch is also created to enable/disable
-adaptation for the whole instance.
+adaptation for the whole instance, plus an *Active schema* select that reads and
+switches which schema drives the lights (usable from dashboards and automations).
 
 ### Services
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 from typing import Final
 
 DOMAIN: Final = "ha_adapt"
-PLATFORMS: Final = ["switch"]
+PLATFORMS: Final = ["select", "switch"]
 
 # --- Storage -----------------------------------------------------------------
 STORAGE_KEY: Final = "ha_adapt"
