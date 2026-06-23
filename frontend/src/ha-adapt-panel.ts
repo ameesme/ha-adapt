@@ -8,6 +8,13 @@ import { defaultSchema } from "./utils";
 
 import "./components/schema-editor";
 
+// Dev hot-reload: custom elements can't be re-defined, so reload the page on
+// any module update. `import.meta.hot` is replaced with `undefined` in the
+// production build, so this whole block is dead-code-eliminated.
+if (import.meta.hot) {
+  import.meta.hot.accept(() => window.location.reload());
+}
+
 // The panel owns the API + config state and the currently-edited schema. The
 // schema selector lives in the header; the schema editor renders the timeline
 // plus a right-hand side panel. Children report changes via bubbling

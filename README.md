@@ -125,6 +125,38 @@ npm run build   # outputs to ../custom_components/ha_adapt/frontend/dist
 The engine and model tests run without Home Assistant installed. Re-run
 `npm run build` and commit the bundle whenever the panel changes.
 
+### Live UI (hot reload)
+
+To iterate on the panel without rebuilding the bundle each time, run the Vite
+dev server and point Home Assistant at it:
+
+```bash
+cd frontend
+npm install
+npm run dev      # Vite dev server on :5173 with hot module replacement
+```
+
+Then set `HA_ADAPT_DEV_URL` in Home Assistant's environment and restart HA:
+
+```bash
+HA_ADAPT_DEV_URL=http://localhost:5173/src/ha-adapt-panel.ts
+```
+
+The panel now loads straight from the dev server, so edits to `frontend/src`
+reflect on a quick page refresh (custom elements can't be re-registered, so the
+panel reloads the page on module updates rather than swapping in place). The URL
+is fetched by *your browser*, not the HA host — if you develop against a remote
+HA instance, use the dev machine's address (or an SSH tunnel) instead of
+`localhost`, and note the dev server must be reachable over the network
+(`host: true` is already set). HA logs a warning while this is active.
+
+Unset `HA_ADAPT_DEV_URL` and restart to go back to the committed bundle. As a
+no-config fallback, `npm run watch` rebuilds the bundle on every change; just
+reload the page (the cache token updates automatically).
+
+When you're done, always run `npm run build` and commit the regenerated bundle —
+the dev server is never used in production.
+
 ### Releasing
 
 1. Bump `version` in `custom_components/ha_adapt/manifest.json`.
