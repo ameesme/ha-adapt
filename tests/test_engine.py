@@ -173,6 +173,25 @@ def test_target_changed_thresholds():
     assert engine.target_changed(target, 130, 3200) is True  # color temp diverges
 
 
+def test_color_is_manual_ignores_color_temp_expressed_as_rgb():
+    # A light reporting our colour temp as RGB is not a manual change.
+    target = engine.Target(brightness_pct=50, color_temp_kelvin=3000)
+    near = engine.kelvin_to_rgb(3000)
+    assert engine.color_is_manual(target, near) is False
+    # A clearly different colour (deep blue) is a manual override.
+    assert engine.color_is_manual(target, (0, 0, 255)) is True
+
+
+def test_color_is_manual_compares_against_applied_rgb():
+    # When we applied an explicit RGB, compare against that, not the temp.
+    target = engine.Target(
+        brightness_pct=50, color_temp_kelvin=3000, rgb_color=(10, 200, 40)
+    )
+    assert engine.color_is_manual(target, (12, 198, 44)) is False  # ~same
+    assert engine.color_is_manual(target, (250, 10, 10)) is True  # different
+    assert engine.color_is_manual(None, (1, 2, 3)) is False  # no baseline
+
+
 def test_target_changed_no_baseline_or_missing_actuals():
     target = engine.Target(brightness_pct=50, color_temp_kelvin=3000)
     assert engine.target_changed(None, 255, 6500) is False  # no baseline

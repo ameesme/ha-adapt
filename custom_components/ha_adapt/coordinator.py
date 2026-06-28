@@ -69,6 +69,12 @@ PREVIEW_TRANSITION = 0.4
 # this comfortably long regardless of the stored send_split_delay.
 MIN_SPLIT_DELAY = 0.35
 
+# After we write to a light it reports its own settled state a moment later
+# (often clamped/converted, with a fresh context). Ignore manual-override
+# detection for the transition plus this grace, so our own writes settling — or
+# mid-fade values — aren't mistaken for a manual change.
+SETTLE_GRACE = 3.0
+
 # Colour modes that accept an rgb_color (HA converts to the light's mode).
 _RGB_MODES = frozenset(
     {
@@ -88,6 +94,9 @@ class LightRuntime:
     manual_control: bool = False
     last_target: Target | None = None
     auto_reset_unsub: Callable[[], None] | None = None
+    # Monotonic deadline until which our own write is still settling, so the
+    # light's resulting state report isn't read as a manual override.
+    settle_deadline: float = 0.0
 
 
 class AdaptCoordinator:
@@ -320,6 +329,7 @@ class AdaptCoordinator:
             allow_turn_on,
         ):
             rt.last_target = target
+            rt.settle_deadline = self.hass.loop.time() + transition + SETTLE_GRACE
 
     def _compute_target(
         self,
@@ -559,9 +569,11 @@ class AdaptCoordinator:
                 )
             return
 
-        # Changed while already on by something other than us. Only treat it as
-        # a manual override when the values meaningfully diverge from what we
-        # last applied — so settled/transition/polling updates don't trip it.
+        # Changed while already on by something other than us. Ignore the window
+        # right after our own write, during which the light reports its settling
+        # state, then only treat a meaningful divergence as a manual override.
+        if self.hass.loop.time() < self._runtime[entity_id].settle_deadline:
+            return
         if self.settings.take_over_control and self._is_significant_change(
             entity_id, new_state
         ):
@@ -575,14 +587,13 @@ class AdaptCoordinator:
         color_temp = attrs.get(ATTR_COLOR_TEMP_KELVIN)  # Kelvin or None
         if engine.target_changed(last, brightness, color_temp):
             return True
-        # We drive color temperature; if the light left color-temp mode for an
-        # explicit RGB colour, that's a manual override.
-        return bool(
-            last is not None
-            and last.color_temp_kelvin is not None
-            and color_temp is None
-            and attrs.get(ATTR_RGB_COLOR) is not None
-        )
+        # The light reports an RGB colour with no colour temp. Treat it as a
+        # manual override only when that colour clearly differs from the one we
+        # applied — not when the light is merely expressing our colour as RGB.
+        rgb = attrs.get(ATTR_RGB_COLOR)
+        if color_temp is None and rgb is not None:
+            return engine.color_is_manual(last, rgb)
+        return False
 
     @callback
     def note_manual_turn_on(self, entity_id: str) -> None:

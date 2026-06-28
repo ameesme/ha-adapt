@@ -18,7 +18,12 @@ from dataclasses import dataclass
 from datetime import datetime
 import math
 
-from .const import BRIGHTNESS_CHANGE, COLOR_TEMP_CHANGE, HOURS_PER_DAY
+from .const import (
+    BRIGHTNESS_CHANGE,
+    COLOR_TEMP_CHANGE,
+    HOURS_PER_DAY,
+    RGB_REDMEAN_CHANGE,
+)
 from .models import LightConfig, SunConfig
 
 # --- small numeric helpers ---------------------------------------------------
@@ -356,3 +361,27 @@ def target_changed(
         and color_temp_kelvin is not None
         and abs(color_temp_kelvin - target.color_temp_kelvin) > COLOR_TEMP_CHANGE
     )
+
+
+def color_is_manual(
+    target: Target | None, rgb_color: tuple[int, int, int]
+) -> bool:
+    """Whether a light reporting ``rgb_color`` (in a colour mode, no colour temp)
+    has a colour that meaningfully differs from the one we last applied.
+
+    Many RGB-capable lights express a colour *temperature* internally as an RGB
+    or hs colour, so a bare "reports rgb" is not by itself a manual change. We
+    compare the reported colour against what we applied — the explicit rgb we
+    set, or the rgb equivalent of the colour temperature — and only call it
+    manual when it diverges beyond the perceptual threshold.
+    """
+    if target is None:
+        return False
+    if target.rgb_color is not None:
+        expected = target.rgb_color
+    elif target.color_temp_kelvin is not None:
+        expected = kelvin_to_rgb(target.color_temp_kelvin)
+    else:
+        return False
+    reported = (int(rgb_color[0]), int(rgb_color[1]), int(rgb_color[2]))
+    return color_difference_redmean(reported, expected) > RGB_REDMEAN_CHANGE
