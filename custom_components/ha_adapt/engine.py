@@ -255,14 +255,21 @@ Anchor = tuple[float, float, RgbColor | None]
 
 
 def light_anchors(
-    light: LightConfig, sun_vals: list[tuple[float, float]]
+    light: LightConfig,
+    sun_vals: list[tuple[float, float]],
+    drives: list[DriveSignal],
 ) -> list[Anchor]:
     """Build 24 effective (brightness, colorTemp, rgb) anchors for a light.
 
-    Explicit hour cells win (and may carry an ``rgb_color`` override); empty
-    cells *follow the sun*, clamped into the light's own min/max range (so a
-    light can't run brighter/cooler than it allows, but otherwise tracks the
-    sun rather than scaling its own independent curve).
+    Explicit hour cells win (and may carry an ``rgb_color`` override). Empty
+    cells *follow the sun*; how the light's own min/max apply depends on
+    ``light.limit_mode``:
+
+    - ``"cap"`` (default): clamp the sun's value (in the sun's range) into the
+      light's range, so the light tracks the sun but can't run past its limits.
+    - ``"scale"``: map the sun's normalized 0..1 signal onto the light's range,
+      so the light sweeps its whole range across the day regardless of the sun's
+      own min/max.
     """
     anchors: list[Anchor] = []
     for hour in range(HOURS_PER_DAY):
@@ -281,7 +288,16 @@ def light_anchors(
             rgb: RgbColor | None = (
                 (int(raw[0]), int(raw[1]), int(raw[2])) if raw else None
             )
-        else:
+        elif light.limit_mode == "scale":
+            bri, temp = drive_to_values(
+                drives[hour],
+                light.min_brightness,
+                light.max_brightness,
+                light.min_color_temp,
+                light.max_color_temp,
+            )
+            rgb = None
+        else:  # "cap"
             bri = clamp(
                 sun_vals[hour][0], light.min_brightness, light.max_brightness
             )
@@ -326,7 +342,7 @@ def light_target(
     light: LightConfig, sun: SunConfig, drives: list[DriveSignal], hour: float
 ) -> Target:
     """The concrete :class:`Target` for a light at fractional ``hour``."""
-    anchors = light_anchors(light, sun_values(sun, drives))
+    anchors = light_anchors(light, sun_values(sun, drives), drives)
     bri, temp, rgb = interpolate_cyclic(anchors, hour)
     return Target(
         brightness_pct=int(round(bri)),

@@ -40,6 +40,12 @@ DEFAULT_MIN_BRIGHTNESS: Final = 1  # percent
 DEFAULT_MAX_BRIGHTNESS: Final = 100  # percent
 DEFAULT_MIN_COLOR_TEMP: Final = 2000  # Kelvin
 DEFAULT_MAX_COLOR_TEMP: Final = 5500  # Kelvin
+
+# How a light's per-light min/max apply on sun-following hours:
+#   "cap"   — clamp the sun's value into the range (default; tracks the sun)
+#   "scale" — map the sun's 0..1 signal onto the range (use the full range)
+LIMIT_MODES: Final = ("cap", "scale")
+DEFAULT_LIMIT_MODE: Final = "cap"
 # --- Sun defaults ----------------------------------------------------------
 DEFAULT_SUN_MIN_BRIGHTNESS: Final = 5  # percent
 DEFAULT_SUNRISE_OFFSET: Final = 5000  # seconds

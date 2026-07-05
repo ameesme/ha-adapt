@@ -863,6 +863,7 @@ function se() {
     min_color_temp: 2e3,
     max_color_temp: 5500,
     separate_turn_on_commands: !1,
+    limit_mode: "cap",
     hours: Array.from({ length: 24 }, () => null)
   };
 }
@@ -956,10 +957,24 @@ function Et(e, t, s) {
     ${e}
   </label>`;
 }
-var ce = Object.defineProperty, he = Object.getOwnPropertyDescriptor, R = (e, t, s, i) => {
-  for (var r = i > 1 ? void 0 : i ? he(t, s) : t, n = e.length - 1, o; n >= 0; n--)
+function ce(e, t, s, i) {
+  return c`<label class="field"
+    >${e}
+    <select
+      @change=${(r) => i(r.target.value)}
+    >
+      ${s.map(
+    (r) => c`<option value=${r.value} ?selected=${r.value === t}>
+            ${r.label}
+          </option>`
+  )}
+    </select>
+  </label>`;
+}
+var he = Object.defineProperty, de = Object.getOwnPropertyDescriptor, R = (e, t, s, i) => {
+  for (var r = i > 1 ? void 0 : i ? de(t, s) : t, n = e.length - 1, o; n >= 0; n--)
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
-  return i && r && ce(t, s, r), r;
+  return i && r && he(t, s, r), r;
 };
 let A = class extends v {
   constructor() {
@@ -1288,10 +1303,10 @@ R([
 A = R([
   F("ha-adapt-timeline-grid")
 ], A);
-var de = Object.defineProperty, pe = Object.getOwnPropertyDescriptor, Ct = (e, t, s, i) => {
-  for (var r = i > 1 ? void 0 : i ? pe(t, s) : t, n = e.length - 1, o; n >= 0; n--)
+var pe = Object.defineProperty, ue = Object.getOwnPropertyDescriptor, Ct = (e, t, s, i) => {
+  for (var r = i > 1 ? void 0 : i ? ue(t, s) : t, n = e.length - 1, o; n >= 0; n--)
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
-  return i && r && de(t, s, r), r;
+  return i && r && pe(t, s, r), r;
 };
 let J = class extends v {
   render() {
@@ -1401,10 +1416,10 @@ Ct([
 J = Ct([
   F("ha-adapt-sun-config")
 ], J);
-var ue = Object.defineProperty, Pt = (e, t, s, i) => {
+var ge = Object.defineProperty, Pt = (e, t, s, i) => {
   for (var r = void 0, n = e.length - 1, o; n >= 0; n--)
     (o = e[n]) && (r = o(t, s, r) || r);
-  return r && ue(t, s, r), r;
+  return r && ge(t, s, r), r;
 };
 class at extends v {
   /** Run an API mutation and bubble the resulting config (or error) up. */
@@ -1435,8 +1450,8 @@ Pt([
 Pt([
   g({ attribute: !1 })
 ], at.prototype, "api");
-var ge = Object.getOwnPropertyDescriptor, _e = (e, t, s, i) => {
-  for (var r = i > 1 ? void 0 : i ? ge(t, s) : t, n = e.length - 1, o; n >= 0; n--)
+var _e = Object.getOwnPropertyDescriptor, fe = (e, t, s, i) => {
+  for (var r = i > 1 ? void 0 : i ? _e(t, s) : t, n = e.length - 1, o; n >= 0; n--)
     (o = e[n]) && (r = o(r) || r);
   return r;
 };
@@ -1487,13 +1502,13 @@ let tt = class extends at {
   }
 };
 tt.styles = K;
-tt = _e([
+tt = fe([
   F("ha-adapt-settings-tab")
 ], tt);
-var fe = Object.defineProperty, me = Object.getOwnPropertyDescriptor, b = (e, t, s, i) => {
-  for (var r = i > 1 ? void 0 : i ? me(t, s) : t, n = e.length - 1, o; n >= 0; n--)
+var me = Object.defineProperty, ve = Object.getOwnPropertyDescriptor, b = (e, t, s, i) => {
+  for (var r = i > 1 ? void 0 : i ? ve(t, s) : t, n = e.length - 1, o; n >= 0; n--)
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
-  return i && r && fe(t, s, r), r;
+  return i && r && me(t, s, r), r;
 };
 let _ = class extends v {
   constructor() {
@@ -1760,6 +1775,19 @@ let _ = class extends v {
       "K",
       (i) => this._patchLight(e, { max_color_temp: i })
     )}
+      ${ce(
+      "Limits",
+      s.limit_mode,
+      [
+        { value: "cap", label: "Cap (clamp to range)" },
+        { value: "scale", label: "Scale (map onto range)" }
+      ],
+      (i) => this._patchLight(e, { limit_mode: i })
+    )}
+      <p class="muted">
+        Cap tracks the sun and clamps to this range; Scale sweeps the whole range
+        across the day.
+      </p>
       <div class="actions">
         ${Et(
       "Split commands",
@@ -1948,10 +1976,10 @@ b([
 _ = b([
   F("ha-adapt-schema-editor")
 ], _);
-var ve = Object.defineProperty, $e = Object.getOwnPropertyDescriptor, k = (e, t, s, i) => {
-  for (var r = i > 1 ? void 0 : i ? $e(t, s) : t, n = e.length - 1, o; n >= 0; n--)
+var $e = Object.defineProperty, be = Object.getOwnPropertyDescriptor, k = (e, t, s, i) => {
+  for (var r = i > 1 ? void 0 : i ? be(t, s) : t, n = e.length - 1, o; n >= 0; n--)
     (o = e[n]) && (r = (i ? o(t, s, r) : o(r)) || r);
-  return i && r && ve(t, s, r), r;
+  return i && r && $e(t, s, r), r;
 };
 let $ = class extends v {
   constructor() {

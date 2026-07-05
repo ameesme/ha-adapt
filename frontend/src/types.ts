@@ -33,6 +33,9 @@ export interface LightConfig {
   min_color_temp: number;
   max_color_temp: number;
   separate_turn_on_commands: boolean;
+  // "cap" clamps the sun's value into the range; "scale" maps the sun's 0..1
+  // signal onto the range (used on sun-following hours).
+  limit_mode: "cap" | "scale";
   hours: HourCell[]; // length 24
 }
 

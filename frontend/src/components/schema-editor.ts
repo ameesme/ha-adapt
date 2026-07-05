@@ -9,7 +9,7 @@ import {
 import { customElement, property, state } from "lit/decorators.js";
 
 import type { HaAdaptApi } from "../api";
-import { checkboxField, rangeField } from "../form-fields";
+import { checkboxField, rangeField, selectField } from "../form-fields";
 import { baseStyles } from "../theme";
 import type {
   ConfigPayload,
@@ -513,6 +513,20 @@ export class SchemaEditor extends LitElement {
         "K",
         (v) => this._patchLight(entityId, { max_color_temp: v })
       )}
+      ${selectField(
+        "Limits",
+        cfg.limit_mode,
+        [
+          { value: "cap", label: "Cap (clamp to range)" },
+          { value: "scale", label: "Scale (map onto range)" },
+        ],
+        (v) =>
+          this._patchLight(entityId, { limit_mode: v as "cap" | "scale" })
+      )}
+      <p class="muted">
+        Cap tracks the sun and clamps to this range; Scale sweeps the whole range
+        across the day.
+      </p>
       <div class="actions">
         ${checkboxField(
           "Split commands",

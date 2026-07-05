@@ -148,6 +148,34 @@ def test_empty_light_clamped_below_the_sun():
     assert midday.brightness_pct == 40  # sun would be 100, clamped to the light
 
 
+def test_scale_mode_maps_sun_signal_onto_light_range():
+    # In "scale" mode an empty light uses its whole range across the day,
+    # ignoring the sun's own min/max.
+    base = dt.datetime(2026, 6, 14, tzinfo=UTC)
+    sun = SunConfig()
+    drives = _sun_drives(sun, base)
+    light = LightConfig(
+        min_brightness=20, max_brightness=60, limit_mode="scale"
+    )
+    # Midday: sun demand ~1.0 -> light rides its max.
+    midday = engine.light_target(light, sun, drives, 13.0)
+    assert midday.brightness_pct == pytest.approx(60, abs=1)
+    # Night: sun demand ~0.0 -> light rides its min (not clamped up from the sun).
+    night = engine.light_target(light, sun, drives, 1.0)
+    assert night.brightness_pct == pytest.approx(20, abs=1)
+
+
+def test_cap_mode_clamps_sun_value_to_light_range():
+    # In "cap" mode (default) an empty light tracks the sun's absolute value,
+    # clamped to its range — so a low max holds the light down at midday.
+    base = dt.datetime(2026, 6, 14, tzinfo=UTC)
+    sun = SunConfig()
+    drives = _sun_drives(sun, base)
+    capped = LightConfig(max_brightness=40)  # limit_mode defaults to "cap"
+    midday = engine.light_target(capped, sun, drives, 13.0)
+    assert midday.brightness_pct == 40
+
+
 def test_explicit_cell_overrides_and_interpolates():
     base = dt.datetime(2026, 6, 14, tzinfo=UTC)
     sun = SunConfig()

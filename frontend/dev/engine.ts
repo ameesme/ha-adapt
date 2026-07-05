@@ -120,7 +120,11 @@ function sunValues(sun: SunConfig, drives: Drive[]): [number, number][] {
 
 type Anchor = [number, number, RgbColor | null];
 
-function lightAnchors(light: LightConfig, sunVals: [number, number][]): Anchor[] {
+function lightAnchors(
+  light: LightConfig,
+  sunVals: [number, number][],
+  drives: Drive[],
+): Anchor[] {
   return HOURS.map((hour): Anchor => {
     const cell: HourCell = light.hours[hour] ?? null;
     if (cell) {
@@ -135,6 +139,14 @@ function lightAnchors(light: LightConfig, sunVals: [number, number][]): Anchor[]
         ? ([cell.rgb_color[0], cell.rgb_color[1], cell.rgb_color[2]] as RgbColor)
         : null;
       return [bri, temp, rgb];
+    }
+    if (light.limit_mode === "scale") {
+      const d = drives[hour];
+      return [
+        lerp(light.min_brightness, light.max_brightness, clamp(d.brightness, 0, 1)),
+        lerp(light.min_color_temp, light.max_color_temp, clamp(d.warmth, 0, 1)),
+        null,
+      ];
     }
     return [
       clamp(sunVals[hour][0], light.min_brightness, light.max_brightness),
@@ -180,7 +192,7 @@ export function computeTimeline(schema: Schema, entityIds: string[], defaultLigh
   const lights: Record<string, unknown[]> = {};
   for (const entityId of entityIds) {
     const cfg = schema.lights[entityId] ?? defaultLight();
-    const anchors = lightAnchors(cfg, sunVals);
+    const anchors = lightAnchors(cfg, sunVals, drives);
     lights[entityId] = HOURS.map((hour) => ({
       brightness: Math.round(anchors[hour][0]),
       color_temp: round5(anchors[hour][1]),
@@ -202,7 +214,7 @@ export function computeTargets(
   const targets: Record<string, { brightness_pct: number; color_temp_kelvin: number }> = {};
   for (const entityId of entityIds) {
     const cfg = schema.lights[entityId] ?? defaultLight();
-    const anchors = lightAnchors(cfg, sunVals);
+    const anchors = lightAnchors(cfg, sunVals, drives);
     const [bri, temp] = interpolateCyclic(anchors, hour);
     targets[entityId] = { brightness_pct: Math.round(bri), color_temp_kelvin: round5(temp) };
   }

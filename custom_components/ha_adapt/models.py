@@ -26,6 +26,7 @@ from .const import (
     DEFAULT_AUTORESET_CONTROL,
     DEFAULT_INITIAL_TRANSITION,
     DEFAULT_INTERVAL,
+    DEFAULT_LIMIT_MODE,
     DEFAULT_MAX_BRIGHTNESS,
     DEFAULT_MAX_COLOR_TEMP,
     DEFAULT_MIN_BRIGHTNESS,
@@ -39,6 +40,7 @@ from .const import (
     DEFAULT_SUNSET_OFFSET,
     DEFAULT_TRANSITION,
     HOURS_PER_DAY,
+    LIMIT_MODES,
 )
 
 # An hour cell is either None (fall back to the sun) or a mapping with explicit
@@ -119,6 +121,9 @@ class LightConfig:
     max_color_temp: int = DEFAULT_MAX_COLOR_TEMP
     # Send brightness and color as separate light.turn_on calls (e.g. IKEA).
     separate_turn_on_commands: bool = False
+    # How the per-light min/max apply on sun-following hours: "cap" (clamp the
+    # sun's value into the range) or "scale" (map the sun's 0..1 onto the range).
+    limit_mode: str = DEFAULT_LIMIT_MODE
     # 24 cells; None = follow the sun for that hour.
     hours: list[HourCell] = field(
         default_factory=lambda: [None] * HOURS_PER_DAY
@@ -126,6 +131,8 @@ class LightConfig:
 
     def __post_init__(self) -> None:
         self.hours = _normalize_hours(self.hours)
+        if self.limit_mode not in LIMIT_MODES:
+            self.limit_mode = DEFAULT_LIMIT_MODE
 
     def to_dict(self) -> dict[str, Any]:
         return {f.name: getattr(self, f.name) for f in fields(self)}

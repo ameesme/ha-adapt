@@ -659,7 +659,7 @@ class AdaptCoordinator:
         lights: dict[str, list[dict]] = {}
         for entity_id in self._lights:
             cfg = schema.light_config(entity_id)
-            anchors = engine.light_anchors(cfg, sun_vals)
+            anchors = engine.light_anchors(cfg, sun_vals, drives)
             lights[entity_id] = [
                 {
                     "brightness": int(round(anchors[hour][0])),
