@@ -117,7 +117,7 @@ export class SettingsTab extends LitElement {
       </div>
       ${sectionHeading(
         "Manual control",
-        "When a light is changed by hand, adaptation pauses for it. " +
+        "When a light is changed by hand, Sundial pauses for it. " +
           "Auto-reset hands control back after this many seconds (0 = never)."
       )}
       <div class="actions">

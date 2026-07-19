@@ -29,7 +29,7 @@ desktop.
 
 - Live **preview**: scrub through the day and optionally push the values to
   your lights as you drag.
-- **Manual-control detection** — changing a light by hand pauses adaptation
+- **Manual-control detection** — changing a light by hand pauses Sundial
   for it, with an optional auto-reset that hands control back.
 - **Per-light ranges** with cap (clamp to range) or scale (sweep the whole
   range) behaviour.
@@ -54,9 +54,9 @@ the config flow asks — everything else lives in the panel.
 
 ## Services
 
-- `sundial.apply` — force an immediate adaptation (optionally per light, with
-  `turn_on` to light up lights that are off).
-- `sundial.set_manual_control` — pause or resume adaptation for given lights.
+- `sundial.apply` — have Sundial apply the scheduled values immediately
+  (optionally per light, with `turn_on` to light up lights that are off).
+- `sundial.set_manual_control` — pause or resume Sundial for given lights.
 
 ## Architecture
 

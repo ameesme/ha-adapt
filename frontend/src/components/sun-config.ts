@@ -38,7 +38,7 @@ export class SunConfigEditor extends LitElement {
       )}
       ${s.min_brightness <= 0
         ? html`<p class="warn">
-            At 0% lights following the sun can turn off at night, and adaptation
+            At 0% lights following the sun can turn off at night, and Sundial
             won't turn them back on automatically.
           </p>`
         : nothing}

@@ -857,7 +857,7 @@ export class SchemaEditor extends LitElement {
       )}
       ${brightness <= 0
         ? html`<p class="warn">
-            At 0% this light turns off at this hour, and adaptation won't turn it
+            At 0% this light turns off at this hour, and Sundial won't turn it
             back on automatically.
           </p>`
         : nothing}
@@ -914,7 +914,7 @@ export class SchemaEditor extends LitElement {
       )}
       ${cfg.min_brightness <= 0
         ? html`<p class="warn">
-            At 0% this light can turn off during the day, and adaptation won't
+            At 0% this light can turn off during the day, and Sundial won't
             turn it back on automatically.
           </p>`
         : nothing}

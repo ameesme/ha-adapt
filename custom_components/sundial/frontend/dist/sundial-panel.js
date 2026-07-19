@@ -263,8 +263,8 @@ T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[D("elementProper
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const he = globalThis, be = (t) => t, Y = he.trustedTypes, $e = Y ? Y.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Ne = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Ie = "?" + A, et = `<${Ie}>`, E = document, F = () => E.createComment(""), V = (t) => t === null || typeof t != "object" && typeof t != "function", pe = Array.isArray, tt = (t) => pe(t) || typeof t?.[Symbol.iterator] == "function", ne = `[ 	
-\f\r]`, I = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, we = /-->/g, xe = />/g, S = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ye = /'/g, Ae = /"/g, ze = /^(?:script|style|textarea|title)$/i, it = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = it(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), ke = /* @__PURE__ */ new WeakMap(), C = E.createTreeWalker(E, 129);
+\f\r]`, I = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, we = /-->/g, xe = />/g, k = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ye = /'/g, Ae = /"/g, ze = /^(?:script|style|textarea|title)$/i, it = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = it(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Se = /* @__PURE__ */ new WeakMap(), C = E.createTreeWalker(E, 129);
 function De(t, e) {
   if (!pe(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return $e !== void 0 ? $e.createHTML(e) : e;
@@ -275,8 +275,8 @@ const st = (t, e) => {
   for (let c = 0; c < i; c++) {
     const a = t[c];
     let p, u, h = -1, m = 0;
-    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === I ? u[1] === "!--" ? o = we : u[1] !== void 0 ? o = xe : u[2] !== void 0 ? (ze.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = S) : u[3] !== void 0 && (o = S) : o === S ? u[0] === ">" ? (o = r ?? I, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? S : u[3] === '"' ? Ae : ye) : o === Ae || o === ye ? o = S : o === we || o === xe ? o = I : (o = S, r = void 0);
-    const y = o === S && t[c + 1].startsWith("/>") ? " " : "";
+    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === I ? u[1] === "!--" ? o = we : u[1] !== void 0 ? o = xe : u[2] !== void 0 ? (ze.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = k) : u[3] !== void 0 && (o = k) : o === k ? u[0] === ">" ? (o = r ?? I, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? k : u[3] === '"' ? Ae : ye) : o === Ae || o === ye ? o = k : o === we || o === xe ? o = I : (o = k, r = void 0);
+    const y = o === k && t[c + 1].startsWith("/>") ? " " : "";
     n += o === I ? a + et : h >= 0 ? (s.push(p), a.slice(0, h) + Ne + a.slice(h) + A + y) : a + A + (h === -2 ? c : y);
   }
   return [De(t, n + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), s];
@@ -391,8 +391,8 @@ class K {
     }
   }
   _$AC(e) {
-    let i = ke.get(e.strings);
-    return i === void 0 && ke.set(e.strings, i = new q(e)), i;
+    let i = Se.get(e.strings);
+    return i === void 0 && Se.set(e.strings, i = new q(e)), i;
   }
   k(e) {
     pe(this._$AH) || (this._$AH = [], this._$AR());
@@ -1105,13 +1105,13 @@ function ae() {
 }
 const L = (t) => l`<svg viewBox="0 0 24 24" aria-hidden="true">
     <path fill="currentColor" d=${t} />
-  </svg>`, Se = L("M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"), Ce = L(
+  </svg>`, ke = L("M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"), Ce = L(
   "M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"
 ), Ee = L(
   "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"
 ), Me = L(
   "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
-), kt = L(
+), St = L(
   "M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
 ), Le = L(
   "M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7 7 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.31 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96a7 7 0 0 0 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54a7 7 0 0 0 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"
@@ -1120,7 +1120,7 @@ const L = (t) => l`<svg viewBox="0 0 24 24" aria-hidden="true">
 );
 function f(t, e) {
   return e ? l`<details class="section">
-    <summary>${t} ${kt}</summary>
+    <summary>${t} ${St}</summary>
     <p class="muted">${e}</p>
   </details>` : l`<div class="section">${t}</div>`;
 }
@@ -1179,7 +1179,7 @@ function z(t, e, i, s, r, n) {
     <span class="duration-preview">${o}</span>
   </label>`;
 }
-function St(t, e, i) {
+function kt(t, e, i) {
   return l`<label class="field"
     >${t}
     <input
@@ -1255,7 +1255,7 @@ function Ct(t, e, i, s) {
     </select>
   </label>`;
 }
-var Et = Object.defineProperty, Mt = Object.getOwnPropertyDescriptor, k = (t, e, i, s) => {
+var Et = Object.defineProperty, Mt = Object.getOwnPropertyDescriptor, S = (t, e, i, s) => {
   for (var r = s > 1 ? void 0 : s ? Mt(e, i) : e, n = t.length - 1, o; n >= 0; n--)
     (o = t[n]) && (r = (s ? o(e, i, r) : o(r)) || r);
   return s && r && Et(e, i, r), r;
@@ -1728,28 +1728,28 @@ b.styles = [
       }
     `
 ];
-k([
+S([
   g({ attribute: !1 })
 ], b.prototype, "lights", 2);
-k([
+S([
   g({ attribute: !1 })
 ], b.prototype, "timeline", 2);
-k([
+S([
   g({ attribute: !1 })
 ], b.prototype, "selected", 2);
-k([
+S([
   g({ attribute: !1 })
 ], b.prototype, "selectedRow", 2);
-k([
+S([
   g({ type: Number })
 ], b.prototype, "previewHour", 2);
-k([
+S([
   g({ type: Boolean })
 ], b.prototype, "scrollLocked", 2);
-k([
+S([
   g({ type: Boolean })
 ], b.prototype, "previewActive", 2);
-b = k([
+b = S([
   N("sundial-timeline-grid")
 ], b);
 var Lt = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, Be = (t, e, i, s) => {
@@ -1845,7 +1845,7 @@ let te = class extends _ {
       (e, i) => this._patch({ min_brightness: e, max_brightness: i })
     )}
       ${t.min_brightness <= 0 ? l`<p class="warn">
-            At 0% lights following the sun can turn off at night, and adaptation
+            At 0% lights following the sun can turn off at night, and Sundial
             won't turn them back on automatically.
           </p>` : d}
       ${f("Color temperature")}
@@ -2016,7 +2016,7 @@ let R = class extends _ {
       </div>
       ${f(
       "Manual control",
-      "When a light is changed by hand, adaptation pauses for it. Auto-reset hands control back after this many seconds (0 = never)."
+      "When a light is changed by hand, Sundial pauses for it. Auto-reset hands control back after this many seconds (0 = never)."
     )}
       <div class="actions">
         ${je(
@@ -2040,7 +2040,7 @@ let R = class extends _ {
       "Gap between the two turn-on calls for lights that get brightness and colour sent separately (e.g. IKEA)."
     )}
       <div class="grid">
-        ${St(
+        ${kt(
       "Split-command delay (ms)",
       t.send_split_delay,
       (i) => e({ send_split_delay: i })
@@ -2280,7 +2280,7 @@ let v = class extends _ {
         title="New schema"
         @click=${() => this._emit("schema-new", null)}
       >
-        ${Se}
+        ${ke}
       </button>
       <button
         class="icon-btn danger"
@@ -2314,7 +2314,7 @@ let v = class extends _ {
       </button>
     ` : l`
         <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
-          ${Se} New
+          ${ke} New
         </button>
         <button
           class="btn danger"
@@ -2440,7 +2440,7 @@ let v = class extends _ {
       (a) => c({ brightness: a })
     )}
       ${r <= 0 ? l`<p class="warn">
-            At 0% this light turns off at this hour, and adaptation won't turn it
+            At 0% this light turns off at this hour, and Sundial won't turn it
             back on automatically.
           </p>` : d}
       ${B(
@@ -2499,7 +2499,7 @@ let v = class extends _ {
       (i, s) => this._patchLight(t, { min_brightness: i, max_brightness: s })
     )}
       ${e.min_brightness <= 0 ? l`<p class="warn">
-            At 0% this light can turn off during the day, and adaptation won't
+            At 0% this light can turn off during the day, and Sundial won't
             turn it back on automatically.
           </p>` : d}
       ${f("Color temperature")}

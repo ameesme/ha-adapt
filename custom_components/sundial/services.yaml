@@ -1,7 +1,7 @@
 apply:
   name: Apply
   description: >-
-    Force an immediate adaptation of the controlled lights, ignoring any manual
+    Have Sundial apply the scheduled values immediately, ignoring any manual
     control. Omit entity_id to apply to every controlled light.
   fields:
     entity_id:
@@ -25,8 +25,8 @@ apply:
 set_manual_control:
   name: Set manual control
   description: >-
-    Mark lights as manually controlled (adaptation pauses) or hand control back
-    to the adaptive engine.
+    Mark lights as manually controlled (Sundial pauses for them) or hand
+    control back to Sundial.
   fields:
     entity_id:
       name: Lights
@@ -38,7 +38,7 @@ set_manual_control:
           multiple: true
     manual_control:
       name: Manual control
-      description: True to pause adaptation, false to resume it.
+      description: True to pause Sundial, false to resume it.
       required: true
       default: true
       selector:

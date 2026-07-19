@@ -27,7 +27,7 @@
   "services": {
     "apply": {
       "name": "Apply",
-      "description": "Force an immediate adaptation of the controlled lights.",
+      "description": "Have Sundial apply the scheduled values immediately.",
       "fields": {
         "entity_id": {
           "name": "Lights",
@@ -41,7 +41,7 @@
     },
     "set_manual_control": {
       "name": "Set manual control",
-      "description": "Pause or resume adaptation for specific lights.",
+      "description": "Pause or resume Sundial for specific lights.",
       "fields": {
         "entity_id": {
           "name": "Lights",
@@ -49,7 +49,7 @@
         },
         "manual_control": {
           "name": "Manual control",
-          "description": "True to pause adaptation, false to resume it."
+          "description": "True to pause Sundial, false to resume it."
         }
       }
     }
