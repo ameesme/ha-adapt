@@ -1,6 +1,4 @@
-<p align="center">
-  <img src="assets/logo.png" alt="Sundial" width="371" />
-</p>
+<img src="assets/logo.png" alt="Sundial" width="371" />
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/release/ameesme/sundial.svg)](https://github.com/ameesme/sundial/releases)
