@@ -37,6 +37,7 @@ import {
 } from "../utils";
 import type { CellRef } from "./timeline-grid";
 import "./timeline-grid";
+import "./row-preview";
 import "./sun-config";
 import "./settings-tab";
 
@@ -225,6 +226,15 @@ export class SchemaEditor extends LitElement {
         display: flex;
         justify-content: center;
         margin-top: 14px;
+      }
+
+      ha-adapt-row-preview {
+        margin-bottom: 14px;
+      }
+      /* The strip provides the top spacing; the first heading after it
+         shouldn't add its own. */
+      ha-adapt-row-preview + .section {
+        margin-top: 0;
       }
 
       /* --- bottom drawer (native <dialog>, small screens only) ----------- */
@@ -778,18 +788,34 @@ export class SchemaEditor extends LitElement {
   private _renderContextBody(): TemplateResult {
     const sel = this._sel;
     if (sel?.kind === "sun") {
-      return html`<ha-adapt-sun-config
-        .sun=${this._draft.sun}
-        @sun-changed=${(e: CustomEvent<SunConfig>) =>
-          this._patchSchema({ sun: e.detail })}
-      ></ha-adapt-sun-config>`;
+      return html`
+        ${this._renderRowPreview(this._timeline?.sun)}
+        <ha-adapt-sun-config
+          .sun=${this._draft.sun}
+          @sun-changed=${(e: CustomEvent<SunConfig>) =>
+            this._patchSchema({ sun: e.detail })}
+        ></ha-adapt-sun-config>
+      `;
     }
-    if (sel?.kind === "light") return this._renderLightEditor(sel.entityId);
+    if (sel?.kind === "light") {
+      return html`
+        ${this._renderRowPreview(this._timeline?.lights[sel.entityId])}
+        ${this._renderLightEditor(sel.entityId)}
+      `;
+    }
     if (sel?.kind === "cell") return this._renderCellEditor(sel.ref);
     return html`<ha-adapt-settings-tab
       .config=${this.config}
       .api=${this.api}
     ></ha-adapt-settings-tab>`;
+  }
+
+  // The edited row's 24 cells, mirrored live above the editor.
+  private _renderRowPreview(
+    cells: { brightness: number; color_temp: number }[] | undefined
+  ): TemplateResult | typeof nothing {
+    if (!cells?.length) return nothing;
+    return html`<ha-adapt-row-preview .cells=${cells}></ha-adapt-row-preview>`;
   }
 
   private _renderCellEditor(ref: CellRef): TemplateResult {
