@@ -1,48 +1,48 @@
 # Sundial
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![GitHub release](https://img.shields.io/github/release/ameesme/ha-adapt.svg)](https://github.com/ameesme/ha-adapt/releases)
-[![License](https://img.shields.io/github/license/ameesme/ha-adapt.svg)](LICENSE)
+[![GitHub release](https://img.shields.io/github/release/ameesme/sundial.svg)](https://github.com/ameesme/sundial/releases)
+[![License](https://img.shields.io/github/license/ameesme/sundial.svg)](LICENSE)
 
-Adaptive lighting for Home Assistant, configured on a timeline.
+The easiest way to apply circadian lighting to your home with Home Assistant.
 
 Sundial adapts the brightness and colour temperature of your lights across the
-day. A configurable **sun** drives every light by default; a 24-hour
-**timeline** lets you pin exact values for any light at any hour. Everything is
-edited in a purpose-built panel that works just as well on a phone as on a
-desktop.
+day. By default, all lights that you enable Sundial for follow the sun; but you 
+can easily pin your lights to specific values using the 24-hour **timeline** 
+Everything can be configured in a purpose-built panel that works just as well on
+a phone as on a desktop.
 
 ## How it works
+### Schemas
+A schema covers all your lights and your sun configuration. In it, you can define
+how your lights behave over a 24-hour window. Multiple schemas can be set up and be
+switched through using an automation, for example to have softer lighting durring the
+weekend.
 
-- **Schemas are timelines.** A schema covers all your lights: the sun row on
-  top, one row per light beneath it, grouped by room.
-- **The sun is the default.** Empty timeline cells follow the sun's curve —
-  smooth tanh ramps around sunrise and sunset, warm at night, cool at midday —
-  scaled into each light's own brightness and colour-temperature range.
-- **Override any hour.** Tap a cell to pin an explicit brightness, colour
-  temperature, or RGB colour for that light at that hour. Values between hours
-  are interpolated smoothly around the clock.
-- **One schema is active at a time.** Build variants (movie night, holiday…)
-  and switch between them from the panel, a dashboard, or an automation.
+### Sun
 
-## Features
+### Lights
 
-- Live **preview**: scrub through the day and optionally push the values to
-  your lights as you drag.
-- **Manual-control detection** — changing a light by hand pauses Sundial
-  for it, with an optional auto-reset that hands control back.
-- **Per-light ranges** with cap (clamp to range) or scale (sweep the whole
-  range) behaviour.
-- **Split commands** for lights that drop combined brightness + colour calls
-  (e.g. IKEA), with a configurable delay.
-- Fixed sunrise/sunset times, offsets, and ramp widths; custom coordinates or
-  your home's location.
+#### Overrides
+
+
+## Other features
+
+- Live **preview**: scrub through the day and optionally see your lights adapt as you 
+  drag.
+- **Manual Override**: changing a light by hand pauses Sundial for it, with an optional
+  auto-reset that hands control back.
+- **Per-light configurations**: change limits, temperature, color rendering or completely
+  override a light's color on a per-hour basis.
+- **Split commands**: supports lights that drop combined brightness + colour calls (e.g. IKEA),
+  with a configurable delay.
 - **Backup**: export and import the whole configuration as JSON.
-- Master **switch** and active-schema **select** entities for automations.
+- **Entities**: Master switch to toggle Sundial, as well as active-schema **select** entities
+  to use in automations.
 
 ## Installation
 
-**HACS** — add `https://github.com/ameesme/ha-adapt` as a custom repository
+**HACS** — add `https://github.com/ameesme/sundial` as a custom repository
 (category *Integration*), install **Sundial**, restart Home Assistant.
 
 **Manual** — copy `custom_components/sundial` into
@@ -52,7 +52,7 @@ Then: **Settings → Devices & Services → Add Integration → Sundial**, pick 
 lights to control, and open **Sundial** in the sidebar. That's the only thing
 the config flow asks — everything else lives in the panel.
 
-## Services
+## Exposed Services
 
 - `sundial.apply` — have Sundial apply the scheduled values immediately
   (optionally per light, with `turn_on` to light up lights that are off).
@@ -62,7 +62,7 @@ the config flow asks — everything else lives in the panel.
 
 | File             | Responsibility                                                 |
 | ---------------- | -------------------------------------------------------------- |
-| `engine.py`      | **Pure** math: sun curve, hourly anchors, cyclic interpolation. |
+| `engine.py`      | Math: sun curve, hourly anchors, cyclic interpolation.         |
 | `coordinator.py` | Runtime: scheduling, applying values, override tracking.        |
 | `interceptor.py` | Flags manual control from explicit `light.turn_on` calls.       |
 | `models.py`      | JSON-serialisable dataclasses (schema, sun, lights, settings).  |
@@ -72,6 +72,10 @@ the config flow asks — everything else lives in the panel.
 The sun produces a normalized drive signal; each light builds 24 hourly
 anchors from it (explicit cells win) and interpolates between them. The
 engine has no Home Assistant imports and is unit-tested standalone.
+
+## Is is any good?
+It's pretty good! I have been using Sundial intensively during its development
+and it is now controlling all 40+ fixtures in my house reliably.
 
 ## Development
 
@@ -95,6 +99,16 @@ changes; CI fails if the committed bundle is stale.
 **Releasing** — bump `version` in `custom_components/sundial/manifest.json`,
 commit, tag `vX.Y.Z`, push the tag. The release workflow validates the tag and
 bundle, then publishes a zip.
+
+## Special thanks
+This project was inspired by and partially based on Bas Nijholt's incredible 
+[Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting) which I have
+been using for a long time. I was looking for a more easily beginner friendly solution
+for some friends, and decided to build my own. Attribution is added to all files that can
+be sidered derivatives.
+
+## LLM Disclaimer
+This project was created with the help of Claude and careful manual testing.
 
 ## License
 
