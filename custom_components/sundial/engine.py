@@ -42,6 +42,11 @@ def _round5(value: float) -> int:
     return int(round(value / 5.0) * 5)
 
 
+# The tanh curve-fitting helpers below (find_a_b, scaled_tanh) and
+# color_difference_redmean further down are derived from Adaptive Lighting
+# (https://github.com/basnijholt/adaptive-lighting), copyright Bas Nijholt and
+# contributors, licensed under the Apache License 2.0 — see
+# THIRD_PARTY_LICENSES at the repository root. Both have been modified.
 def find_a_b(x1: float, x2: float, y1: float, y2: float) -> tuple[float, float]:
     """Solve a/b so ``0.5*(1+tanh(a*x+b))`` passes through the two points."""
     ya = math.atanh(2.0 * y1 - 1.0)

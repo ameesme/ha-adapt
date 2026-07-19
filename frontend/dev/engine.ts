@@ -11,6 +11,8 @@ const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 const round5 = (v: number) => Math.round(v / 5) * 5;
 
 // 0.5*(1+tanh(a*x+b)) through (x1,y1),(x2,y2). atanh(y) = 0.5*ln((1+y)/(1-y)).
+// Ported from engine.py; ultimately derived from Adaptive Lighting
+// (Apache-2.0 — see THIRD_PARTY_LICENSES at the repository root).
 function scaledTanh(x: number, x1: number, x2: number, y1 = 0.05, y2 = 0.95): number {
   const atanh = (y: number) => 0.5 * Math.log((1 + y) / (1 - y));
   const ya = atanh(2 * y1 - 1);

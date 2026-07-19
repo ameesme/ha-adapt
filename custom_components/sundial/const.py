@@ -23,7 +23,8 @@ HOURS_PER_DAY: Final = 24
 
 # --- Manual-control detection thresholds -------------------------------------
 # How much an attribute must change (vs. the value we last applied) before we
-# treat it as a manual override.
+# treat it as a manual override. Names and values follow Adaptive Lighting
+# (see THIRD_PARTY_LICENSES at the repository root).
 BRIGHTNESS_CHANGE: Final = 25  # on the 0-255 scale
 COLOR_TEMP_CHANGE: Final = 100  # Kelvin
 RGB_REDMEAN_CHANGE: Final = 80
