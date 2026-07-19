@@ -8,7 +8,7 @@
 
 Sundial adapts the brightness and colour temperature of your lights across the
 day. By default, all lights that you enable Sundial for follow the sun; but you 
-can easily pin your lights to specific values using the 24-hour **timeline** 
+can easily pin your lights to specific values using the 24-hour **timeline**.
 Everything can be configured in a purpose-built panel that works just as well on
 a phone as on a desktop.
 
@@ -16,7 +16,7 @@ a phone as on a desktop.
 ### Schemas
 A schema covers all your lights and your sun configuration. In it, you can define
 how your lights behave over a 24-hour window. Multiple schemas can be set up and be
-switched through using an automation, for example to have softer lighting durring the
+switched through using an automation, for example to have softer lighting during the
 weekend.
 
 ### Sun
@@ -30,7 +30,7 @@ Each light is a row on the timeline. It follows the sun within its own
 brightness and temperature range, which defaults to what the bulb supports.
 
 #### Overrides
-Tap an hour in the timeline and hit **Override** to sert exact values like brightness,
+Tap an hour in the timeline and hit **Override** to set exact values like brightness,
 temperature, or an RGB colour. Sundial blends the values between hours.
 
 ## Other features
@@ -75,7 +75,7 @@ schema.
 | `panel.py`       | Sidebar panel, static asset, WebSocket API.                     |
 | `store.py`       | Persistence via HA's `Store` (`<config>/.storage/sundial`).     |
 
-## Is is any good?
+## Is it any good?
 It's pretty good! I have been using Sundial intensively during its development
 and it is now controlling all 40+ fixtures in my house reliably.
 
@@ -105,9 +105,9 @@ bundle, then publishes a zip.
 ## Special thanks
 This project was inspired by and partially based on Bas Nijholt's incredible 
 [Adaptive Lighting](https://github.com/basnijholt/adaptive-lighting) which I have
-been using for a long time. I was looking for a more easily beginner friendly solution
+been using for a long time. I was looking for a more beginner-friendly solution
 for some friends, and decided to build my own. Attribution is added to all files that can
-be sidered derivatives.
+be considered derivatives.
 
 ## LLM Disclaimer
 This project was created with the help of Claude and careful manual testing.
