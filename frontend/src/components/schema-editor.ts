@@ -16,7 +16,15 @@ import {
   sectionHeading,
   selectField,
 } from "../form-fields";
-import { checkCircleIcon, cogIcon, eyeIcon, plusIcon, trashIcon } from "../icons";
+import {
+  bulbIcon,
+  checkCircleIcon,
+  cogIcon,
+  eyeIcon,
+  pencilIcon,
+  plusIcon,
+  trashIcon,
+} from "../icons";
 import { baseStyles } from "../theme";
 import type {
   ConfigPayload,
@@ -68,21 +76,23 @@ export class SchemaEditor extends LitElement {
         flex-wrap: wrap;
         margin-bottom: 14px;
       }
-      input.name {
+      .name {
         font-size: 1.3rem;
         font-weight: 700;
         color: var(--text);
-        border: none;
-        border-bottom: 2px solid var(--border);
-        background: transparent;
-        border-radius: 0;
-        padding: 4px 2px;
         min-width: 0;
-        flex: 0 1 260px;
+        flex: 0 1 auto;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
-      input.name:focus {
-        outline: none;
-        border-bottom-color: var(--accent);
+      .icon-btn.rename {
+        width: 30px;
+        height: 30px;
+      }
+      .icon-btn.rename svg {
+        width: 16px;
+        height: 16px;
       }
       .switcher {
         position: relative;
@@ -186,6 +196,23 @@ export class SchemaEditor extends LitElement {
         font-size: 1.05rem;
         font-weight: 650;
         padding-right: 28px;
+      }
+      /* Empty-selection state, centred across the card's full height. */
+      .side-placeholder {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: var(--text-soft);
+        text-align: center;
+        font-size: 0.9rem;
+      }
+      .side-placeholder svg {
+        width: 34px;
+        height: 34px;
+        opacity: 0.5;
       }
       .close {
         position: absolute;
@@ -352,9 +379,7 @@ export class SchemaEditor extends LitElement {
           margin: 0 0 8px;
           padding: 0 12px;
         }
-        input.name {
-          flex: 1 1 auto;
-          min-width: 50px;
+        .name {
           font-size: 1.05rem;
         }
         .layout {
@@ -583,12 +608,15 @@ export class SchemaEditor extends LitElement {
             )}
           </select>
         </div>
-        <input
-          class="name"
-          .value=${this._draft.name}
-          @input=${(e: Event) =>
-            this._patchSchema({ name: (e.target as HTMLInputElement).value })}
-        />
+        <span class="name">${this._draft.name}</span>
+        <button
+          class="icon-btn plain rename"
+          title="Rename schema"
+          @click=${this._rename}
+        >
+          ${pencilIcon}
+        </button>
+        ${this._isMobile ? nothing : this._renderSchemaActions()}
         <span class="grow"></span>
         ${this._renderActions()}
       </div>
@@ -624,19 +652,6 @@ export class SchemaEditor extends LitElement {
     const deletable = this._draft.id !== "default";
     if (!this._isMobile) {
       return html`
-        <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
-          ${plusIcon} New
-        </button>
-        <button
-          class="btn danger"
-          ?disabled=${!deletable}
-          title=${deletable
-            ? "Delete schema"
-            : "The default schema cannot be deleted"}
-          @click=${this._delete}
-        >
-          ${trashIcon} Delete
-        </button>
         <button
           class="btn ${this.preview ? "" : "ghost"}"
           @click=${() => this._emit("preview-toggle", !this.preview)}
@@ -703,18 +718,43 @@ export class SchemaEditor extends LitElement {
     `;
   }
 
+  // Desktop: schema-scoped actions sit next to the title; the rest of the
+  // controls stay on the right.
+  private _renderSchemaActions(): TemplateResult {
+    const deletable = this._draft.id !== "default";
+    return html`
+      <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
+        ${plusIcon} New
+      </button>
+      <button
+        class="btn danger"
+        ?disabled=${!deletable}
+        title=${deletable
+          ? "Delete schema"
+          : "The default schema cannot be deleted"}
+        @click=${this._delete}
+      >
+        ${trashIcon} Delete
+      </button>
+    `;
+  }
+
   private _renderSide(): TemplateResult {
+    if (!this._sel) {
+      // Nothing selected: a quiet placeholder (settings live behind the
+      // gear button).
+      return html`<div class="side">
+        <div class="side-placeholder">
+          ${bulbIcon}
+          <span>Select a light to configure it</span>
+        </div>
+      </div>`;
+    }
     const subtitle = this._contextSubtitle();
-    return html`<div class="side ${this._sel ? "editing" : ""}">
-      ${this._sel
-        ? html`<button
-            class="close"
-            title="Close"
-            @click=${() => (this._sel = null)}
-          >
-            ✕
-          </button>`
-        : nothing}
+    return html`<div class="side editing">
+      <button class="close" title="Close" @click=${() => (this._sel = null)}>
+        ✕
+      </button>
       <h2>${this._contextTitle()}</h2>
       ${subtitle ? html`<p class="subtitle">${subtitle}</p>` : nothing}
       ${this._renderContextBody()}
@@ -1040,6 +1080,14 @@ export class SchemaEditor extends LitElement {
       .setActiveSchema(this._draft.id)
       .then((config) => this._emit("config-changed", config))
       .catch((err) => this._emit("panel-error", String(err)));
+  };
+
+  private _rename = (): void => {
+    const name = window.prompt("Schema name", this._draft.name);
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === this._draft.name) return;
+    this._patchSchema({ name: trimmed });
   };
 
   private _delete = (): void => {

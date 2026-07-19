@@ -41,9 +41,15 @@ export class TimelineGrid extends LitElement {
       }
       .gridrow {
         display: grid;
-        grid-template-columns: 100px 1fr;
+        grid-template-columns: 160px 1fr;
         gap: 1px;
         align-items: center;
+      }
+      /* Air between charts of the same room (desktop stacks them tightly). */
+      @media (min-width: 961px) {
+        .lightrow + .lightrow {
+          margin-top: 6px;
+        }
       }
       /* The 24 cells of one row, with row-level overlays (max line, playhead). */
       .cells {
@@ -489,7 +495,7 @@ export class TimelineGrid extends LitElement {
   private _lightRow(light: LightInfo): TemplateResult {
     const row = this.timeline!.lights[light.entity_id] ?? [];
     const selected = this.selectedRow === light.entity_id ? "rowselected" : "";
-    return html`<div class="gridrow ${selected}">
+    return html`<div class="gridrow lightrow ${selected}">
       <div
         class="label clickable"
         title="Edit light range"

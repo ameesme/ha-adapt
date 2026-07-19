@@ -26,6 +26,7 @@ interface FakeLight {
 
 const FAKE_LIGHTS: FakeLight[] = [
   { entity_id: "light.living_room", name: "Living Room", area_name: "Living Room", supports_rgb: true, ct_range: [2000, 6500] },
+  { entity_id: "light.floor_lamp", name: "Floor Lamp Corner", area_name: "Living Room", supports_rgb: false, ct_range: [2200, 4500] },
   { entity_id: "light.kitchen", name: "Kitchen Spots", area_name: "Kitchen", supports_rgb: false, ct_range: [2200, 4000] },
   { entity_id: "light.bedroom", name: "Bedroom", area_name: "Bedroom", supports_rgb: true, ct_range: null },
   { entity_id: "light.hallway", name: "Hallway", area_name: null, supports_rgb: false, ct_range: [2700, 5000] },
