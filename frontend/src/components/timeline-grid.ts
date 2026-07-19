@@ -236,6 +236,17 @@ export class TimelineGrid extends LitElement {
           z-index: 4;
           background: var(--bg);
         }
+        /* Lighter timeline field, matching the header bar's surface. */
+        .cell {
+          background: var(--surface);
+        }
+        .cell.explicit {
+          background: var(--border);
+        }
+        .legend-dot.sun-controlled,
+        .legend-dot.selected {
+          background: var(--surface);
+        }
         /* Keep the legend clear of the iOS home indicator / navigation bar. */
         .legend {
           flex: none;

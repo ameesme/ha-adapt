@@ -380,6 +380,8 @@ export const baseStyles = css`
     border-color: transparent;
     background: transparent;
     color: var(--accent-strong);
+    padding-left: 10px;
+    padding-right: 10px;
   }
 
   button.btn:disabled {
