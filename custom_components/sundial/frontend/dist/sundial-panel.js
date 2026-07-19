@@ -1299,10 +1299,10 @@ let _ = class extends b {
             `
     )}
         </div>
-      </div>
-      <div class="legend">
-        <span class="legend-item"><span class="legend-dot overridden"></span>Overridden</span>
-        <span class="legend-item"><span class="legend-dot selected"></span>Selected</span>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot overridden"></span>Overridden</span>
+          <span class="legend-item"><span class="legend-dot selected"></span>Selected</span>
+        </div>
       </div>
     </div>`;
   }
@@ -1618,6 +1618,11 @@ _.styles = [
         overflow: hidden;
         cursor: pointer;
       }
+      @media (max-width: 960px) {
+        .cell {
+          height: 52px;
+        }
+      }
       .cell.readonly {
         cursor: default;
       }
@@ -1714,7 +1719,7 @@ _.styles = [
           margin-bottom: 3px;
         }
         .gridrow .label.section-label {
-          padding-top: 18px;
+          padding-top: 10px;
         }
         /* Keep the room heading tight to the first light under it. */
         .section-row {
@@ -1735,18 +1740,17 @@ _.styles = [
           font-size: 0.55rem;
           overflow: hidden;
         }
+        /* Above the rows' playheads (z-index 4) so scrolling content always
+           passes underneath the hour numbers. */
         .headrow {
           position: sticky;
           top: 0;
-          z-index: 4;
+          z-index: 6;
           background: var(--bg);
         }
-        /* Pinned at the very bottom edge; the inset keeps the text above the
-           iOS home indicator. */
+        /* Scrolls with the content as its last item. */
         .legend {
-          flex: none;
-          padding-top: 6px;
-          padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
+          padding: 6px 0 0;
         }
       }
     `
