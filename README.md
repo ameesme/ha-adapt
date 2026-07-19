@@ -4,7 +4,7 @@
 [![GitHub release](https://img.shields.io/github/release/ameesme/sundial.svg)](https://github.com/ameesme/sundial/releases)
 [![License](https://img.shields.io/github/license/ameesme/sundial.svg)](LICENSE)
 
-The easiest way to apply circadian lighting to your home with Home Assistant.
+> The easiest way to apply circadian lighting to your home with Home Assistant.
 
 Sundial adapts the brightness and colour temperature of your lights across the
 day. By default, all lights that you enable Sundial for follow the sun; but you 
@@ -20,14 +20,20 @@ switched through using an automation, for example to have softer lighting durrin
 weekend.
 
 ### Sun
+The sun drives all lights by default: lights get brighter towards noon and
+warmer towards the night. Sunrise and sunset come from your home's location automatically
+using Home Assistant's configured location. You can tune the ranges, times, and 
+how gradual the transitions are, or override the used location altogether.
 
 ### Lights
+Each light is a row on the timeline. It follows the sun within its own
+brightness and temperature range, which defaults to what the bulb supports.
 
 #### Overrides
-
+Tap an hour in the timeline and hit **Override** to sert exact values like brightness,
+temperature, or an RGB colour. Sundial blends the values between hours.
 
 ## Other features
-
 - Live **preview**: scrub through the day and optionally see your lights adapt as you 
   drag.
 - **Manual Override**: changing a light by hand pauses Sundial for it, with an optional
@@ -49,8 +55,8 @@ weekend.
 `<config>/custom_components/` and restart.
 
 Then: **Settings → Devices & Services → Add Integration → Sundial**, pick the
-lights to control, and open **Sundial** in the sidebar. That's the only thing
-the config flow asks — everything else lives in the panel.
+lights to control, and open **Sundial** in the sidebar. You can now configure your
+schema.
 
 ## Exposed Services
 
@@ -58,7 +64,7 @@ the config flow asks — everything else lives in the panel.
   (optionally per light, with `turn_on` to light up lights that are off).
 - `sundial.set_manual_control` — pause or resume Sundial for given lights.
 
-## Architecture
+## Noteworthy files
 
 | File             | Responsibility                                                 |
 | ---------------- | -------------------------------------------------------------- |
@@ -68,10 +74,6 @@ the config flow asks — everything else lives in the panel.
 | `models.py`      | JSON-serialisable dataclasses (schema, sun, lights, settings).  |
 | `panel.py`       | Sidebar panel, static asset, WebSocket API.                     |
 | `store.py`       | Persistence via HA's `Store` (`<config>/.storage/sundial`).     |
-
-The sun produces a normalized drive signal; each light builds 24 hourly
-anchors from it (explicit cells win) and interpolates between them. The
-engine has no Home Assistant imports and is unit-tested standalone.
 
 ## Is is any good?
 It's pretty good! I have been using Sundial intensively during its development
@@ -111,5 +113,4 @@ be sidered derivatives.
 This project was created with the help of Claude and careful manual testing.
 
 ## License
-
 MIT
