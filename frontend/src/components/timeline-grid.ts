@@ -195,14 +195,14 @@ export class TimelineGrid extends LitElement {
         :host {
           min-height: 0;
         }
-        /* Fill the viewport and scroll the grid internally on both axes;
-           bottom margin leaves room for the drawer to slide in from. */
+        /* Fill the viewport; the grid fits the width (no horizontal
+           scrolling) and scrolls internally only vertically. */
         .card {
           padding: 0;
           height: 100%;
           display: flex;
           flex-direction: column;
-          margin-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+          margin-bottom: 8px;
         }
         .scrub-bar {
           display: flex;
@@ -221,19 +221,25 @@ export class TimelineGrid extends LitElement {
         .scroll {
           flex: 1;
           min-height: 0;
-          overflow: auto;
+          overflow-y: auto;
+          overflow-x: hidden;
           overscroll-behavior: contain;
           -webkit-overflow-scrolling: touch;
         }
-        /* Give the 24 columns a usable width and scroll to them; the label
-           column stays pinned on the left, the hour header on top. */
+        /* Narrower label column; minmax(0, 1fr) lets the 24 cells shrink
+           below their content so the grid truly fits the width. */
         .gridrow {
-          grid-template-columns: 88px repeat(24, minmax(26px, 1fr));
+          grid-template-columns: 72px repeat(24, minmax(0, 1fr));
         }
         .label {
-          position: sticky;
-          left: 0;
-          background: var(--bg);
+          font-size: 0.72rem;
+        }
+        .label .area {
+          font-size: 0.58rem;
+        }
+        .hourhead {
+          font-size: 0.55rem;
+          overflow: hidden;
         }
         .headrow {
           position: sticky;
@@ -241,12 +247,11 @@ export class TimelineGrid extends LitElement {
           z-index: 4;
           background: var(--bg);
         }
-        .headrow .label {
-          z-index: 5;
-        }
+        /* Keep the legend clear of the iOS home indicator / navigation bar. */
         .legend {
           flex: none;
           padding-top: 8px;
+          padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
         }
       }
     `,

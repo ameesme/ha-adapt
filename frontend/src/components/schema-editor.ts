@@ -9,7 +9,13 @@ import {
 import { customElement, property, state } from "lit/decorators.js";
 
 import type { HaAdaptApi } from "../api";
-import { checkboxField, rangeField, selectField } from "../form-fields";
+import {
+  checkboxField,
+  minMaxField,
+  rangeField,
+  sectionHeading,
+  selectField,
+} from "../form-fields";
 import { cogIcon, eyeIcon, plusIcon, starIcon, trashIcon } from "../icons";
 import { baseStyles } from "../theme";
 import type {
@@ -26,6 +32,7 @@ import {
   currentHour,
   defaultLightConfig,
   hexToRgb,
+  kelvinGradientCss,
   rgbToHex,
 } from "../utils";
 import type { CellRef } from "./timeline-grid";
@@ -189,6 +196,9 @@ export class SchemaEditor extends LitElement {
         color: var(--accent-strong);
         background: var(--accent-soft);
       }
+      .close:focus-visible {
+        outline: 2px solid var(--accent);
+      }
 
       /* --- bottom drawer (native <dialog>, small screens only) ----------- */
       dialog.drawer {
@@ -225,12 +235,16 @@ export class SchemaEditor extends LitElement {
         display: flex;
         align-items: center;
         gap: 10px;
-        padding: 14px 16px;
+        padding: 10px 10px 10px 16px;
         border-bottom: 1px solid var(--surface-alt);
       }
-      .drawer-head h2 {
+      .drawer-titles {
         flex: 1;
         min-width: 0;
+        display: flex;
+        flex-direction: column;
+      }
+      .drawer-titles h2 {
         margin: 0;
         font-size: 1.05rem;
         font-weight: 650;
@@ -238,15 +252,35 @@ export class SchemaEditor extends LitElement {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+      .drawer-titles .area {
+        font-size: 0.75rem;
+        color: var(--text-soft);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .drawer-head .close {
         position: static;
+        flex: none;
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
       }
       .drawer-body {
         flex: 1;
         min-height: 0;
         overflow-y: auto;
+        overflow-x: hidden;
         overscroll-behavior: contain;
-        padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+        padding: 18px 16px calc(18px + env(safe-area-inset-bottom, 0px));
+      }
+      /* Extra breathing room between stacked fields in the drawer. */
+      .drawer-body .field,
+      .drawer-body label.field {
+        margin-bottom: 16px;
       }
 
       @media (max-width: 960px) {
@@ -259,17 +293,20 @@ export class SchemaEditor extends LitElement {
         .app-title {
           display: none;
         }
-        /* Fixed-height single-row sticky bar. */
+        /* Fixed-height single-row sticky bar on a soft surface, full-bleed
+           across the wrap's side padding. */
         .head {
           flex: none;
           position: sticky;
           top: 0;
           z-index: 20;
-          background: var(--bg);
+          background: var(--surface);
+          box-shadow: var(--shadow);
           flex-wrap: nowrap;
           gap: 6px;
           height: 52px;
-          margin-bottom: 4px;
+          margin: 0 -12px 8px;
+          padding: 0 12px;
         }
         input.name {
           flex: 1 1 auto;
@@ -551,6 +588,7 @@ export class SchemaEditor extends LitElement {
   }
 
   private _renderSide(): TemplateResult {
+    const subtitle = this._contextSubtitle();
     return html`<div class="side ${this._sel ? "editing" : ""}">
       ${this._sel
         ? html`<button
@@ -562,18 +600,23 @@ export class SchemaEditor extends LitElement {
           </button>`
         : nothing}
       <h2>${this._contextTitle()}</h2>
+      ${subtitle ? html`<p class="subtitle">${subtitle}</p>` : nothing}
       ${this._renderContextBody()}
     </div>`;
   }
 
   private _renderDrawer(): TemplateResult {
+    const subtitle = this._contextSubtitle();
     return html`<dialog
       class="drawer"
       @close=${() => (this._sel = null)}
       @click=${this._onDrawerClick}
     >
       <div class="drawer-head">
-        <h2>${this._contextTitle()}</h2>
+        <div class="drawer-titles">
+          <h2>${this._contextTitle()}</h2>
+          ${subtitle ? html`<span class="area">${subtitle}</span>` : nothing}
+        </div>
         <button class="close" title="Close" @click=${this._closeDrawer}>✕</button>
       </div>
       <div class="drawer-body">${this._renderContextBody()}</div>
@@ -612,6 +655,22 @@ export class SchemaEditor extends LitElement {
       return `${this._lightName(sel.ref.entityId)} · ${hour}:00`;
     }
     return "Global settings";
+  }
+
+  /** The room (area) of the selected light, for the header subtitle. */
+  private _contextSubtitle(): string | null {
+    const sel = this._sel;
+    const entityId =
+      sel?.kind === "light"
+        ? sel.entityId
+        : sel?.kind === "cell"
+          ? sel.ref.entityId
+          : null;
+    if (!entityId) return null;
+    return (
+      this.config.lights.find((l) => l.entity_id === entityId)?.area_name ??
+      null
+    );
   }
 
   private _renderContextBody(): TemplateResult {
@@ -699,14 +758,19 @@ export class SchemaEditor extends LitElement {
   }
 
   private _renderLightEditor(entityId: string): TemplateResult {
-    const light = this.config.lights.find((l) => l.entity_id === entityId);
     const cfg = this._lightCfg(entityId);
     return html`
-      ${light?.area_name
-        ? html`<p class="subtitle">${light.area_name}</p>`
-        : nothing}
-      ${rangeField("Min brightness", cfg.min_brightness, 0, 100, 1, "%", (v) =>
-        this._patchLight(entityId, { min_brightness: v })
+      ${sectionHeading("Brightness")}
+      ${minMaxField(
+        "Range",
+        "%",
+        cfg.min_brightness,
+        cfg.max_brightness,
+        0,
+        100,
+        1,
+        (lo, hi) =>
+          this._patchLight(entityId, { min_brightness: lo, max_brightness: hi })
       )}
       ${cfg.min_brightness <= 0
         ? html`<p class="warn">
@@ -714,26 +778,24 @@ export class SchemaEditor extends LitElement {
             turn it back on automatically.
           </p>`
         : nothing}
-      ${rangeField("Max brightness", cfg.max_brightness, 0, 100, 1, "%", (v) =>
-        this._patchLight(entityId, { max_brightness: v })
-      )}
-      ${rangeField(
-        "Min color temp",
+      ${sectionHeading("Color temperature")}
+      ${minMaxField(
+        "Range",
+        " K",
         cfg.min_color_temp,
-        KELVIN_MIN,
-        KELVIN_MAX,
-        50,
-        "K",
-        (v) => this._patchLight(entityId, { min_color_temp: v })
-      )}
-      ${rangeField(
-        "Max color temp",
         cfg.max_color_temp,
         KELVIN_MIN,
         KELVIN_MAX,
         50,
-        "K",
-        (v) => this._patchLight(entityId, { max_color_temp: v })
+        (lo, hi) =>
+          this._patchLight(entityId, { min_color_temp: lo, max_color_temp: hi }),
+        kelvinGradientCss(KELVIN_MIN, KELVIN_MAX)
+      )}
+      ${sectionHeading(
+        "Behaviour",
+        "Cap keeps the light tracking the sun, clamped into its range; Scale " +
+          "sweeps the whole range across the day. Split commands sends " +
+          "brightness and colour as two separate calls (e.g. IKEA lights)."
       )}
       ${selectField(
         "Limits",
@@ -745,10 +807,6 @@ export class SchemaEditor extends LitElement {
         (v) =>
           this._patchLight(entityId, { limit_mode: v as "cap" | "scale" })
       )}
-      <p class="muted">
-        Cap tracks the sun and clamps to this range; Scale sweeps the whole range
-        across the day.
-      </p>
       <div class="actions">
         ${checkboxField(
           "Split commands",

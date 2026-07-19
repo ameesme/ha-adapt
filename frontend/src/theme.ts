@@ -79,6 +79,144 @@ export const baseStyles = css`
     color: var(--text-soft);
   }
 
+  div.field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-soft);
+  }
+
+  /* Small uppercase section heading; as a <details> it reveals its info text. */
+  .section {
+    margin: 22px 0 10px;
+    color: var(--text-soft);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .section:first-child {
+    margin-top: 0;
+  }
+  details.section summary {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    list-style: none;
+  }
+  details.section summary::-webkit-details-marker {
+    display: none;
+  }
+  details.section summary svg {
+    width: 14px;
+    height: 14px;
+    flex: none;
+    opacity: 0.6;
+  }
+  details.section[open] summary svg {
+    opacity: 1;
+    color: var(--accent-strong);
+  }
+  details.section p {
+    margin: 8px 0 0;
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: normal;
+    line-height: 1.4;
+  }
+
+  /* Two-part values (e.g. sunrise + sunset) on one row. */
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .pair + .pair {
+    margin-top: 14px;
+  }
+
+  /* Indication strip above a slider (e.g. the Kelvin spectrum). */
+  .temp-gradient {
+    height: 8px;
+    border-radius: 4px;
+    border: 1px solid var(--border);
+  }
+
+  /* Parsed value shown underneath duration sliders. */
+  .duration-preview {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--accent-strong);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Dual-thumb min–max slider: two overlapped native ranges, thumbs only. */
+  .minmax {
+    position: relative;
+    height: 24px;
+  }
+  .minmax-track {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 4px;
+    transform: translateY(-50%);
+    border-radius: 2px;
+    background: var(--accent-soft);
+  }
+  .minmax-fill {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-radius: 2px;
+    background: var(--accent);
+  }
+  .minmax input[type="range"] {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 24px;
+    margin: 0;
+    background: transparent;
+    -webkit-appearance: none;
+    appearance: none;
+    pointer-events: none;
+  }
+  .minmax input[type="range"]::-webkit-slider-runnable-track {
+    background: transparent;
+    border: none;
+  }
+  .minmax input[type="range"]::-moz-range-track {
+    background: transparent;
+    border: none;
+  }
+  .minmax input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    pointer-events: auto;
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--surface);
+    box-shadow: 0 1px 3px rgba(120, 80, 40, 0.4);
+    cursor: pointer;
+  }
+  .minmax input[type="range"]::-moz-range-thumb {
+    pointer-events: auto;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--accent);
+    border: 2px solid var(--surface);
+    cursor: pointer;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
@@ -86,8 +224,13 @@ export const baseStyles = css`
   }
 
   @media (max-width: 960px) {
+    /* More breathing room in the drawer forms. */
     .grid {
       grid-template-columns: minmax(0, 1fr);
+      gap: 20px;
+    }
+    .section {
+      margin: 26px 0 12px;
     }
     /* Flatten cards on mobile so they don't add a second horizontal padding
        inside the panel's own padding. */

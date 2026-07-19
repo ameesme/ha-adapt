@@ -65,6 +65,27 @@ export function kelvinToCss(kelvin: number): string {
   return `rgb(${clamp(r)}, ${clamp(g)}, ${clamp(b)})`;
 }
 
+// CSS gradient sweeping a Kelvin range, for slider indication strips.
+export function kelvinGradientCss(minK: number, maxK: number): string {
+  const steps = 10;
+  const stops: string[] = [];
+  for (let i = 0; i <= steps; i++) {
+    stops.push(kelvinToCss(minK + ((maxK - minK) * i) / steps));
+  }
+  return `linear-gradient(90deg, ${stops.join(", ")})`;
+}
+
+// "45 min" below an hour, "1 h 23 min" above; signed when negative.
+export function formatDuration(seconds: number): string {
+  const sign = seconds < 0 ? "−" : "";
+  const totalMin = Math.round(Math.abs(seconds) / 60);
+  const h = Math.floor(totalMin / 60);
+  const min = totalMin % 60;
+  if (h === 0) return `${sign}${min} min`;
+  if (min === 0) return `${sign}${h} h`;
+  return `${sign}${h} h ${min} min`;
+}
+
 export function hourLabel(hour: number): string {
   return String(hour).padStart(2, "0");
 }

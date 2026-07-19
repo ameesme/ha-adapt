@@ -1,7 +1,105 @@
-import { html, type TemplateResult } from "lit";
+import { html, nothing, type TemplateResult } from "lit";
+
+import { infoIcon } from "./icons";
+import { formatDuration } from "./utils";
 
 // Small presentational field builders shared by every editor/tab. They rely on
-// the `.field`/`.toggle` classes from baseStyles being present in the host.
+// the `.field`/`.toggle`/`.section`/`.minmax` classes from baseStyles being
+// present in the host.
+
+// A small uppercase section heading. With `info`, the heading becomes a native
+// <details>: tapping it (or its ⓘ) reveals the explanatory text underneath.
+export function sectionHeading(title: string, info?: string): TemplateResult {
+  if (!info) return html`<div class="section">${title}</div>`;
+  return html`<details class="section">
+    <summary>${title} ${infoIcon}</summary>
+    <p class="muted">${info}</p>
+  </details>`;
+}
+
+// A dual-thumb min–max range slider built from two overlapped native range
+// inputs (pointer events on the thumbs only). Optional `gradient` renders an
+// indication strip above the track (e.g. the Kelvin spectrum).
+export function minMaxField(
+  label: string,
+  unit: string,
+  lo: number,
+  hi: number,
+  min: number,
+  max: number,
+  step: number,
+  onChange: (lo: number, hi: number) => void,
+  gradient?: string
+): TemplateResult {
+  const pct = (v: number) => ((v - min) / (max - min)) * 100;
+  return html`<div class="field">
+    <span class="field-head">
+      <span>${label}</span>
+      <b>${lo}–${hi}${unit}</b>
+    </span>
+    ${gradient
+      ? html`<div class="temp-gradient" style="background:${gradient}"></div>`
+      : nothing}
+    <div class="minmax">
+      <div class="minmax-track">
+        <div
+          class="minmax-fill"
+          style="left:${pct(lo)}%;width:${Math.max(0, pct(hi) - pct(lo))}%"
+        ></div>
+      </div>
+      <input
+        type="range"
+        min=${min}
+        max=${max}
+        step=${step}
+        .value=${String(lo)}
+        @input=${(e: Event) => {
+          const el = e.target as HTMLInputElement;
+          const v = Math.min(Number(el.value), hi);
+          el.value = String(v);
+          onChange(v, hi);
+        }}
+      />
+      <input
+        type="range"
+        min=${min}
+        max=${max}
+        step=${step}
+        .value=${String(hi)}
+        @input=${(e: Event) => {
+          const el = e.target as HTMLInputElement;
+          const v = Math.max(Number(el.value), lo);
+          el.value = String(v);
+          onChange(lo, v);
+        }}
+      />
+    </div>
+  </div>`;
+}
+
+// A duration slider (stored in seconds, 1-minute steps) with the parsed
+// value — "45 min" / "1 h 23 min" — previewed underneath.
+export function durationField(
+  label: string,
+  seconds: number,
+  min: number,
+  max: number,
+  onChange: (value: number) => void
+): TemplateResult {
+  return html`<label class="field">
+    ${label}
+    <input
+      type="range"
+      min=${min}
+      max=${max}
+      step="60"
+      .value=${String(seconds)}
+      @input=${(e: Event) =>
+        onChange(Number((e.target as HTMLInputElement).value))}
+    />
+    <span class="duration-preview">${formatDuration(seconds)}</span>
+  </label>`;
+}
 
 export function numberField(
   label: string,

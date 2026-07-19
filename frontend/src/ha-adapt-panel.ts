@@ -42,6 +42,7 @@ export class HaAdaptPanel extends LitElement {
           height: 100dvh;
           min-height: 0;
           overflow: hidden;
+          overscroll-behavior: none;
         }
         .wrap {
           height: 100%;
@@ -49,6 +50,7 @@ export class HaAdaptPanel extends LitElement {
           flex-direction: column;
           padding: 0 12px;
           overflow: hidden;
+          overscroll-behavior: none;
         }
         .wrap > .card {
           flex: none;
