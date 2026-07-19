@@ -226,6 +226,10 @@ export class TimelineGrid extends LitElement {
           overscroll-behavior: contain;
           -webkit-overflow-scrolling: touch;
         }
+        .scroll.locked {
+          overflow: hidden;
+          touch-action: none;
+        }
         /* Narrower label column; minmax(0, 1fr) lets the 24 cells shrink
            below their content so the grid truly fits the width. */
         .gridrow {
@@ -263,6 +267,9 @@ export class TimelineGrid extends LitElement {
   // "sun" or an entity_id — the row to highlight as selected.
   @property({ attribute: false }) selectedRow: string | null = null;
   @property({ type: Number }) previewHour = 12;
+  // True while a modal drawer is open: freezes the internal scroll so touch
+  // scrolling can't chain through to the timeline behind the sheet.
+  @property({ type: Boolean }) scrollLocked = false;
 
   override render(): TemplateResult {
     if (!this.timeline) {
@@ -271,7 +278,7 @@ export class TimelineGrid extends LitElement {
     const nowHour = Math.floor(this.previewHour) % 24;
     return html`<div class="card">
       ${this._scrubBar()}
-      <div class="scroll">
+      <div class="scroll ${this.scrollLocked ? "locked" : ""}">
         <div class="rows">
           ${this._scrubRow()}
           ${this._headerRow(nowHour)}

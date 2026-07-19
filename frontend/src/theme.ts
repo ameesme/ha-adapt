@@ -88,11 +88,13 @@ export const baseStyles = css`
     color: var(--text-soft);
   }
 
-  /* Small uppercase section heading; as a <details> it reveals its info text. */
+  /* Small uppercase section heading; as a <details> it reveals its info text.
+     Darker than the field labels so the hierarchy reads: tight to its fields,
+     generous space above. */
   .section {
-    margin: 22px 0 10px;
-    color: var(--text-soft);
-    font-size: 0.72rem;
+    margin: 28px 0 6px;
+    color: var(--text);
+    font-size: 0.74rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -200,7 +202,8 @@ export const baseStyles = css`
     pointer-events: auto;
     width: 18px;
     height: 18px;
-    margin-top: 3px;
+    /* 18px + 2×2px border = 22px outer on a 24px-high input. */
+    margin-top: 1px;
     border-radius: 50%;
     background: var(--accent);
     border: 2px solid var(--surface);
@@ -230,7 +233,7 @@ export const baseStyles = css`
       gap: 20px;
     }
     .section {
-      margin: 26px 0 12px;
+      margin: 34px 0 8px;
     }
     /* Flatten cards on mobile so they don't add a second horizontal padding
        inside the panel's own padding. */
@@ -322,6 +325,10 @@ export const baseStyles = css`
     gap: 10px;
     flex-wrap: wrap;
     margin-top: 12px;
+  }
+
+  .actions:not(:last-child) {
+    margin-bottom: 14px;
   }
 
   .empty {

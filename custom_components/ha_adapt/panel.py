@@ -27,7 +27,7 @@ from .const import (
     PANEL_URL_PATH,
 )
 from .coordinator import AdaptCoordinator, get_coordinator
-from .models import GlobalSettings, Schema
+from .models import GlobalSettings, Schema, StoreData
 
 
 def _bundle_token(path: str) -> str:
@@ -149,6 +149,8 @@ def _register_ws_commands(hass: HomeAssistant) -> None:
         ws_timeline,
         ws_preview,
         ws_apply,
+        ws_export,
+        ws_import,
     ):
         websocket_api.async_register_command(hass, handler)
 
@@ -298,4 +300,35 @@ async def ws_apply(hass, connection, msg) -> None:
     raw = msg.get("entity_id")
     entity_ids = [raw] if isinstance(raw, str) else raw
     await coordinator.async_apply(entity_ids)
+    connection.send_result(msg["id"], _config_payload(hass, coordinator))
+
+
+@websocket_api.websocket_command({vol.Required("type"): "ha_adapt/export"})
+@websocket_api.async_response
+async def ws_export(hass, connection, msg) -> None:
+    """The raw store document, used by the panel's backup download."""
+    coordinator = _error_if_not_ready(connection, msg)
+    if coordinator is not None:
+        connection.send_result(msg["id"], coordinator.data.to_dict())
+
+
+@websocket_api.websocket_command(
+    {
+        vol.Required("type"): "ha_adapt/import",
+        vol.Required("data"): dict,
+    }
+)
+@websocket_api.async_response
+async def ws_import(hass, connection, msg) -> None:
+    """Restore a previously exported configuration.
+
+    ``StoreData.from_dict`` normalises everything (unknown keys are dropped,
+    hour cells coerced, a default schema guaranteed), so a malformed file
+    degrades to defaults rather than corrupting the store.
+    """
+    coordinator = _error_if_not_ready(connection, msg)
+    if coordinator is None:
+        return
+    coordinator.store.data = StoreData.from_dict(msg["data"])
+    await coordinator.async_apply_config_change()
     connection.send_result(msg["id"], _config_payload(hass, coordinator))

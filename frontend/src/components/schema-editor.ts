@@ -203,13 +203,16 @@ export class SchemaEditor extends LitElement {
       /* --- bottom drawer (native <dialog>, small screens only) ----------- */
       dialog.drawer {
         position: fixed;
-        inset: 0;
-        margin: auto 0 0;
+        /* Pin to the bottom only — a top of 0 would stretch the box to the
+           full viewport regardless of height: auto. */
+        inset: auto 0 0 0;
+        margin: 0;
         width: 100%;
         max-width: 100%;
-        height: calc(100vh - 40px);
-        height: calc(100dvh - 40px);
-        max-height: none;
+        /* Size to the content; the body scrolls once this cap binds. */
+        height: auto;
+        max-height: calc(100vh - 40px);
+        max-height: calc(100dvh - 40px);
         border: none;
         border-radius: 16px 16px 0 0;
         padding: 0;
@@ -220,14 +223,20 @@ export class SchemaEditor extends LitElement {
       dialog.drawer[open] {
         display: flex;
         flex-direction: column;
-        animation: drawer-up 220ms ease-out;
+        animation: drawer-up 320ms cubic-bezier(0.32, 0.72, 0, 1);
       }
       dialog.drawer::backdrop {
         background: rgba(61, 44, 30, 0.4);
+        animation: backdrop-fade 240ms ease-out;
       }
       @keyframes drawer-up {
         from {
           transform: translateY(100%);
+        }
+      }
+      @keyframes backdrop-fade {
+        from {
+          opacity: 0;
         }
       }
       .drawer-head {
@@ -358,11 +367,22 @@ export class SchemaEditor extends LitElement {
   }
 
   protected override willUpdate(changed: PropertyValues): void {
-    if (changed.has("schema") && this._draft?.id !== this.schema.id) {
-      this._flushSave();
-      this._draft = structuredClone(this.schema);
-      this._sel = null;
-      void this._loadTimeline();
+    if (changed.has("schema")) {
+      if (this._draft?.id !== this.schema.id) {
+        this._flushSave();
+        this._draft = structuredClone(this.schema);
+        this._sel = null;
+        void this._loadTimeline();
+      } else if (
+        this._saveTimer === undefined &&
+        JSON.stringify(this.schema) !== JSON.stringify(this._draft)
+      ) {
+        // Same schema id but different content, with no local edit pending:
+        // the stored schema changed underneath us (e.g. a config import) —
+        // adopt it rather than clobbering it with the stale draft.
+        this._draft = structuredClone(this.schema);
+        void this._loadTimeline();
+      }
     }
     // React to the preview toggle (driven from the header or the timeline).
     if (changed.has("preview") && changed.get("preview") !== undefined) {
@@ -511,6 +531,7 @@ export class SchemaEditor extends LitElement {
             .selected=${this._sel?.kind === "cell" ? this._sel.ref : null}
             .selectedRow=${this._selectedRow}
             .previewHour=${this._previewHour}
+            .scrollLocked=${this._isMobile && this._sel !== null}
             @select-cell=${(e: CustomEvent<CellRef>) => this._onSelectCell(e.detail)}
             @select-light=${(e: CustomEvent<string>) =>
               (this._sel = { kind: "light", entityId: e.detail })}
@@ -794,8 +815,9 @@ export class SchemaEditor extends LitElement {
       ${sectionHeading(
         "Behaviour",
         "Cap keeps the light tracking the sun, clamped into its range; Scale " +
-          "sweeps the whole range across the day. Split commands sends " +
-          "brightness and colour as two separate calls (e.g. IKEA lights)."
+          "sweeps the whole range across the day. Sending brightness and " +
+          "colour separately helps lights that drop combined commands " +
+          "(e.g. IKEA)."
       )}
       ${selectField(
         "Limits",
@@ -809,7 +831,7 @@ export class SchemaEditor extends LitElement {
       )}
       <div class="actions">
         ${checkboxField(
-          "Split commands",
+          "Send brightness and colour separately",
           cfg.separate_turn_on_commands,
           (v) => this._patchLight(entityId, { separate_turn_on_commands: v })
         )}

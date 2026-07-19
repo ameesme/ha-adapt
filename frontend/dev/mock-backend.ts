@@ -164,6 +164,21 @@ function handle(store: Store, msg: Msg): unknown {
     case "ha_adapt/apply":
       return configPayload(store);
 
+    case "ha_adapt/export":
+      return {
+        settings: store.settings,
+        schemas: store.schemas,
+        active_schema_id: store.active_schema_id,
+      };
+
+    case "ha_adapt/import": {
+      const data = msg.data as Partial<Store>;
+      store.settings = data.settings ?? store.settings;
+      store.schemas = data.schemas ?? store.schemas;
+      store.active_schema_id = data.active_schema_id ?? store.active_schema_id;
+      return configPayload(store);
+    }
+
     default:
       throw new Error(`mock backend: unhandled message ${String(msg.type)}`);
   }

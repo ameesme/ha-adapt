@@ -56,6 +56,15 @@ export class HaAdaptApi {
     return this.send("ha_adapt/apply", entityId ? { entity_id: entityId } : {});
   }
 
+  // Full-configuration backup: the raw store document (all schemas + settings).
+  exportConfig(): Promise<unknown> {
+    return this.send("ha_adapt/export");
+  }
+
+  importConfig(data: unknown): Promise<ConfigPayload> {
+    return this.send("ha_adapt/import", { data: data as Record<string, unknown> });
+  }
+
   private send<T>(type: string, payload: Record<string, unknown> = {}): Promise<T> {
     return this.hass.connection.sendMessagePromise<T>({ type, ...payload });
   }

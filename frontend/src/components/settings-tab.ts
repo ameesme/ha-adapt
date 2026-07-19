@@ -1,11 +1,12 @@
 import { LitElement, html, type TemplateResult } from "lit";
-import { customElement, property } from "lit/decorators.js";
+import { customElement, property, query } from "lit/decorators.js";
 
 import type { HaAdaptApi } from "../api";
 import {
   checkboxField,
   coordField,
   numberField,
+  rangeField,
   sectionHeading,
 } from "../form-fields";
 import { baseStyles } from "../theme";
@@ -20,6 +21,8 @@ export class SettingsTab extends LitElement {
   @property({ attribute: false }) config!: ConfigPayload;
   @property({ attribute: false }) api!: HaAdaptApi;
 
+  @query("input[type=file]") private _fileInput!: HTMLInputElement;
+
   /** Run an API mutation and bubble the resulting config (or error) up. */
   private async run(promise: Promise<ConfigPayload>): Promise<void> {
     try {
@@ -32,13 +35,47 @@ export class SettingsTab extends LitElement {
         })
       );
     } catch (err) {
-      this.dispatchEvent(
-        new CustomEvent("panel-error", {
-          detail: String(err),
-          bubbles: true,
-          composed: true,
-        })
-      );
+      this._error(err);
+    }
+  }
+
+  private _error(err: unknown): void {
+    this.dispatchEvent(
+      new CustomEvent("panel-error", {
+        detail: String(err),
+        bubbles: true,
+        composed: true,
+      })
+    );
+  }
+
+  private async _export(): Promise<void> {
+    try {
+      const data = await this.api.exportConfig();
+      const blob = new Blob([JSON.stringify(data, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ha-adapt-config.json";
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      this._error(err);
+    }
+  }
+
+  private async _onImportFile(e: Event): Promise<void> {
+    const input = e.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = "";
+    if (!file) return;
+    try {
+      const data: unknown = JSON.parse(await file.text());
+      await this.run(this.api.importConfig(data));
+    } catch (err) {
+      this._error(err);
     }
   }
 
@@ -50,13 +87,19 @@ export class SettingsTab extends LitElement {
     return html`
       ${sectionHeading("Adaptation")}
       <div class="grid">
-        ${numberField("Interval (s)", s.interval, (v) => save({ interval: v }))}
-        ${numberField("Transition (s)", s.transition, (v) =>
+        ${rangeField("Interval", s.interval, 10, 300, 5, " s", (v) =>
+          save({ interval: v })
+        )}
+        ${rangeField("Transition", s.transition, 0, 300, 1, " s", (v) =>
           save({ transition: v })
         )}
-        ${numberField(
-          "Turn-on transition (s)",
+        ${rangeField(
+          "Turn-on transition",
           s.initial_transition,
+          0,
+          300,
+          1,
+          " s",
           (v) => save({ initial_transition: v })
         )}
       </div>
@@ -66,8 +109,10 @@ export class SettingsTab extends LitElement {
           "Auto-reset hands control back after this many seconds (0 = never)."
       )}
       <div class="actions">
-        ${checkboxField("Take over control", s.take_over_control, (v) =>
-          save({ take_over_control: v })
+        ${checkboxField(
+          "Pause when controlled manually",
+          s.take_over_control,
+          (v) => save({ take_over_control: v })
         )}
       </div>
       <div class="grid">
@@ -79,8 +124,8 @@ export class SettingsTab extends LitElement {
       </div>
       ${sectionHeading(
         "Light commands",
-        "Gap between the two turn-on calls for lights with the per-light " +
-          '"Split commands" option enabled (e.g. IKEA).'
+        "Gap between the two turn-on calls for lights that get brightness " +
+          "and colour sent separately (e.g. IKEA)."
       )}
       <div class="grid">
         ${numberField(
@@ -91,16 +136,35 @@ export class SettingsTab extends LitElement {
       </div>
       ${sectionHeading(
         "Location",
-        "Optional coordinates for the sun calculation. Leave blank to use " +
-          "Home Assistant's own location."
+        "Coordinates used to calculate sunrise and sunset. Leave blank to " +
+          "use your home's location."
       )}
       <div class="pair">
-        ${coordField("Sun latitude", s.sun_latitude, (v) =>
+        ${coordField("Latitude", s.sun_latitude, (v) =>
           save({ sun_latitude: v })
         )}
-        ${coordField("Sun longitude", s.sun_longitude, (v) =>
+        ${coordField("Longitude", s.sun_longitude, (v) =>
           save({ sun_longitude: v })
         )}
+      </div>
+      ${sectionHeading(
+        "Backup",
+        "Download the full configuration — every schema plus these settings " +
+          "— as a JSON file, or restore a previous export."
+      )}
+      <div class="actions">
+        <button class="btn ghost" @click=${() => void this._export()}>
+          Export
+        </button>
+        <button class="btn ghost" @click=${() => this._fileInput.click()}>
+          Import
+        </button>
+        <input
+          type="file"
+          accept=".json,application/json"
+          hidden
+          @change=${this._onImportFile}
+        />
       </div>
     `;
   }

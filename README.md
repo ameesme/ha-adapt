@@ -71,8 +71,9 @@ restart Home Assistant.
    - **Timeline** — the schema editor: tune the sun, click timeline cells to
      pin per-hour values, set per-light ranges, mark a schema active, and step
      the day with the preview slider.
-   - **Global settings** (side panel) — `interval`, `transition`, auto-reset,
-     split-command delay, sun coordinates.
+   - **Global settings** (side panel; behind the gear on mobile) — adaptation
+     timing, manual-control behaviour, split-command delay, location, and a
+     JSON export/import of the whole configuration.
 
 A master *Adaptive lighting* switch is also created to enable/disable
 adaptation for the whole instance, plus an *Active schema* select that reads and

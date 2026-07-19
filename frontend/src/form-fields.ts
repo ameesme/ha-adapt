@@ -129,7 +129,7 @@ export function coordField(
     <input
       type="number"
       step="any"
-      placeholder="HA location"
+      placeholder="Home location"
       .value=${value != null ? String(value) : ""}
       @change=${(e: Event) => {
         const raw = (e.target as HTMLInputElement).value.trim();
