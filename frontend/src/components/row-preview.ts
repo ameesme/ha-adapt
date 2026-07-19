@@ -28,7 +28,6 @@ export class RowPreview extends LitElement {
     }
     .cell {
       position: relative;
-      background: var(--surface-alt);
       overflow: hidden;
     }
     .cell.explicit {

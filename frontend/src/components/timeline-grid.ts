@@ -1,7 +1,7 @@
 import { LitElement, html, css, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
-import { cogIcon } from "../icons";
+import { cogFilledIcon } from "../icons";
 import { baseStyles } from "../theme";
 import type { LightInfo, TimelineCell, TimelineData } from "../types";
 import { HOURS, currentHour, hourLabel, kelvinToCss } from "../utils";
@@ -129,10 +129,11 @@ export class TimelineGrid extends LitElement {
       .now-btn:hover {
         color: var(--accent-strong);
       }
+      /* Sun-following cells have no background — that's the default state;
+         only overrides get a marker. */
       .cell {
         position: relative;
         height: 42px;
-        background: var(--surface-alt);
         overflow: hidden;
         cursor: pointer;
       }
@@ -169,14 +170,10 @@ export class TimelineGrid extends LitElement {
         height: 12px;
         border-radius: 2px;
       }
-      .legend-dot.sun-controlled {
-        background: var(--surface-alt);
-      }
       .legend-dot.overridden {
         background: var(--border);
       }
       .legend-dot.selected {
-        background: var(--surface-alt);
         border: 2px var(--accent-strong) solid;
       }
       @media (max-width: 960px) {
@@ -241,17 +238,6 @@ export class TimelineGrid extends LitElement {
           z-index: 4;
           background: var(--bg);
         }
-        /* Lighter timeline field, matching the header bar's surface. */
-        .cell {
-          background: var(--surface);
-        }
-        .cell.explicit {
-          background: var(--border);
-        }
-        .legend-dot.sun-controlled,
-        .legend-dot.selected {
-          background: var(--surface);
-        }
         /* Keep the legend clear of the iOS home indicator / navigation bar. */
         .legend {
           flex: none;
@@ -294,7 +280,6 @@ export class TimelineGrid extends LitElement {
         </div>
       </div>
       <div class="legend">
-        <span class="legend-item"><span class="legend-dot sun-controlled"></span>Sun-controlled</span>
         <span class="legend-item"><span class="legend-dot overridden"></span>Overridden</span>
         <span class="legend-item"><span class="legend-dot selected"></span>Selected</span>
       </div>
@@ -357,7 +342,7 @@ export class TimelineGrid extends LitElement {
         <span class="text-col">
           <span class="lname">☀️ Sun</span>
         </span>
-        ${cogIcon}
+        ${cogFilledIcon}
       </div>
       ${HOURS.map((h) => this._cell(row[h], "readonly", false, false))}
     </div>`;
@@ -391,7 +376,7 @@ export class TimelineGrid extends LitElement {
         <span class="text-col">
           <span class="lname">${light.name}</span>
         </span>
-        ${cogIcon}
+        ${cogFilledIcon}
       </div>
       ${HOURS.map((h) => {
         const cell = row[h];
