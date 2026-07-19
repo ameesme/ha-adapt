@@ -21,6 +21,7 @@ import {
   checkCircleIcon,
   cogIcon,
   eyeIcon,
+  pencilIcon,
   plusIcon,
   trashIcon,
 } from "../icons";
@@ -75,21 +76,23 @@ export class SchemaEditor extends LitElement {
         flex-wrap: wrap;
         margin-bottom: 14px;
       }
-      input.name {
+      .name {
         font-size: 1.3rem;
         font-weight: 700;
         color: var(--text);
-        border: none;
-        border-bottom: 2px solid var(--border);
-        background: transparent;
-        border-radius: 0;
-        padding: 4px 2px;
         min-width: 0;
-        flex: 0 1 260px;
+        flex: 0 1 auto;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
-      input.name:focus {
-        outline: none;
-        border-bottom-color: var(--accent);
+      .icon-btn.rename {
+        width: 30px;
+        height: 30px;
+      }
+      .icon-btn.rename svg {
+        width: 16px;
+        height: 16px;
       }
       .switcher {
         position: relative;
@@ -376,9 +379,7 @@ export class SchemaEditor extends LitElement {
           margin: 0 0 8px;
           padding: 0 12px;
         }
-        input.name {
-          flex: 1 1 auto;
-          min-width: 50px;
+        .name {
           font-size: 1.05rem;
         }
         .layout {
@@ -607,12 +608,14 @@ export class SchemaEditor extends LitElement {
             )}
           </select>
         </div>
-        <input
-          class="name"
-          .value=${this._draft.name}
-          @input=${(e: Event) =>
-            this._patchSchema({ name: (e.target as HTMLInputElement).value })}
-        />
+        <span class="name">${this._draft.name}</span>
+        <button
+          class="icon-btn plain rename"
+          title="Rename schema"
+          @click=${this._rename}
+        >
+          ${pencilIcon}
+        </button>
         <span class="grow"></span>
         ${this._renderActions()}
       </div>
@@ -1068,6 +1071,14 @@ export class SchemaEditor extends LitElement {
       .setActiveSchema(this._draft.id)
       .then((config) => this._emit("config-changed", config))
       .catch((err) => this._emit("panel-error", String(err)));
+  };
+
+  private _rename = (): void => {
+    const name = window.prompt("Schema name", this._draft.name);
+    if (name === null) return;
+    const trimmed = name.trim();
+    if (!trimmed || trimmed === this._draft.name) return;
+    this._patchSchema({ name: trimmed });
   };
 
   private _delete = (): void => {
