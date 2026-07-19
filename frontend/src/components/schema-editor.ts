@@ -502,7 +502,32 @@ export class SchemaEditor extends LitElement {
   }
 
   private _lightCfg(entityId: string): LightConfig {
-    return this._draft.lights[entityId] ?? defaultLightConfig();
+    const existing = this._draft.lights[entityId];
+    if (existing) return existing;
+    // Unconfigured light: default the colour-temperature bounds to what the
+    // bulb actually supports.
+    const cfg = defaultLightConfig();
+    const range = this._bulbCtRange(entityId);
+    if (range) {
+      cfg.min_color_temp = range[0];
+      cfg.max_color_temp = range[1];
+    }
+    return cfg;
+  }
+
+  /** The bulb's supported colour-temperature range, normalised to the
+   *  editor's 50 K slider grid and bounds; null when unknown/RGB-only. */
+  private _bulbCtRange(entityId: string): [number, number] | null {
+    const light = this.config.lights.find((l) => l.entity_id === entityId);
+    if (
+      light?.min_color_temp_kelvin == null ||
+      light?.max_color_temp_kelvin == null
+    ) {
+      return null;
+    }
+    const snap = (v: number) =>
+      Math.min(KELVIN_MAX, Math.max(KELVIN_MIN, Math.round(v / 50) * 50));
+    return [snap(light.min_color_temp_kelvin), snap(light.max_color_temp_kelvin)];
   }
 
   private _patchSchema(patch: Partial<Schema>): void {
@@ -898,6 +923,32 @@ export class SchemaEditor extends LitElement {
     `;
   }
 
+  /** A one-tap reset when the configured range deviates from the bulb's. */
+  private _renderBulbRangeReset(
+    entityId: string,
+    cfg: LightConfig
+  ): TemplateResult | typeof nothing {
+    const range = this._bulbCtRange(entityId);
+    if (
+      !range ||
+      (cfg.min_color_temp === range[0] && cfg.max_color_temp === range[1])
+    ) {
+      return nothing;
+    }
+    return html`<div class="center-cta">
+      <button
+        class="btn ghost"
+        @click=${() =>
+          this._patchLight(entityId, {
+            min_color_temp: range[0],
+            max_color_temp: range[1],
+          })}
+      >
+        Use bulb range (${range[0]}–${range[1]} K)
+      </button>
+    </div>`;
+  }
+
   private _renderLightEditor(entityId: string): TemplateResult {
     const cfg = this._lightCfg(entityId);
     return html`
@@ -932,6 +983,7 @@ export class SchemaEditor extends LitElement {
           this._patchLight(entityId, { min_color_temp: lo, max_color_temp: hi }),
         kelvinGradientCss(KELVIN_MIN, KELVIN_MAX)
       )}
+      ${this._renderBulbRangeReset(entityId, cfg)}
       ${sectionHeading(
         "Behaviour",
         "Cap keeps the light tracking the sun, clamped into its range; Scale " +

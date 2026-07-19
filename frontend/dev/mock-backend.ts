@@ -21,13 +21,14 @@ interface FakeLight {
   name: string;
   area_name: string | null;
   supports_rgb: boolean;
+  ct_range: [number, number] | null;
 }
 
 const FAKE_LIGHTS: FakeLight[] = [
-  { entity_id: "light.living_room", name: "Living Room", area_name: "Living Room", supports_rgb: true },
-  { entity_id: "light.kitchen", name: "Kitchen Spots", area_name: "Kitchen", supports_rgb: false },
-  { entity_id: "light.bedroom", name: "Bedroom", area_name: "Bedroom", supports_rgb: true },
-  { entity_id: "light.hallway", name: "Hallway", area_name: null, supports_rgb: false },
+  { entity_id: "light.living_room", name: "Living Room", area_name: "Living Room", supports_rgb: true, ct_range: [2000, 6500] },
+  { entity_id: "light.kitchen", name: "Kitchen Spots", area_name: "Kitchen", supports_rgb: false, ct_range: [2200, 4000] },
+  { entity_id: "light.bedroom", name: "Bedroom", area_name: "Bedroom", supports_rgb: true, ct_range: null },
+  { entity_id: "light.hallway", name: "Hallway", area_name: null, supports_rgb: false, ct_range: [2700, 5000] },
 ];
 
 const cell = (brightness: number, color_temp: number, rgb_color?: [number, number, number]): HourCell => ({
@@ -116,6 +117,8 @@ function configPayload(store: Store): ConfigPayload {
       name: l.name,
       area_name: l.area_name,
       supports_rgb: l.supports_rgb,
+      min_color_temp_kelvin: l.ct_range?.[0] ?? null,
+      max_color_temp_kelvin: l.ct_range?.[1] ?? null,
     })),
     home_latitude: 52.3731,
     home_longitude: 4.8922,

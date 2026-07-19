@@ -109,12 +109,18 @@ def _lights_payload(hass: HomeAssistant, coordinator: SundialCoordinator) -> lis
                 area_id = device.area_id
             if area_id and (area := area_reg.async_get_area(area_id)):
                 area_name = area.name
+        attrs = state.attributes if state else {}
         lights.append(
             {
                 "entity_id": entity_id,
                 "name": state.name if state else entity_id,
                 "area_name": area_name,
                 "supports_rgb": coordinator.supports_rgb(entity_id),
+                # The bulb's own supported colour-temperature range (None for
+                # RGB-only lights or while unavailable) — the editor uses it
+                # as the default bounds.
+                "min_color_temp_kelvin": attrs.get("min_color_temp_kelvin"),
+                "max_color_temp_kelvin": attrs.get("max_color_temp_kelvin"),
             }
         )
     # Group by area (unassigned last), then alphabetically by name.
