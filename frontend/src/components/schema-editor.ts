@@ -616,6 +616,7 @@ export class SchemaEditor extends LitElement {
         >
           ${pencilIcon}
         </button>
+        ${this._isMobile ? nothing : this._renderSchemaActions()}
         <span class="grow"></span>
         ${this._renderActions()}
       </div>
@@ -651,19 +652,6 @@ export class SchemaEditor extends LitElement {
     const deletable = this._draft.id !== "default";
     if (!this._isMobile) {
       return html`
-        <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
-          ${plusIcon} New
-        </button>
-        <button
-          class="btn danger"
-          ?disabled=${!deletable}
-          title=${deletable
-            ? "Delete schema"
-            : "The default schema cannot be deleted"}
-          @click=${this._delete}
-        >
-          ${trashIcon} Delete
-        </button>
         <button
           class="btn ${this.preview ? "" : "ghost"}"
           @click=${() => this._emit("preview-toggle", !this.preview)}
@@ -726,6 +714,27 @@ export class SchemaEditor extends LitElement {
         @click=${() => (this._sel = { kind: "settings" })}
       >
         ${cogIcon}
+      </button>
+    `;
+  }
+
+  // Desktop: schema-scoped actions sit next to the title; the rest of the
+  // controls stay on the right.
+  private _renderSchemaActions(): TemplateResult {
+    const deletable = this._draft.id !== "default";
+    return html`
+      <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
+        ${plusIcon} New
+      </button>
+      <button
+        class="btn danger"
+        ?disabled=${!deletable}
+        title=${deletable
+          ? "Delete schema"
+          : "The default schema cannot be deleted"}
+        @click=${this._delete}
+      >
+        ${trashIcon} Delete
       </button>
     `;
   }

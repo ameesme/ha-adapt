@@ -2321,6 +2321,7 @@ let v = class extends _ {
         >
           ${Et}
         </button>
+        ${this._isMobile ? d : this._renderSchemaActions()}
         <span class="grow"></span>
         ${this._renderActions()}
       </div>
@@ -2391,17 +2392,6 @@ let v = class extends _ {
         ${Te}
       </button>
     ` : a`
-        <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
-          ${Ce} New
-        </button>
-        <button
-          class="btn danger"
-          ?disabled=${!t}
-          title=${t ? "Delete schema" : "The default schema cannot be deleted"}
-          @click=${this._delete}
-        >
-          ${Le} Delete
-        </button>
         <button
           class="btn ${this.preview ? "" : "ghost"}"
           @click=${() => this._emit("preview-toggle", !this.preview)}
@@ -2424,6 +2414,24 @@ let v = class extends _ {
           ${Te} Settings
         </button>
       `;
+  }
+  // Desktop: schema-scoped actions sit next to the title; the rest of the
+  // controls stay on the right.
+  _renderSchemaActions() {
+    const t = this._draft.id !== "default";
+    return a`
+      <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
+        ${Ce} New
+      </button>
+      <button
+        class="btn danger"
+        ?disabled=${!t}
+        title=${t ? "Delete schema" : "The default schema cannot be deleted"}
+        @click=${this._delete}
+      >
+        ${Le} Delete
+      </button>
+    `;
   }
   _renderSide() {
     if (!this._sel)
