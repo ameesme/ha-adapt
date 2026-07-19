@@ -16,7 +16,7 @@ import {
   sectionHeading,
   selectField,
 } from "../form-fields";
-import { cogIcon, eyeIcon, plusIcon, starIcon, trashIcon } from "../icons";
+import { checkCircleIcon, cogIcon, eyeIcon, plusIcon, trashIcon } from "../icons";
 import { baseStyles } from "../theme";
 import type {
   ConfigPayload,
@@ -144,6 +144,14 @@ export class SchemaEditor extends LitElement {
       .icon-btn.danger {
         color: var(--danger);
         border-color: var(--danger);
+      }
+      .icon-btn:disabled {
+        opacity: 0.45;
+        cursor: default;
+      }
+      /* Disabled because it's already applied — state, not a dead control. */
+      .icon-btn.active:disabled {
+        opacity: 0.9;
       }
       .layout {
         display: grid;
@@ -313,7 +321,8 @@ export class SchemaEditor extends LitElement {
           box-shadow: var(--shadow);
           flex-wrap: nowrap;
           gap: 6px;
-          height: 52px;
+          /* Matches the Home Assistant app header height. */
+          height: 56px;
           margin: 0 -12px 8px;
           padding: 0 12px;
         }
@@ -486,12 +495,6 @@ export class SchemaEditor extends LitElement {
     return html`
       <div class="head">
         <h1 class="app-title">Adaptive Lighting</h1>
-        <input
-          class="name"
-          .value=${this._draft.name}
-          @input=${(e: Event) =>
-            this._patchSchema({ name: (e.target as HTMLInputElement).value })}
-        />
         <div class="switcher" title="Switch schema">
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -519,6 +522,12 @@ export class SchemaEditor extends LitElement {
             )}
           </select>
         </div>
+        <input
+          class="name"
+          .value=${this._draft.name}
+          @input=${(e: Event) =>
+            this._patchSchema({ name: (e.target as HTMLInputElement).value })}
+        />
         <span class="grow"></span>
         ${this._renderActions()}
       </div>
@@ -547,11 +556,24 @@ export class SchemaEditor extends LitElement {
     `;
   }
 
+  // A fixed set of controls in a fixed order — unavailable ones are disabled
+  // rather than hidden, so nothing shifts around.
   private _renderActions(): TemplateResult {
+    const deletable = this._draft.id !== "default";
     if (!this._isMobile) {
       return html`
         <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
           + New
+        </button>
+        <button
+          class="btn danger"
+          ?disabled=${!deletable}
+          title=${deletable
+            ? "Delete schema"
+            : "The default schema cannot be deleted"}
+          @click=${this._delete}
+        >
+          Delete
         </button>
         <button
           class="btn ${this.preview ? "" : "ghost"}"
@@ -559,14 +581,14 @@ export class SchemaEditor extends LitElement {
         >
           Preview
         </button>
-        ${this._active
-          ? nothing
-          : html`<button class="btn ghost" @click=${this._setActive}>
-              Set active
-            </button>`}
-        ${this._draft.id !== "default"
-          ? html`<button class="btn danger" @click=${this._delete}>Delete</button>`
-          : nothing}
+        <button
+          class="btn ghost"
+          ?disabled=${this._active}
+          title=${this._active ? "This schema is active" : "Apply this schema"}
+          @click=${this._setActive}
+        >
+          ${this._active ? "Active" : "Apply"}
+        </button>
       `;
     }
     return html`
@@ -578,26 +600,30 @@ export class SchemaEditor extends LitElement {
         ${plusIcon}
       </button>
       <button
+        class="icon-btn danger"
+        ?disabled=${!deletable}
+        title=${deletable
+          ? "Delete schema"
+          : "The default schema cannot be deleted"}
+        @click=${this._delete}
+      >
+        ${trashIcon}
+      </button>
+      <button
         class="icon-btn ${this.preview ? "active" : ""}"
         title="Preview on lights"
         @click=${() => this._emit("preview-toggle", !this.preview)}
       >
         ${eyeIcon}
       </button>
-      ${this._active
-        ? nothing
-        : html`<button
-            class="icon-btn"
-            title="Set as active schema"
-            @click=${this._setActive}
-          >
-            ${starIcon}
-          </button>`}
-      ${this._draft.id !== "default"
-        ? html`<button class="icon-btn danger" title="Delete schema" @click=${this._delete}>
-            ${trashIcon}
-          </button>`
-        : nothing}
+      <button
+        class="icon-btn ${this._active ? "active" : ""}"
+        ?disabled=${this._active}
+        title=${this._active ? "This schema is active" : "Apply this schema"}
+        @click=${this._setActive}
+      >
+        ${checkCircleIcon}
+      </button>
       <button
         class="icon-btn"
         title="Global settings"
@@ -849,6 +875,10 @@ export class SchemaEditor extends LitElement {
   };
 
   private _delete = (): void => {
+    const name = this._draft.name || this._draft.id;
+    if (!window.confirm(`Delete schema "${name}"? This cannot be undone.`)) {
+      return;
+    }
     this._emit("schema-delete", this._draft.id);
   };
 

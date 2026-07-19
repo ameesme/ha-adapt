@@ -320,6 +320,11 @@ export const baseStyles = css`
     color: var(--danger);
   }
 
+  button.btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
   .actions {
     display: flex;
     gap: 10px;
