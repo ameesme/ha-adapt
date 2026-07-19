@@ -26,7 +26,7 @@ export const tokenStyles = css`
 `;
 
 // Reusable element/class rules. Each component includes this so the shared
-// classes (.card, .btn, .row, fields, …) apply inside its own shadow root.
+// classes (.card, .btn, fields, …) apply inside its own shadow root.
 export const baseStyles = css`
   * {
     box-sizing: border-box;
@@ -39,24 +39,6 @@ export const baseStyles = css`
     box-shadow: var(--shadow);
     padding: 18px;
     margin-bottom: 16px;
-  }
-
-  .card h2 {
-    margin: 0 0 14px;
-    font-size: 1.05rem;
-    font-weight: 650;
-  }
-
-  .row {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--surface-alt);
-  }
-
-  .row:last-child {
-    border-bottom: none;
   }
 
   .grow {
@@ -190,33 +172,6 @@ export const baseStyles = css`
     border-color: var(--danger);
     background: transparent;
     color: var(--danger);
-  }
-
-  button.btn:disabled {
-    opacity: 0.5;
-    cursor: default;
-  }
-
-  .badge {
-    padding: 2px 9px;
-    border-radius: 999px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    background: var(--accent-soft);
-    color: var(--accent-strong);
-  }
-
-  .badge.manual {
-    background: #f3d9c0;
-    color: var(--danger);
-  }
-
-  .swatch {
-    width: 26px;
-    height: 26px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    flex: none;
   }
 
   .actions {

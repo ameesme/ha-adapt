@@ -3,7 +3,7 @@ import { customElement, property } from "lit/decorators.js";
 
 import { baseStyles } from "../theme";
 import type { LightInfo, TimelineCell, TimelineData } from "../types";
-import { HOURS, hourLabel, kelvinToCss } from "../utils";
+import { HOURS, currentHour, hourLabel, kelvinToCss } from "../utils";
 
 export interface CellRef {
   entityId: string;
@@ -14,8 +14,8 @@ type GridCell = TimelineCell | { brightness: number; color_temp: number };
 
 // The 24-hour grid: an integrated time scrubber, an hour header, a distinct
 // sun row, and one clickable row per light. Row labels stay pinned while the
-// columns scroll horizontally. Emits `select-cell`, `select-light`, `scrub`,
-// and `live-toggle`.
+// columns scroll horizontally. Emits `select-cell`, `select-light`,
+// `select-sun`, and `scrub`.
 @customElement("ha-adapt-timeline-grid")
 export class TimelineGrid extends LitElement {
   static override styles = [
@@ -210,11 +210,11 @@ export class TimelineGrid extends LitElement {
         <div class="rows">
           ${this._scrubRow()}
           ${this._headerRow(nowHour)}
-          ${this._sunRow(nowHour)}
+          ${this._sunRow()}
           <div class="gridrow">
             <div class="label section-label">Lights</div>
           </div>
-          ${this.lights.map((light) => this._lightRow(light, nowHour))}
+          ${this.lights.map((light) => this._lightRow(light))}
         </div>
       </div>
       <div class="legend">
@@ -249,9 +249,7 @@ export class TimelineGrid extends LitElement {
   }
 
   private _jumpToNow(): void {
-    const now = new Date();
-    const hour = now.getHours() + now.getMinutes() / 60;
-    this._emit("scrub", hour);
+    this._emit("scrub", currentHour());
   }
 
   private _headerRow(nowHour: number): TemplateResult {
@@ -265,7 +263,7 @@ export class TimelineGrid extends LitElement {
     </div>`;
   }
 
-  private _sunRow(nowHour: number): TemplateResult {
+  private _sunRow(): TemplateResult {
     const row = this.timeline!.sun;
     const selected = this.selectedRow === "sun" ? "rowselected" : "";
     return html`<div class="gridrow sunrow ${selected}">
@@ -279,13 +277,11 @@ export class TimelineGrid extends LitElement {
         </span>
         ${this._cogIcon()}
       </div>
-      ${HOURS.map((h) =>
-        this._cell(row[h], h === nowHour, "readonly", false, false)
-      )}
+      ${HOURS.map((h) => this._cell(row[h], "readonly", false, false))}
     </div>`;
   }
 
-  private _lightRow(light: LightInfo, nowHour: number): TemplateResult {
+  private _lightRow(light: LightInfo): TemplateResult {
     const row = this.timeline!.lights[light.entity_id] ?? [];
     const selected = this.selectedRow === light.entity_id ? "rowselected" : "";
     return html`<div class="gridrow ${selected}">
@@ -305,13 +301,8 @@ export class TimelineGrid extends LitElement {
         const selected =
           this.selected?.entityId === light.entity_id &&
           this.selected?.hour === h;
-        return this._cell(
-          cell,
-          h === nowHour,
-          "",
-          Boolean(cell?.explicit),
-          selected,
-          () => this._emit("select-cell", { entityId: light.entity_id, hour: h })
+        return this._cell(cell, "", Boolean(cell?.explicit), selected, () =>
+          this._emit("select-cell", { entityId: light.entity_id, hour: h })
         );
       })}
     </div>`;
@@ -319,7 +310,6 @@ export class TimelineGrid extends LitElement {
 
   private _cell(
     cell: GridCell | undefined,
-    isNow: boolean,
     extra: string,
     explicit: boolean,
     selected: boolean,
@@ -337,7 +327,6 @@ export class TimelineGrid extends LitElement {
       extra,
       explicit ? "explicit" : "",
       selected ? "selected" : "",
-      isNow ? "now" : "",
     ].join(" ");
     return html`<div
       class=${classes}

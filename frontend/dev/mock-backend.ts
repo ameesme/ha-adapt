@@ -11,7 +11,7 @@ import type {
   LightConfig,
   Schema,
 } from "../src/types";
-import { currentHour, defaultLightConfig, defaultSunConfig } from "../src/utils";
+import { defaultLightConfig, defaultSunConfig } from "../src/utils";
 import { computeTargets, computeTimeline } from "./engine";
 
 // --- fake devices ------------------------------------------------------------
@@ -84,7 +84,6 @@ const defaultSettings = (): GlobalSettings => ({
   send_split_delay: 350,
   autoreset_control: 0,
   take_over_control: true,
-  detect_non_ha_changes: false,
   sun_latitude: null,
   sun_longitude: null,
 });
@@ -95,7 +94,6 @@ interface Store {
   settings: GlobalSettings;
   schemas: Record<string, Schema>;
   active_schema_id: string;
-  manual: Record<string, boolean>;
 }
 
 function newStore(): Store {
@@ -103,28 +101,21 @@ function newStore(): Store {
     settings: defaultSettings(),
     schemas: { default: defaultSchema(), evening: eveningSchema() },
     active_schema_id: "default",
-    manual: {},
   };
 }
 
 const entityIds = () => FAKE_LIGHTS.map((l) => l.entity_id);
 
 function configPayload(store: Store): ConfigPayload {
-  const active = store.schemas[store.active_schema_id] ?? defaultSchema();
-  const targets = computeTargets(active, currentHour(), entityIds(), defaultLightConfig);
   return {
     settings: store.settings,
     schemas: store.schemas,
     active_schema_id: store.active_schema_id,
-    enabled: true,
     lights: FAKE_LIGHTS.map((l) => ({
       entity_id: l.entity_id,
       name: l.name,
       area_name: l.area_name,
-      state: "on",
-      manual_control: store.manual[l.entity_id] ?? false,
       supports_rgb: l.supports_rgb,
-      target: targets[l.entity_id] ?? { brightness_pct: null, color_temp_kelvin: null },
     })),
   };
 }
@@ -157,10 +148,6 @@ function handle(store: Store, msg: Msg): unknown {
       store.active_schema_id = msg.schema_id as string;
       return configPayload(store);
 
-    case "ha_adapt/set_manual_control":
-      store.manual[msg.entity_id as string] = msg.manual_control as boolean;
-      return configPayload(store);
-
     case "ha_adapt/timeline":
       return computeTimeline(msg.schema as Schema, entityIds(), defaultLightConfig);
 
@@ -176,21 +163,6 @@ function handle(store: Store, msg: Msg): unknown {
 
     case "ha_adapt/apply":
       return configPayload(store);
-
-    case "ha_adapt/export":
-      return {
-        settings: store.settings,
-        schemas: store.schemas,
-        active_schema_id: store.active_schema_id,
-      };
-
-    case "ha_adapt/import": {
-      const data = msg.data as Partial<Store>;
-      store.settings = (data.settings as GlobalSettings) ?? store.settings;
-      store.schemas = (data.schemas as Record<string, Schema>) ?? store.schemas;
-      store.active_schema_id = (data.active_schema_id as string) ?? store.active_schema_id;
-      return configPayload(store);
-    }
 
     default:
       throw new Error(`mock backend: unhandled message ${String(msg.type)}`);

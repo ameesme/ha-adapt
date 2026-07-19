@@ -24,15 +24,17 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the master switch."""
-    coordinator: AdaptCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: AdaptCoordinator = hass.data[DOMAIN]
     async_add_entities([AdaptMasterSwitch(coordinator, entry)])
 
 
-class _BaseAdaptSwitch(SwitchEntity, RestoreEntity):
-    """Shared wiring: device grouping and config-update refresh."""
+class AdaptMasterSwitch(SwitchEntity, RestoreEntity):
+    """Enable/disable adaptation for the whole instance."""
 
     _attr_has_entity_name = True
     _attr_should_poll = False
+    _attr_name = "Adaptive lighting"
+    _attr_icon = "mdi:theme-light-dark"
 
     def __init__(self, coordinator: AdaptCoordinator, entry: ConfigEntry) -> None:
         self.coordinator = coordinator
@@ -47,25 +49,6 @@ class _BaseAdaptSwitch(SwitchEntity, RestoreEntity):
             entry_type=None,
         )
 
-    async def async_added_to_hass(self) -> None:
-        await super().async_added_to_hass()
-        self.async_on_remove(
-            async_dispatcher_connect(
-                self.hass, SIGNAL_CONFIG_UPDATED, self._handle_update
-            )
-        )
-
-    @callback
-    def _handle_update(self) -> None:
-        self.async_write_ha_state()
-
-
-class AdaptMasterSwitch(_BaseAdaptSwitch):
-    """Enable/disable adaptation for the whole instance."""
-
-    _attr_name = "Adaptive lighting"
-    _attr_icon = "mdi:theme-light-dark"
-
     @property
     def unique_id(self) -> str:
         return f"{self._entry.entry_id}_master"
@@ -76,9 +59,18 @@ class AdaptMasterSwitch(_BaseAdaptSwitch):
 
     async def async_added_to_hass(self) -> None:
         await super().async_added_to_hass()
+        self.async_on_remove(
+            async_dispatcher_connect(
+                self.hass, SIGNAL_CONFIG_UPDATED, self._handle_update
+            )
+        )
         last_state = await self.async_get_last_state()
         if last_state is not None:
             self.coordinator.set_enabled(last_state.state == "on")
+
+    @callback
+    def _handle_update(self) -> None:
+        self.async_write_ha_state()
 
     async def async_turn_on(self, **kwargs) -> None:
         self.coordinator.set_enabled(True)

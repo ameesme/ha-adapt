@@ -211,6 +211,8 @@ export class SchemaEditor extends LitElement {
 
   override disconnectedCallback(): void {
     this._flushSave();
+    window.clearTimeout(this._previewTimer);
+    window.clearTimeout(this._timelineTimer);
     super.disconnectedCallback();
   }
 

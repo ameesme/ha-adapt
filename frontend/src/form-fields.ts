@@ -68,23 +68,6 @@ export function rangeField(
   </label>`;
 }
 
-export function textField(
-  label: string,
-  value: string,
-  placeholder: string,
-  onChange: (value: string) => void
-): TemplateResult {
-  return html`<label class="field"
-    >${label}
-    <input
-      type="text"
-      placeholder=${placeholder}
-      .value=${value}
-      @input=${(e: Event) => onChange((e.target as HTMLInputElement).value)}
-    />
-  </label>`;
-}
-
 export function timeField(
   label: string,
   value: string | null,

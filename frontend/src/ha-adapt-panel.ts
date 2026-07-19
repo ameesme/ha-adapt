@@ -133,7 +133,8 @@ export class HaAdaptPanel extends LitElement {
   }
 
   private async _onDelete(e: CustomEvent<string>): Promise<void> {
-    this._selectedId = this._config!.active_schema_id;
+    // Fall back to whatever is active once the refreshed config arrives.
+    this._selectedId = undefined;
     await this._run(this._api!.deleteSchema(e.detail));
   }
 

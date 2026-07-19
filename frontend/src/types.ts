@@ -53,7 +53,6 @@ export interface GlobalSettings {
   send_split_delay: number;
   autoreset_control: number;
   take_over_control: boolean;
-  detect_non_ha_changes: boolean;
   // null = use Home Assistant's configured location for sun calculation.
   sun_latitude: number | null;
   sun_longitude: number | null;
@@ -63,10 +62,7 @@ export interface LightInfo {
   entity_id: string;
   name: string;
   area_name: string | null;
-  state: string;
-  manual_control: boolean;
   supports_rgb: boolean;
-  target: { brightness_pct: number | null; color_temp_kelvin: number | null };
 }
 
 export interface ConfigPayload {
@@ -74,7 +70,6 @@ export interface ConfigPayload {
   schemas: Record<string, Schema>;
   active_schema_id: string;
   lights: LightInfo[];
-  enabled: boolean;
 }
 
 // Computed per-hour values for rendering the timeline (from ha_adapt/timeline).

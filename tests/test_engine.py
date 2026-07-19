@@ -115,7 +115,7 @@ def test_drive_to_values_scales_midpoint():
 def test_sun_row_has_24_entries():
     sun = SunConfig()
     drives = _sun_drives(sun, dt.datetime(2026, 6, 14, tzinfo=UTC))
-    row = engine.sun_row(sun, drives)
+    row = engine.sun_row(engine.sun_values(sun, drives))
     assert len(row) == 24
     assert all(isinstance(b, int) and isinstance(t, int) for b, t in row)
 

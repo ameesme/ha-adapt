@@ -46,6 +46,7 @@ These familiar options are exposed in the panel:
 | `sunset_time`  | Sun      | Fixed `HH:MM:SS` sunset overriding astral. |
 | `autoreset`    | Settings | Auto-reset manual control after N seconds. |
 | split commands | Light    | Separate brightness/color calls (IKEA).    |
+| `send_split_delay` | Settings | Gap between the two split calls (ms).  |
 
 ## Installation
 
@@ -67,11 +68,11 @@ restart Home Assistant.
 2. Select the lights or light groups to control. (This is the *only* thing the
    config flow asks — by design.)
 3. Open **Adaptive Lighting** in the sidebar:
-   - **Lights** — live status of every light; reset manual control.
-   - **Schemas** — the timeline editor: tune the sun, click timeline cells to
+   - **Timeline** — the schema editor: tune the sun, click timeline cells to
      pin per-hour values, set per-light ranges, mark a schema active, and step
      the day with the preview slider.
-   - **Settings** — `interval`, `transition`, auto-reset, etc.
+   - **Global settings** (side panel) — `interval`, `transition`, auto-reset,
+     split-command delay, sun coordinates.
 
 A master *Adaptive lighting* switch is also created to enable/disable
 adaptation for the whole instance, plus an *Active schema* select that reads and

@@ -38,6 +38,32 @@ def test_lightconfig_drops_malformed_cells():
     assert cfg.hours[1] is None
 
 
+def test_lightconfig_drops_corrupt_cell_values_not_whole_config():
+    # A cell whose values can't be coerced must not abort loading the config;
+    # only that cell falls back to the sun.
+    cfg = LightConfig(
+        hours=[
+            {"brightness": "garbage", "color_temp": 3000},
+            {"brightness": 40, "color_temp": None},
+            {"brightness": 40, "color_temp": 3000},
+        ]
+    )
+    assert cfg.hours[0] is None
+    assert cfg.hours[1] is None
+    assert cfg.hours[2] == {"brightness": 40, "color_temp": 3000}
+
+
+def test_inverted_ranges_are_reordered():
+    light = LightConfig(
+        min_brightness=90, max_brightness=10, min_color_temp=5000, max_color_temp=2000
+    )
+    assert (light.min_brightness, light.max_brightness) == (10, 90)
+    assert (light.min_color_temp, light.max_color_temp) == (2000, 5000)
+
+    sun = SunConfig(min_brightness=80, max_brightness=20)
+    assert (sun.min_brightness, sun.max_brightness) == (20, 80)
+
+
 def test_schema_round_trip():
     schema = Schema(
         id="evening",

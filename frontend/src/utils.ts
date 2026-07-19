@@ -87,8 +87,11 @@ export function hexToRgb(hex: string): [number, number, number] {
   ];
 }
 
-// Fractional local hour-of-day right now (e.g. 14.5 at 14:30).
+// Local hour-of-day right now, snapped to the timeline scrubber's half-hour
+// grid (e.g. 14.5 at 14:40) and clamped to its 0..23.5 range, so the clock
+// label always matches the thumb position.
 export function currentHour(): number {
   const now = new Date();
-  return now.getHours() + now.getMinutes() / 60;
+  const hour = now.getHours() + now.getMinutes() / 60;
+  return Math.min(23.5, Math.round(hour * 2) / 2);
 }

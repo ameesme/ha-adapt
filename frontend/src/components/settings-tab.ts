@@ -1,14 +1,41 @@
-import { html, type TemplateResult } from "lit";
-import { customElement } from "lit/decorators.js";
+import { LitElement, html, type TemplateResult } from "lit";
+import { customElement, property } from "lit/decorators.js";
 
-import { TabBase } from "../base-tab";
+import type { HaAdaptApi } from "../api";
 import { checkboxField, coordField, numberField } from "../form-fields";
 import { baseStyles } from "../theme";
-import type { GlobalSettings } from "../types";
+import type { ConfigPayload, GlobalSettings } from "../types";
 
+// Receives the current config + api, and reports results upward via bubbling
+// events so the panel owns state.
 @customElement("ha-adapt-settings-tab")
-export class SettingsTab extends TabBase {
+export class SettingsTab extends LitElement {
   static override styles = baseStyles;
+
+  @property({ attribute: false }) config!: ConfigPayload;
+  @property({ attribute: false }) api!: HaAdaptApi;
+
+  /** Run an API mutation and bubble the resulting config (or error) up. */
+  private async run(promise: Promise<ConfigPayload>): Promise<void> {
+    try {
+      const config = await promise;
+      this.dispatchEvent(
+        new CustomEvent("config-changed", {
+          detail: config,
+          bubbles: true,
+          composed: true,
+        })
+      );
+    } catch (err) {
+      this.dispatchEvent(
+        new CustomEvent("panel-error", {
+          detail: String(err),
+          bubbles: true,
+          composed: true,
+        })
+      );
+    }
+  }
 
   override render(): TemplateResult {
     const s = this.config.settings;
@@ -31,6 +58,11 @@ export class SettingsTab extends TabBase {
           s.autoreset_control,
           (v) => save({ autoreset_control: v })
         )}
+        ${numberField(
+          "Split-command delay (ms)",
+          s.send_split_delay,
+          (v) => save({ send_split_delay: v })
+        )}
         ${coordField("Sun latitude", s.sun_latitude, (v) =>
           save({ sun_latitude: v })
         )}
@@ -40,7 +72,8 @@ export class SettingsTab extends TabBase {
       </div>
       <p class="muted">
         Leave the coordinates blank to use Home Assistant's own location for sun
-        calculation.
+        calculation. The split-command delay is the gap between the two turn-on
+        calls for lights with "Split commands" enabled.
       </p>
       <div class="actions">
         ${checkboxField("Take over control", s.take_over_control, (v) =>

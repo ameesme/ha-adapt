@@ -14,6 +14,7 @@ from homeassistant.components import frontend, websocket_api
 from homeassistant.components.http import StaticPathConfig
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import area_registry as ar
+from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
 import voluptuous as vol
 
@@ -26,7 +27,7 @@ from .const import (
     PANEL_URL_PATH,
 )
 from .coordinator import AdaptCoordinator, get_coordinator
-from .models import GlobalSettings, Schema, StoreData
+from .models import GlobalSettings, Schema
 
 
 def _bundle_token(path: str) -> str:
@@ -82,20 +83,20 @@ def async_remove_panel(hass: HomeAssistant) -> None:
 def _lights_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> list[dict]:
     ent_reg = er.async_get(hass)
     area_reg = ar.async_get(hass)
+    dev_reg = dr.async_get(hass)
     lights = []
     for entity_id in coordinator.controlled_lights:
         state = hass.states.get(entity_id)
-        target = coordinator.compute_preview(entity_id)
         # Resolve area name via entity -> device -> area chain
         area_name: str | None = None
         if entry := ent_reg.async_get(entity_id):
             area_id = entry.area_id
-            if area_id is None and entry.device_id:
-                from homeassistant.helpers import device_registry as dr
-
-                dev_reg = dr.async_get(hass)
-                if device := dev_reg.async_get(entry.device_id):
-                    area_id = device.area_id
+            if (
+                area_id is None
+                and entry.device_id
+                and (device := dev_reg.async_get(entry.device_id))
+            ):
+                area_id = device.area_id
             if area_id and (area := area_reg.async_get_area(area_id)):
                 area_name = area.name
         lights.append(
@@ -103,13 +104,7 @@ def _lights_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> list[
                 "entity_id": entity_id,
                 "name": state.name if state else entity_id,
                 "area_name": area_name,
-                "state": state.state if state else "unavailable",
-                "manual_control": coordinator.is_manual(entity_id),
                 "supports_rgb": coordinator.supports_rgb(entity_id),
-                "target": {
-                    "brightness_pct": target.brightness_pct,
-                    "color_temp_kelvin": target.color_temp_kelvin,
-                },
             }
         )
     # Group by area (unassigned last), then alphabetically by name.
@@ -130,7 +125,6 @@ def _config_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> dict:
         "schemas": {sid: schema.to_dict() for sid, schema in data.schemas.items()},
         "active_schema_id": data.active_schema_id,
         "lights": _lights_payload(hass, coordinator),
-        "enabled": coordinator.enabled,
     }
 
 
@@ -152,12 +146,9 @@ def _register_ws_commands(hass: HomeAssistant) -> None:
         ws_save_schema,
         ws_delete_schema,
         ws_set_active_schema,
-        ws_set_manual_control,
         ws_timeline,
         ws_preview,
         ws_apply,
-        ws_export,
-        ws_import,
     ):
         websocket_api.async_register_command(hass, handler)
 
@@ -248,22 +239,6 @@ async def ws_set_active_schema(hass, connection, msg) -> None:
     connection.send_result(msg["id"], _config_payload(hass, coordinator))
 
 
-@websocket_api.websocket_command(
-    {
-        vol.Required("type"): "ha_adapt/set_manual_control",
-        vol.Required("entity_id"): str,
-        vol.Required("manual_control"): bool,
-    }
-)
-@websocket_api.async_response
-async def ws_set_manual_control(hass, connection, msg) -> None:
-    coordinator = _error_if_not_ready(connection, msg)
-    if coordinator is None:
-        return
-    coordinator.set_manual_control(msg["entity_id"], msg["manual_control"])
-    connection.send_result(msg["id"], _config_payload(hass, coordinator))
-
-
 def _resolve_schema(coordinator: AdaptCoordinator, msg) -> Schema | None:
     """The inline draft ``schema`` if given, else the stored one by id."""
     if msg.get("schema"):
@@ -322,29 +297,5 @@ async def ws_apply(hass, connection, msg) -> None:
         return
     raw = msg.get("entity_id")
     entity_ids = [raw] if isinstance(raw, str) else raw
-    await coordinator.async_apply(entity_ids, force=True)
-    connection.send_result(msg["id"], _config_payload(hass, coordinator))
-
-
-@websocket_api.websocket_command({vol.Required("type"): "ha_adapt/export"})
-@websocket_api.async_response
-async def ws_export(hass, connection, msg) -> None:
-    coordinator = _error_if_not_ready(connection, msg)
-    if coordinator is not None:
-        connection.send_result(msg["id"], coordinator.data.to_dict())
-
-
-@websocket_api.websocket_command(
-    {
-        vol.Required("type"): "ha_adapt/import",
-        vol.Required("data"): dict,
-    }
-)
-@websocket_api.async_response
-async def ws_import(hass, connection, msg) -> None:
-    coordinator = _error_if_not_ready(connection, msg)
-    if coordinator is None:
-        return
-    coordinator.store.data = StoreData.from_dict(msg["data"])
-    await coordinator.async_apply_config_change()
+    await coordinator.async_apply(entity_ids)
     connection.send_result(msg["id"], _config_payload(hass, coordinator))

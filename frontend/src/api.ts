@@ -42,13 +42,6 @@ export class HaAdaptApi {
     return this.send("ha_adapt/set_active_schema", { schema_id: schemaId });
   }
 
-  setManualControl(entityId: string, manual: boolean): Promise<ConfigPayload> {
-    return this.send("ha_adapt/set_manual_control", {
-      entity_id: entityId,
-      manual_control: manual,
-    });
-  }
-
   // Pass the (possibly unsaved) draft schema so the timeline/preview reflect
   // edits live, without persisting on every change.
   timeline(schema: Schema): Promise<TimelineData> {

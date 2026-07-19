@@ -35,6 +35,7 @@ from homeassistant.const import (
     ATTR_ENTITY_ID,
     SERVICE_TURN_OFF,
     SERVICE_TURN_ON,
+    STATE_OFF,
     STATE_ON,
     SUN_EVENT_SUNRISE,
     SUN_EVENT_SUNSET,
@@ -115,11 +116,17 @@ class AdaptCoordinator:
         self._runtime: dict[str, LightRuntime] = {}
 
         self._unsub_interval: Callable[[], None] | None = None
+        self._interval_seconds: int | None = None
         self._unsub_state: Callable[[], None] | None = None
         self._extra_unsubs: list[Callable[[], None]] = []
 
-        # Serialises full adaptation passes so they can't overlap.
+        # Serialises adaptation/preview passes so they can't interleave (the
+        # IKEA split path awaits a sleep mid-light, so passes really do yield).
         self._adapt_lock = asyncio.Lock()
+
+        # Last target sent per light while scrubbing the preview, so flat
+        # sections of the curve don't re-send identical commands each step.
+        self._last_preview_targets: dict[str, Target] = {}
 
         # Context ids of service calls we made, so we can tell our own writes
         # apart from manual changes. Bounded to avoid unbounded growth.
@@ -199,8 +206,14 @@ class AdaptCoordinator:
                     rt.auto_reset_unsub()
 
     def _schedule_interval(self) -> None:
+        # Only (re)start the timer when the interval actually changed —
+        # otherwise every debounced panel save would reset the countdown and
+        # the periodic pass would never fire while editing.
+        if self._unsub_interval and self._interval_seconds == self.settings.interval:
+            return
         if self._unsub_interval:
             self._unsub_interval()
+        self._interval_seconds = self.settings.interval
         self._unsub_interval = async_track_time_interval(
             self.hass,
             self._handle_interval,
@@ -236,34 +249,37 @@ class AdaptCoordinator:
             return  # previous pass still running; skip this tick
         self.hass.async_create_task(self.async_adapt_all())
 
-    async def async_adapt_all(self, force: bool = False) -> None:
+    async def async_adapt_all(self) -> None:
         async with self._adapt_lock:
             now = dt_util.utcnow()
             drives = self._sun_drives(self.data.active_schema.sun, now)
             for entity_id in self._lights:
-                await self.async_adapt_one(
-                    entity_id, force=force, now=now, drives=drives
-                )
+                await self.async_adapt_one(entity_id, now=now, drives=drives)
+
+    async def _adapt_one_locked(self, entity_id: str, initial: bool = False) -> None:
+        """Adapt a single light under the lock (for fire-and-forget tasks)."""
+        async with self._adapt_lock:
+            await self.async_adapt_one(entity_id, initial=initial)
 
     async def async_apply(
         self,
         entity_ids: list[str] | None = None,
-        force: bool = True,
         turn_on: bool = False,
     ) -> None:
         """Public 'apply now' entry point used by the service/panel.
 
-        ``turn_on`` lets the apply service light up currently-off lights (to
+        Always forced (it overrides manual control — that's the point of an
+        explicit apply). ``turn_on`` lets it light up currently-off lights (to
         their scheduled value); a scheduled 0% still leaves them off.
         """
-        targets = entity_ids or self._lights
-        for entity_id in targets:
-            if entity_id in self._runtime:
-                await self.async_adapt_one(
-                    entity_id, force=force, allow_turn_on=turn_on
-                )
-            else:
-                await self._apply_external(entity_id, allow_turn_on=turn_on)
+        async with self._adapt_lock:
+            for entity_id in entity_ids or self._lights:
+                if entity_id in self._runtime:
+                    await self.async_adapt_one(
+                        entity_id, force=True, allow_turn_on=turn_on
+                    )
+                else:
+                    await self._apply_external(entity_id, allow_turn_on=turn_on)
 
     async def _apply_external(self, entity_id: str, allow_turn_on: bool) -> None:
         """Apply the sun default to a light that isn't one of ours.
@@ -276,8 +292,6 @@ class AdaptCoordinator:
         if state is None:
             return
         target = self._compute_target(entity_id, dt_util.utcnow())
-        if target.is_empty:
-            return
         light_cfg = self.data.active_schema.light_config(entity_id)
         await self._drive_light(
             entity_id,
@@ -310,8 +324,26 @@ class AdaptCoordinator:
         if now is None:
             now = dt_util.utcnow()
         target = self._compute_target(entity_id, now, drives)
-        if target.is_empty:
+        if (
+            initial
+            and target.brightness_pct is not None
+            and target.brightness_pct <= 0
+        ):
+            # The schedule says "off" but the light was just turned on by the
+            # user — their intent wins. Flag it manual so the periodic pass
+            # doesn't switch it off either; auto-reset (if configured) hands
+            # it back to the schedule later.
+            self._set_manual_control(entity_id, True)
             return
+        if (
+            not force
+            and not initial
+            and not allow_turn_on
+            and rt.last_target is not None
+            and target == rt.last_target
+            and self._already_at_target(state, target)
+        ):
+            return  # nothing changed since our last write; skip the re-send
         light_cfg = self.data.active_schema.light_config(entity_id)
         # Turn-on, forced apply and preview-off snap quickly; the periodic
         # interval pass eases over the longer transition.
@@ -330,6 +362,7 @@ class AdaptCoordinator:
         ):
             rt.last_target = target
             rt.settle_deadline = self.hass.loop.time() + transition + SETTLE_GRACE
+            self._last_preview_targets.pop(entity_id, None)
 
     def _compute_target(
         self,
@@ -342,6 +375,30 @@ class AdaptCoordinator:
             drives = self._sun_drives(schema.sun, now)
         light_cfg = schema.light_config(entity_id)
         return engine.light_target(light_cfg, schema.sun, drives, _local_hour(now))
+
+    def _already_at_target(self, state, target: Target) -> bool:
+        """Whether re-sending ``target`` would be a no-op.
+
+        True for an off light (an unforced pass never turns lights on), or an
+        on light already reporting the target's values within the
+        manual-control thresholds. A light that reports none of the attributes
+        we control can't be verified, so it always gets the send.
+        """
+        if state.state != STATE_ON:
+            return True
+        if target.brightness_pct is not None and target.brightness_pct <= 0:
+            return False  # scheduled off, light on: the turn-off must happen
+        attrs = state.attributes
+        brightness = attrs.get(ATTR_BRIGHTNESS)
+        color_temp = attrs.get(ATTR_COLOR_TEMP_KELVIN)
+        rgb = attrs.get(ATTR_RGB_COLOR)
+        if brightness is None and color_temp is None and rgb is None:
+            return False
+        if engine.target_changed(target, brightness, color_temp):
+            return False
+        if color_temp is None and rgb is not None:
+            return not engine.color_is_manual(target, rgb)
+        return True
 
     def _sun_drives(self, sun: SunConfig, now: datetime) -> list[DriveSignal]:
         """The sun's normalized drive for each of the 24 local hours of today."""
@@ -555,8 +612,11 @@ class AdaptCoordinator:
         old_state = event.data.get("old_state")
 
         if new_state is None or new_state.state != STATE_ON:
-            # Off/unavailable: control reverts to us for next time it's on.
-            self._set_manual_control(entity_id, False)
+            # Genuinely off: control reverts to us for next time it's on. An
+            # `unavailable`/`unknown` blip (flaky Zigbee, reload) must not
+            # silently drop a manual override.
+            if new_state is not None and new_state.state == STATE_OFF:
+                self._set_manual_control(entity_id, False)
             return
 
         was_on = old_state is not None and old_state.state == STATE_ON
@@ -565,7 +625,7 @@ class AdaptCoordinator:
             # user explicitly asked for values (the interceptor flags that).
             if not self._runtime[entity_id].manual_control:
                 self.hass.async_create_task(
-                    self.async_adapt_one(entity_id, initial=True)
+                    self._adapt_one_locked(entity_id, initial=True)
                 )
             return
 
@@ -606,23 +666,30 @@ class AdaptCoordinator:
         rt = self._runtime.get(entity_id)
         if rt is None:
             return
-        if rt.manual_control == manual:
-            return
+        changed = rt.manual_control != manual
         rt.manual_control = manual
 
         if rt.auto_reset_unsub:
             rt.auto_reset_unsub()
             rt.auto_reset_unsub = None
 
+        # (Re)armed on every manual event, not only the first, so the reset
+        # counts from the *last* manual change — a sliding window.
         if manual and self.settings.autoreset_control > 0:
             rt.auto_reset_unsub = async_call_later(
                 self.hass,
                 self.settings.autoreset_control,
                 partial(self._auto_reset, entity_id),
             )
-        if not manual:
-            self.hass.async_create_task(self.async_adapt_one(entity_id))
 
+        if not changed:
+            return
+        if not manual:
+            # Adapt the light back to schedule — but only if it's actually on
+            # (this also fires when a light just turned off).
+            state = self.hass.states.get(entity_id)
+            if state is not None and state.state == STATE_ON:
+                self.hass.async_create_task(self._adapt_one_locked(entity_id))
         async_dispatcher_send(self.hass, SIGNAL_CONFIG_UPDATED)
 
     @callback
@@ -630,20 +697,12 @@ class AdaptCoordinator:
         self._set_manual_control(entity_id, False)
 
     def set_manual_control(self, entity_id: str, manual: bool) -> None:
-        """Public setter used by the service/panel."""
+        """Public setter used by the ``ha_adapt.set_manual_control`` service."""
         self._set_manual_control(entity_id, manual)
-
-    def is_manual(self, entity_id: str) -> bool:
-        rt = self._runtime.get(entity_id)
-        return bool(rt and rt.manual_control)
 
     def supports_rgb(self, entity_id: str) -> bool:
         """Whether the light can take an RGB colour (for the web-ui editor)."""
         return self._supported_modes(entity_id)[2]
-
-    def compute_preview(self, entity_id: str) -> Target:
-        """Return what we *would* apply right now (for the web-ui preview)."""
-        return self._compute_target(entity_id, dt_util.utcnow())
 
     # --- web-ui timeline + stepping preview ---------------------------------
 
@@ -654,7 +713,7 @@ class AdaptCoordinator:
         sun_vals = engine.sun_values(schema.sun, drives)
         sun = [
             {"brightness": bri, "color_temp": temp}
-            for bri, temp in engine.sun_row(schema.sun, drives)
+            for bri, temp in engine.sun_row(sun_vals)
         ]
         lights: dict[str, list[dict]] = {}
         for entity_id in self._lights:
@@ -677,21 +736,24 @@ class AdaptCoordinator:
         self, schema: Schema, hour: float, apply: bool
     ) -> dict[str, dict]:
         """Compute (and optionally apply) targets at a simulated ``hour``."""
-        drives = self._sun_drives(schema.sun, dt_util.utcnow())
-        targets: dict[str, dict] = {}
-        for entity_id in self._lights:
-            cfg = schema.light_config(entity_id)
-            target = engine.light_target(cfg, schema.sun, drives, hour)
-            targets[entity_id] = {
-                "brightness_pct": target.brightness_pct,
-                "color_temp_kelvin": target.color_temp_kelvin,
-            }
-            if apply:
+        async with self._adapt_lock:
+            drives = self._sun_drives(schema.sun, dt_util.utcnow())
+            targets: dict[str, dict] = {}
+            for entity_id in self._lights:
+                cfg = schema.light_config(entity_id)
+                target = engine.light_target(cfg, schema.sun, drives, hour)
+                targets[entity_id] = {
+                    "brightness_pct": target.brightness_pct,
+                    "color_temp_kelvin": target.color_temp_kelvin,
+                }
+                if not apply or self._last_preview_targets.get(entity_id) == target:
+                    continue
                 state = self.hass.states.get(entity_id)
                 if state is not None and state.state == STATE_ON:
                     # Short transition so scrubbing the timeline is responsive.
                     await self._apply_light(entity_id, cfg, target, PREVIEW_TRANSITION)
-        return targets
+                    self._last_preview_targets[entity_id] = target
+            return targets
 
 
 def _local_hour(now: datetime) -> float:
@@ -701,10 +763,9 @@ def _local_hour(now: datetime) -> float:
 
 
 def get_coordinator(hass: HomeAssistant) -> AdaptCoordinator | None:
-    """Return the (single) coordinator instance, if set up."""
-    instances = [
-        value
-        for key, value in hass.data.get(DOMAIN, {}).items()
-        if isinstance(value, AdaptCoordinator)
-    ]
-    return instances[0] if instances else None
+    """Return the (single) coordinator instance, if set up.
+
+    ``single_config_entry`` is enforced in the manifest, so ``hass.data`` holds
+    the coordinator directly.
+    """
+    return hass.data.get(DOMAIN)

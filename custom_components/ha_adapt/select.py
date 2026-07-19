@@ -24,7 +24,7 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the active-schema select."""
-    coordinator: AdaptCoordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator: AdaptCoordinator = hass.data[DOMAIN]
     async_add_entities([AdaptSchemaSelect(coordinator, entry)])
 
 

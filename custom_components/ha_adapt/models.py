@@ -55,6 +55,11 @@ def _coerce(cls: type, data: dict[str, Any]) -> dict[str, Any]:
     return {k: v for k, v in data.items() if k in valid}
 
 
+def _order_range(lo: Any, hi: Any) -> tuple[Any, Any]:
+    """Return (lo, hi) sorted, so a saved min > max can't invert a clamp."""
+    return (hi, lo) if lo > hi else (lo, hi)
+
+
 def _normalize_rgb(value: Any) -> list[int] | None:
     """Return a clamped [r, g, b] list, or None if not a valid triple."""
     if not isinstance(value, (list, tuple)) or len(value) != 3:
@@ -72,10 +77,13 @@ def _normalize_hours(hours: list[Any] | None) -> list[HourCell]:
         if i >= HOURS_PER_DAY:
             break
         if isinstance(cell, dict) and "brightness" in cell and "color_temp" in cell:
-            normalized: dict[str, Any] = {
-                "brightness": int(cell["brightness"]),
-                "color_temp": int(cell["color_temp"]),
-            }
+            try:
+                normalized: dict[str, Any] = {
+                    "brightness": int(cell["brightness"]),
+                    "color_temp": int(cell["color_temp"]),
+                }
+            except (TypeError, ValueError):
+                continue  # corrupt cell -> fall back to the sun for that hour
             rgb = _normalize_rgb(cell.get("rgb_color"))
             if rgb is not None:
                 normalized["rgb_color"] = rgb
@@ -102,6 +110,14 @@ class SunConfig:
     max_sunrise_time: str | None = None
     min_sunset_time: str | None = None
     max_sunset_time: str | None = None
+
+    def __post_init__(self) -> None:
+        self.min_brightness, self.max_brightness = _order_range(
+            self.min_brightness, self.max_brightness
+        )
+        self.min_color_temp, self.max_color_temp = _order_range(
+            self.min_color_temp, self.max_color_temp
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {f.name: getattr(self, f.name) for f in fields(self)}
@@ -133,6 +149,12 @@ class LightConfig:
         self.hours = _normalize_hours(self.hours)
         if self.limit_mode not in LIMIT_MODES:
             self.limit_mode = DEFAULT_LIMIT_MODE
+        self.min_brightness, self.max_brightness = _order_range(
+            self.min_brightness, self.max_brightness
+        )
+        self.min_color_temp, self.max_color_temp = _order_range(
+            self.min_color_temp, self.max_color_temp
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {f.name: getattr(self, f.name) for f in fields(self)}
@@ -186,7 +208,6 @@ class GlobalSettings:
     send_split_delay: int = DEFAULT_SEND_SPLIT_DELAY
     autoreset_control: int = DEFAULT_AUTORESET_CONTROL
     take_over_control: bool = True
-    detect_non_ha_changes: bool = False
     # Optional override for sun calculation; both None = use Home Assistant's
     # configured location.
     sun_latitude: float | None = None

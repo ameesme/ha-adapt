@@ -134,14 +134,6 @@ class Target:
     color_temp_kelvin: int | None
     rgb_color: tuple[int, int, int] | None = None
 
-    @property
-    def is_empty(self) -> bool:
-        return (
-            self.brightness_pct is None
-            and self.color_temp_kelvin is None
-            and self.rgb_color is None
-        )
-
 
 def sun_snapshot(now: datetime, events: list[tuple[datetime, str]]) -> SunSnapshot:
     """Build a :class:`SunSnapshot` from sorted sun events bracketing ``now``."""
@@ -241,12 +233,9 @@ def sun_values(
     ]
 
 
-def sun_row(sun: SunConfig, drives: list[DriveSignal]) -> list[tuple[int, int]]:
+def sun_row(sun_vals: list[tuple[float, float]]) -> list[tuple[int, int]]:
     """The sun's own (brightness, colorTemp) for each of the 24 hours."""
-    return [
-        (int(round(bri)), _round5(temp))
-        for bri, temp in sun_values(sun, drives)
-    ]
+    return [(int(round(bri)), _round5(temp)) for bri, temp in sun_vals]
 
 
 RgbColor = tuple[int, int, int]
