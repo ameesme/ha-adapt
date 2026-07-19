@@ -266,12 +266,14 @@ export class SchemaEditor extends LitElement {
         background: rgba(61, 44, 30, 0.4);
         animation: backdrop-fade 240ms ease-out;
       }
-      /* Slide back out before actually closing (see _closeDrawer). */
+      /* Slide back out before actually closing (see _closeDrawer). The
+         fade-out needs its own keyframes name — re-declaring the entry
+         animation with "reverse" doesn't retrigger it in WebKit. */
       dialog.drawer[open].closing {
         animation: drawer-down 240ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
       }
       dialog.drawer[open].closing::backdrop {
-        animation: backdrop-fade 240ms ease-out reverse forwards;
+        animation: backdrop-fade-out 240ms ease-out forwards;
       }
       @keyframes drawer-up {
         from {
@@ -285,6 +287,11 @@ export class SchemaEditor extends LitElement {
       }
       @keyframes backdrop-fade {
         from {
+          opacity: 0;
+        }
+      }
+      @keyframes backdrop-fade-out {
+        to {
           opacity: 0;
         }
       }
@@ -861,8 +868,15 @@ export class SchemaEditor extends LitElement {
             back on automatically.
           </p>`
         : nothing}
-      ${rangeField("Color temp", colorTemp, KELVIN_MIN, KELVIN_MAX, 50, "K", (v) =>
-        setCell({ color_temp: v })
+      ${rangeField(
+        "Color temp",
+        colorTemp,
+        KELVIN_MIN,
+        KELVIN_MAX,
+        50,
+        "K",
+        (v) => setCell({ color_temp: v }),
+        kelvinGradientCss(KELVIN_MIN, KELVIN_MAX)
       )}
       ${light?.supports_rgb
         ? html`<label class="toggle">

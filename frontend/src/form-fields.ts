@@ -153,13 +153,17 @@ export function rangeField(
   max: number,
   step: number,
   unit: string,
-  onChange: (value: number) => void
+  onChange: (value: number) => void,
+  gradient?: string
 ): TemplateResult {
   return html`<label class="field">
     <span class="field-head">
       <span>${label}</span>
       <b>${value}${unit}</b>
     </span>
+    ${gradient
+      ? html`<div class="temp-gradient" style="background:${gradient}"></div>`
+      : nothing}
     <input
       type="range"
       min=${min}
@@ -204,13 +208,14 @@ export function checkboxField(
   </label>`;
 }
 
+// iOS-style row: label on the left, the select on the right.
 export function selectField(
   label: string,
   value: string,
   options: Array<{ value: string; label: string }>,
   onChange: (value: string) => void
 ): TemplateResult {
-  return html`<label class="field"
+  return html`<label class="field inline"
     >${label}
     <select
       @change=${(e: Event) => onChange((e.target as HTMLSelectElement).value)}

@@ -88,6 +88,18 @@ export const baseStyles = css`
     color: var(--text-soft);
   }
 
+  /* iOS-style single-line field: label left, control right. */
+  label.field.inline {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  label.field.inline select {
+    width: auto;
+    flex: 0 1 auto;
+  }
+
   /* Small uppercase section heading; as a <details> it reveals its info text.
      Darker than the field labels so the hierarchy reads: tight to its fields,
      generous space above. */
