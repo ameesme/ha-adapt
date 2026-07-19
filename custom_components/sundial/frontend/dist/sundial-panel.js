@@ -1643,14 +1643,14 @@ b.styles = [
         :host {
           min-height: 0;
         }
-        /* Fill the viewport; the grid fits the width (no horizontal
-           scrolling) and scrolls internally only vertically. */
+        /* Fill the viewport to the very bottom; the grid fits the width (no
+           horizontal scrolling) and scrolls internally only vertically. */
         .card {
           padding: 0;
           height: 100%;
           display: flex;
           flex-direction: column;
-          margin-bottom: 4px;
+          margin-bottom: 0;
         }
         .scrub-bar {
           display: block;
@@ -1667,6 +1667,8 @@ b.styles = [
           overflow-x: hidden;
           overscroll-behavior: contain;
           -webkit-overflow-scrolling: touch;
+          /* Let the last row scroll clear of the legend below. */
+          padding-bottom: 12px;
         }
         .scroll.locked {
           overflow: hidden;
@@ -1716,11 +1718,12 @@ b.styles = [
           z-index: 4;
           background: var(--bg);
         }
-        /* Clear the iOS home indicator without stacking extra margin on it. */
+        /* Pinned at the very bottom edge; the inset keeps the text above the
+           iOS home indicator. */
         .legend {
           flex: none;
-          padding-top: 8px;
-          padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+          padding-top: 6px;
+          padding-bottom: max(6px, env(safe-area-inset-bottom, 0px));
         }
       }
     `
