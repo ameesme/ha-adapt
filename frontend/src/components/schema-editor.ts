@@ -257,43 +257,25 @@ export class SchemaEditor extends LitElement {
         color: var(--text);
         box-shadow: 0 -8px 30px rgba(120, 80, 40, 0.3);
       }
+      /* Class-driven transitions: the dialog opens off-screen, .shown slides
+         it in; removing .shown slides it back out (and fades the backdrop)
+         before _closeDrawer actually closes it. */
       dialog.drawer[open] {
         display: flex;
         flex-direction: column;
-        animation: drawer-up 320ms cubic-bezier(0.32, 0.72, 0, 1);
+        transform: translateY(100%);
+        transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+      }
+      dialog.drawer[open].shown {
+        transform: translateY(0);
       }
       dialog.drawer::backdrop {
         background: rgba(61, 44, 30, 0.4);
-        animation: backdrop-fade 240ms ease-out;
+        opacity: 0;
+        transition: opacity 240ms ease-out;
       }
-      /* Slide back out before actually closing (see _closeDrawer). The
-         fade-out needs its own keyframes name — re-declaring the entry
-         animation with "reverse" doesn't retrigger it in WebKit. */
-      dialog.drawer[open].closing {
-        animation: drawer-down 240ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
-      }
-      dialog.drawer[open].closing::backdrop {
-        animation: backdrop-fade-out 240ms ease-out forwards;
-      }
-      @keyframes drawer-up {
-        from {
-          transform: translateY(100%);
-        }
-      }
-      @keyframes drawer-down {
-        to {
-          transform: translateY(100%);
-        }
-      }
-      @keyframes backdrop-fade {
-        from {
-          opacity: 0;
-        }
-      }
-      @keyframes backdrop-fade-out {
-        to {
-          opacity: 0;
-        }
+      dialog.drawer[open].shown::backdrop {
+        opacity: 1;
       }
       .drawer-head {
         flex: none;
@@ -460,9 +442,15 @@ export class SchemaEditor extends LitElement {
 
   // The drawer is rendered only while something is selected on mobile; open
   // it as a modal (backdrop, Esc, focus trap for free) right after render.
+  // The forced reflow between showModal and .shown makes the off-screen
+  // start state stick, so the class change transitions instead of snapping.
   protected override updated(): void {
     const drawer = this.renderRoot.querySelector<HTMLDialogElement>("dialog.drawer");
-    if (drawer && !drawer.open) drawer.showModal();
+    if (drawer && !drawer.open) {
+      drawer.showModal();
+      drawer.getBoundingClientRect();
+      drawer.classList.add("shown");
+    }
   }
 
   // Render/preview the *draft* (unsaved) schema so edits are visible live.
@@ -731,19 +719,19 @@ export class SchemaEditor extends LitElement {
   // Slide the sheet out (and fade the backdrop) before actually closing.
   private _closeDrawer = (): void => {
     const dlg = this.renderRoot.querySelector<HTMLDialogElement>("dialog.drawer");
-    if (!dlg || !dlg.open || dlg.classList.contains("closing")) return;
-    dlg.classList.add("closing");
+    if (!dlg || !dlg.open || !dlg.classList.contains("shown")) return;
     const finish = (): void => {
       window.clearTimeout(fallback);
-      dlg.removeEventListener("animationend", onEnd);
+      dlg.removeEventListener("transitionend", onEnd);
       if (dlg.open) dlg.close();
     };
-    const onEnd = (e: AnimationEvent): void => {
-      if (e.animationName === "drawer-down") finish();
+    const onEnd = (e: TransitionEvent): void => {
+      if (e.target === dlg && e.propertyName === "transform") finish();
     };
-    dlg.addEventListener("animationend", onEnd);
-    // Safety net in case the animation never fires (reduced motion etc.).
-    const fallback = window.setTimeout(finish, 350);
+    dlg.addEventListener("transitionend", onEnd);
+    dlg.classList.remove("shown");
+    // Safety net in case the transition never fires (reduced motion etc.).
+    const fallback = window.setTimeout(finish, 400);
   };
 
   // Esc: intercept the native instant close and run the slide-out instead.
@@ -903,9 +891,9 @@ export class SchemaEditor extends LitElement {
                 />`
               : nothing}`
         : nothing}
-      <div class="actions">
+      <div class="center-cta">
         <button class="btn ghost" @click=${() => this._setCell(ref, null)}>
-          Use sun (clear)
+          Use sun
         </button>
       </div>
     `;

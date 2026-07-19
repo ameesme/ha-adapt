@@ -51,11 +51,12 @@ export class TimelineGrid extends LitElement {
         grid-template-columns: repeat(24, 1fr);
         gap: 1px;
       }
-      /* Continuous dim reference line at the 100% mark. */
-      .cells::before {
+      /* Continuous dim reference lines at the 100% mark (top) and baseline
+         (bottom). Fills paint above them so even 1px values stay visible. */
+      .cells::before,
+      .cells::after {
         content: "";
         position: absolute;
-        top: 0;
         left: 0;
         right: 0;
         height: 1px;
@@ -63,6 +64,12 @@ export class TimelineGrid extends LitElement {
         opacity: 0.5;
         z-index: 2;
         pointer-events: none;
+      }
+      .cells::before {
+        top: 0;
+      }
+      .cells::after {
+        bottom: 0;
       }
       /* Thin light playhead at the currently shown time. */
       .cells .playhead {
@@ -72,7 +79,7 @@ export class TimelineGrid extends LitElement {
         width: 1px;
         background: var(--accent);
         opacity: 0.55;
-        z-index: 2;
+        z-index: 4;
         pointer-events: none;
       }
       .hours {
@@ -182,6 +189,7 @@ export class TimelineGrid extends LitElement {
         left: 0;
         right: 0;
         bottom: 0;
+        z-index: 3;
       }
       .cell.explicit {
         background: var(--border);
