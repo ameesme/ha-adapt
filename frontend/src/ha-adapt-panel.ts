@@ -35,9 +35,28 @@ export class HaAdaptPanel extends LitElement {
         color: var(--danger);
       }
       @media (max-width: 960px) {
+        /* The page itself doesn't scroll on small screens: the header stays
+           put and the timeline scrolls internally. */
+        :host {
+          height: 100vh;
+          height: 100dvh;
+          min-height: 0;
+          overflow: hidden;
+        }
         .wrap {
-          padding-left: 12px;
-          padding-right: 12px;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          padding: 0 12px;
+          overflow: hidden;
+        }
+        .wrap > .card {
+          flex: none;
+          margin-top: 8px;
+        }
+        ha-adapt-schema-editor {
+          flex: 1 1 auto;
+          min-height: 0;
         }
       }
     `,

@@ -10,6 +10,7 @@ import { customElement, property, state } from "lit/decorators.js";
 
 import type { HaAdaptApi } from "../api";
 import { checkboxField, rangeField, selectField } from "../form-fields";
+import { cogIcon, eyeIcon, plusIcon, starIcon, trashIcon } from "../icons";
 import { baseStyles } from "../theme";
 import type {
   ConfigPayload,
@@ -36,11 +37,17 @@ type Selection =
   | { kind: "cell"; ref: CellRef }
   | { kind: "light"; entityId: string }
   | { kind: "sun" }
+  | { kind: "settings" }
   | null;
+
+// Matches the CSS breakpoint used across the panel's media queries.
+const MOBILE_QUERY = "(max-width: 960px)";
 
 // Edits one schema: an inline editable name, the 24-hour timeline on the left,
 // and a right-hand side panel that shows the editor for whatever is selected
-// (the sun, a light, or an hour cell) plus the global settings.
+// (the sun, a light, or an hour cell) plus the global settings. On small
+// screens the side panel is replaced by a bottom drawer (a native <dialog>)
+// and the header collapses to a single sticky row of icon buttons.
 @customElement("ha-adapt-schema-editor")
 export class SchemaEditor extends LitElement {
   static override styles = [
@@ -104,10 +111,32 @@ export class SchemaEditor extends LitElement {
         background: var(--surface);
         cursor: pointer;
       }
-      @media (max-width: 960px) {
-        .app-title {
-          display: none;
-        }
+      .icon-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        flex: none;
+        padding: 0;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--surface);
+        color: var(--accent-strong);
+        cursor: pointer;
+      }
+      .icon-btn svg {
+        width: 20px;
+        height: 20px;
+      }
+      .icon-btn.active {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff8ef;
+      }
+      .icon-btn.danger {
+        color: var(--danger);
+        border-color: var(--danger);
       }
       .layout {
         display: grid;
@@ -160,18 +189,102 @@ export class SchemaEditor extends LitElement {
         color: var(--accent-strong);
         background: var(--accent-soft);
       }
-      @media (max-width: 960px) {
-        .layout {
-          grid-template-columns: minmax(0, 1fr);
+
+      /* --- bottom drawer (native <dialog>, small screens only) ----------- */
+      dialog.drawer {
+        position: fixed;
+        inset: 0;
+        margin: auto 0 0;
+        width: 100%;
+        max-width: 100%;
+        height: calc(100vh - 40px);
+        height: calc(100dvh - 40px);
+        max-height: none;
+        border: none;
+        border-radius: 16px 16px 0 0;
+        padding: 0;
+        background: var(--surface);
+        color: var(--text);
+        box-shadow: 0 -8px 30px rgba(120, 80, 40, 0.3);
+      }
+      dialog.drawer[open] {
+        display: flex;
+        flex-direction: column;
+        animation: drawer-up 220ms ease-out;
+      }
+      dialog.drawer::backdrop {
+        background: rgba(61, 44, 30, 0.4);
+      }
+      @keyframes drawer-up {
+        from {
+          transform: translateY(100%);
         }
-        /* Flatten the editing card on mobile (no second horizontal padding). */
-        .side.editing {
-          padding-left: 0;
-          padding-right: 0;
-          border: none;
-          border-radius: 0;
-          box-shadow: none;
-          background: transparent;
+      }
+      .drawer-head {
+        flex: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--surface-alt);
+      }
+      .drawer-head h2 {
+        flex: 1;
+        min-width: 0;
+        margin: 0;
+        font-size: 1.05rem;
+        font-weight: 650;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .drawer-head .close {
+        position: static;
+      }
+      .drawer-body {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        padding: 16px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+      }
+
+      @media (max-width: 960px) {
+        :host {
+          display: flex;
+          flex-direction: column;
+          height: 100%;
+          min-height: 0;
+        }
+        .app-title {
+          display: none;
+        }
+        /* Fixed-height single-row sticky bar. */
+        .head {
+          flex: none;
+          position: sticky;
+          top: 0;
+          z-index: 20;
+          background: var(--bg);
+          flex-wrap: nowrap;
+          gap: 6px;
+          height: 52px;
+          margin-bottom: 4px;
+        }
+        input.name {
+          flex: 1 1 auto;
+          min-width: 50px;
+          font-size: 1.05rem;
+        }
+        .layout {
+          flex: 1;
+          min-height: 0;
+          grid-template-columns: minmax(0, 1fr);
+          grid-template-rows: minmax(0, 1fr);
+          gap: 0;
+        }
+        .main {
+          min-height: 0;
         }
       }
     `,
@@ -186,13 +299,25 @@ export class SchemaEditor extends LitElement {
   @state() private _timeline?: TimelineData;
   @state() private _sel: Selection = null;
   @state() private _previewHour = currentHour();
+  @state() private _isMobile = false;
 
   private _previewTimer?: number;
   private _saveTimer?: number;
   private _timelineTimer?: number;
+  private _mql?: MediaQueryList;
+  private readonly _onMqChange = (e: MediaQueryListEvent): void => {
+    this._isMobile = e.matches;
+  };
 
   private get _active(): boolean {
     return this.schema.id === this.config.active_schema_id;
+  }
+
+  override connectedCallback(): void {
+    super.connectedCallback();
+    this._mql = window.matchMedia(MOBILE_QUERY);
+    this._isMobile = this._mql.matches;
+    this._mql.addEventListener("change", this._onMqChange);
   }
 
   protected override willUpdate(changed: PropertyValues): void {
@@ -213,7 +338,15 @@ export class SchemaEditor extends LitElement {
     this._flushSave();
     window.clearTimeout(this._previewTimer);
     window.clearTimeout(this._timelineTimer);
+    this._mql?.removeEventListener("change", this._onMqChange);
     super.disconnectedCallback();
+  }
+
+  // The drawer is rendered only while something is selected on mobile; open
+  // it as a modal (backdrop, Esc, focus trap for free) right after render.
+  protected override updated(): void {
+    const drawer = this.renderRoot.querySelector<HTMLDialogElement>("dialog.drawer");
+    if (drawer && !drawer.open) drawer.showModal();
   }
 
   // Render/preview the *draft* (unsaved) schema so edits are visible live.
@@ -330,23 +463,7 @@ export class SchemaEditor extends LitElement {
           </select>
         </div>
         <span class="grow"></span>
-        <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
-          + New
-        </button>
-        <button
-          class="btn ${this.preview ? "" : "ghost"}"
-          @click=${() => this._emit("preview-toggle", !this.preview)}
-        >
-          Preview
-        </button>
-        ${this._active
-          ? nothing
-          : html`<button class="btn ghost" @click=${this._setActive}>
-              Set active
-            </button>`}
-        ${this._draft.id !== "default"
-          ? html`<button class="btn danger" @click=${this._delete}>Delete</button>`
-          : nothing}
+        ${this._renderActions()}
       </div>
 
       <div class="layout">
@@ -365,31 +482,139 @@ export class SchemaEditor extends LitElement {
           ></ha-adapt-timeline-grid>
         </div>
 
-        <div class="side ${this._sel ? "editing" : ""}">
-          ${this._sel
-            ? html`<button
-                class="close"
-                title="Close"
-                @click=${() => (this._sel = null)}
-              >
-                ✕
-              </button>`
-            : nothing}
-          ${this._renderContext()}
-        </div>
+        ${this._isMobile ? nothing : this._renderSide()}
       </div>
+
+      ${this._isMobile && this._sel ? this._renderDrawer() : nothing}
     `;
   }
 
-  private get _selectedRow(): string | null {
-    const sel = this._sel;
-    if (!sel) return null;
-    if (sel.kind === "sun") return "sun";
-    if (sel.kind === "light") return sel.entityId;
-    return sel.ref.entityId;
+  private _renderActions(): TemplateResult {
+    if (!this._isMobile) {
+      return html`
+        <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
+          + New
+        </button>
+        <button
+          class="btn ${this.preview ? "" : "ghost"}"
+          @click=${() => this._emit("preview-toggle", !this.preview)}
+        >
+          Preview
+        </button>
+        ${this._active
+          ? nothing
+          : html`<button class="btn ghost" @click=${this._setActive}>
+              Set active
+            </button>`}
+        ${this._draft.id !== "default"
+          ? html`<button class="btn danger" @click=${this._delete}>Delete</button>`
+          : nothing}
+      `;
+    }
+    return html`
+      <button
+        class="icon-btn"
+        title="New schema"
+        @click=${() => this._emit("schema-new", null)}
+      >
+        ${plusIcon}
+      </button>
+      <button
+        class="icon-btn ${this.preview ? "active" : ""}"
+        title="Preview on lights"
+        @click=${() => this._emit("preview-toggle", !this.preview)}
+      >
+        ${eyeIcon}
+      </button>
+      ${this._active
+        ? nothing
+        : html`<button
+            class="icon-btn"
+            title="Set as active schema"
+            @click=${this._setActive}
+          >
+            ${starIcon}
+          </button>`}
+      ${this._draft.id !== "default"
+        ? html`<button class="icon-btn danger" title="Delete schema" @click=${this._delete}>
+            ${trashIcon}
+          </button>`
+        : nothing}
+      <button
+        class="icon-btn"
+        title="Global settings"
+        @click=${() => (this._sel = { kind: "settings" })}
+      >
+        ${cogIcon}
+      </button>
+    `;
   }
 
-  private _renderContext(): TemplateResult {
+  private _renderSide(): TemplateResult {
+    return html`<div class="side ${this._sel ? "editing" : ""}">
+      ${this._sel
+        ? html`<button
+            class="close"
+            title="Close"
+            @click=${() => (this._sel = null)}
+          >
+            ✕
+          </button>`
+        : nothing}
+      <h2>${this._contextTitle()}</h2>
+      ${this._renderContextBody()}
+    </div>`;
+  }
+
+  private _renderDrawer(): TemplateResult {
+    return html`<dialog
+      class="drawer"
+      @close=${() => (this._sel = null)}
+      @click=${this._onDrawerClick}
+    >
+      <div class="drawer-head">
+        <h2>${this._contextTitle()}</h2>
+        <button class="close" title="Close" @click=${this._closeDrawer}>✕</button>
+      </div>
+      <div class="drawer-body">${this._renderContextBody()}</div>
+    </dialog>`;
+  }
+
+  private _closeDrawer = (): void => {
+    this.renderRoot.querySelector<HTMLDialogElement>("dialog.drawer")?.close();
+  };
+
+  // A click on the backdrop lands on the <dialog> element itself.
+  private _onDrawerClick = (e: MouseEvent): void => {
+    if (e.target instanceof HTMLDialogElement) e.target.close();
+  };
+
+  private get _selectedRow(): string | null {
+    const sel = this._sel;
+    if (sel?.kind === "sun") return "sun";
+    if (sel?.kind === "light") return sel.entityId;
+    if (sel?.kind === "cell") return sel.ref.entityId;
+    return null;
+  }
+
+  private _lightName(entityId: string): string {
+    return (
+      this.config.lights.find((l) => l.entity_id === entityId)?.name ?? entityId
+    );
+  }
+
+  private _contextTitle(): string {
+    const sel = this._sel;
+    if (sel?.kind === "sun") return "☀️ Sun";
+    if (sel?.kind === "light") return this._lightName(sel.entityId);
+    if (sel?.kind === "cell") {
+      const hour = String(sel.ref.hour).padStart(2, "0");
+      return `${this._lightName(sel.ref.entityId)} · ${hour}:00`;
+    }
+    return "Global settings";
+  }
+
+  private _renderContextBody(): TemplateResult {
     const sel = this._sel;
     if (sel?.kind === "sun") {
       return html`<ha-adapt-sun-config
@@ -400,11 +625,10 @@ export class SchemaEditor extends LitElement {
     }
     if (sel?.kind === "light") return this._renderLightEditor(sel.entityId);
     if (sel?.kind === "cell") return this._renderCellEditor(sel.ref);
-    return html`<h2>Global settings</h2>
-      <ha-adapt-settings-tab
-        .config=${this.config}
-        .api=${this.api}
-      ></ha-adapt-settings-tab>`;
+    return html`<ha-adapt-settings-tab
+      .config=${this.config}
+      .api=${this.api}
+    ></ha-adapt-settings-tab>`;
   }
 
   private _renderCellEditor(ref: CellRef): TemplateResult {
@@ -422,9 +646,6 @@ export class SchemaEditor extends LitElement {
         ...patch,
       });
     return html`
-      <h2>
-        ${light?.name ?? ref.entityId} · ${String(ref.hour).padStart(2, "0")}:00
-      </h2>
       <p class="muted">
         ${explicit
           ? "Explicit override for this hour."
@@ -481,7 +702,6 @@ export class SchemaEditor extends LitElement {
     const light = this.config.lights.find((l) => l.entity_id === entityId);
     const cfg = this._lightCfg(entityId);
     return html`
-      <h2>${light?.name ?? entityId}</h2>
       ${light?.area_name
         ? html`<p class="subtitle">${light.area_name}</p>`
         : nothing}

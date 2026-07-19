@@ -1,6 +1,7 @@
 import { LitElement, html, css, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
+import { cogIcon } from "../icons";
 import { baseStyles } from "../theme";
 import type { LightInfo, TimelineCell, TimelineData } from "../types";
 import { HOURS, currentHour, hourLabel, kelvinToCss } from "../utils";
@@ -63,6 +64,15 @@ export class TimelineGrid extends LitElement {
         flex-direction: column;
         overflow: hidden;
       }
+      .label svg {
+        width: 12px;
+        height: 12px;
+        flex: none;
+        opacity: 0.4;
+      }
+      .label.clickable:hover svg {
+        opacity: 0.9;
+      }
       .label .area {
         font-size: 0.65rem;
         font-weight: 400;
@@ -76,15 +86,6 @@ export class TimelineGrid extends LitElement {
       }
       .label.clickable {
         cursor: pointer;
-      }
-      .label .cog {
-        width: 12px;
-        height: 12px;
-        flex: none;
-        opacity: 0.4;
-      }
-      .label.clickable:hover .cog {
-        opacity: 0.9;
       }
       .sunrow .label {
         color: var(--accent-strong);
@@ -185,9 +186,67 @@ export class TimelineGrid extends LitElement {
         background: var(--surface-alt);
         border: 2px var(--accent-strong) solid;
       }
+      /* The standalone scrubber shown above the grid on small screens (the
+         in-grid scrub row would be wider than the viewport there). */
+      .scrub-bar {
+        display: none;
+      }
       @media (max-width: 960px) {
+        :host {
+          min-height: 0;
+        }
+        /* Fill the viewport and scroll the grid internally on both axes;
+           bottom margin leaves room for the drawer to slide in from. */
         .card {
           padding: 0;
+          height: 100%;
+          display: flex;
+          flex-direction: column;
+          margin-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+        }
+        .scrub-bar {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 8px 2px;
+          flex: none;
+        }
+        .scrub-bar input[type="range"] {
+          flex: 1;
+          min-width: 0;
+        }
+        .scrubrow {
+          display: none;
+        }
+        .scroll {
+          flex: 1;
+          min-height: 0;
+          overflow: auto;
+          overscroll-behavior: contain;
+          -webkit-overflow-scrolling: touch;
+        }
+        /* Give the 24 columns a usable width and scroll to them; the label
+           column stays pinned on the left, the hour header on top. */
+        .gridrow {
+          grid-template-columns: 88px repeat(24, minmax(26px, 1fr));
+        }
+        .label {
+          position: sticky;
+          left: 0;
+          background: var(--bg);
+        }
+        .headrow {
+          position: sticky;
+          top: 0;
+          z-index: 4;
+          background: var(--bg);
+        }
+        .headrow .label {
+          z-index: 5;
+        }
+        .legend {
+          flex: none;
+          padding-top: 8px;
         }
       }
     `,
@@ -206,6 +265,7 @@ export class TimelineGrid extends LitElement {
     }
     const nowHour = Math.floor(this.previewHour) % 24;
     return html`<div class="card">
+      ${this._scrubBar()}
       <div class="scroll">
         <div class="rows">
           ${this._scrubRow()}
@@ -225,26 +285,41 @@ export class TimelineGrid extends LitElement {
     </div>`;
   }
 
-  private _scrubRow(): TemplateResult {
+  private get _clockLabel(): string {
     const h = Math.floor(this.previewHour);
     const m = Math.round((this.previewHour - h) * 60);
-    const label = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+    return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  }
+
+  private _slider(): TemplateResult {
+    return html`<input
+      type="range"
+      min="0"
+      max="23.5"
+      step="0.5"
+      .value=${String(this.previewHour)}
+      @input=${(e: Event) =>
+        this._emit("scrub", Number((e.target as HTMLInputElement).value))}
+    />`;
+  }
+
+  // Desktop: part of the grid, so the track lines up with the hour columns.
+  private _scrubRow(): TemplateResult {
     return html`<div class="gridrow scrubrow">
       <div class="label">
-        <span class="clock">${label}</span>
+        <span class="clock">${this._clockLabel}</span>
         <button class="now-btn" @click=${this._jumpToNow} title="Jump to now">now</button>
       </div>
-      <div class="track">
-        <input
-          type="range"
-          min="0"
-          max="23.5"
-          step="0.5"
-          .value=${String(this.previewHour)}
-          @input=${(e: Event) =>
-            this._emit("scrub", Number((e.target as HTMLInputElement).value))}
-        />
-      </div>
+      <div class="track">${this._slider()}</div>
+    </div>`;
+  }
+
+  // Small screens: a viewport-wide bar above the grid instead.
+  private _scrubBar(): TemplateResult {
+    return html`<div class="scrub-bar">
+      <span class="clock">${this._clockLabel}</span>
+      ${this._slider()}
+      <button class="now-btn" @click=${this._jumpToNow} title="Jump to now">now</button>
     </div>`;
   }
 
@@ -253,7 +328,7 @@ export class TimelineGrid extends LitElement {
   }
 
   private _headerRow(nowHour: number): TemplateResult {
-    return html`<div class="gridrow">
+    return html`<div class="gridrow headrow">
       <div class="label"></div>
       ${HOURS.map(
         (h) => html`<div class="hourhead ${h === nowHour ? "now" : ""}">
@@ -275,7 +350,7 @@ export class TimelineGrid extends LitElement {
         <span class="text-col">
           <span class="lname">☀️ Sun</span>
         </span>
-        ${this._cogIcon()}
+        ${cogIcon}
       </div>
       ${HOURS.map((h) => this._cell(row[h], "readonly", false, false))}
     </div>`;
@@ -294,7 +369,7 @@ export class TimelineGrid extends LitElement {
           ${light.area_name ? html`<span class="area">${light.area_name}</span>` : ""}
           <span class="lname">${light.name}</span>
         </span>
-        ${this._cogIcon()}
+        ${cogIcon}
       </div>
       ${HOURS.map((h) => {
         const cell = row[h];
@@ -335,15 +410,6 @@ export class TimelineGrid extends LitElement {
     >
       <div class="fill" style="height:${brightness}%;background:${color}"></div>
     </div>`;
-  }
-
-  private _cogIcon(): TemplateResult {
-    return html`<svg class="cog" viewBox="0 0 24 24" aria-hidden="true">
-      <path
-        fill="currentColor"
-        d="M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7 7 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.31 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96a7 7 0 0 0 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54a7 7 0 0 0 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"
-      />
-    </svg>`;
   }
 
   private _emit(type: string, detail: unknown): void {
