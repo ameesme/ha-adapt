@@ -75,7 +75,7 @@ export const baseStyles = css`
     flex-direction: column;
     gap: 5px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-soft);
   }
 
@@ -84,7 +84,7 @@ export const baseStyles = css`
     flex-direction: column;
     gap: 5px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-soft);
   }
 
@@ -94,7 +94,7 @@ export const baseStyles = css`
   .section {
     margin: 28px 0 6px;
     color: var(--text);
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -302,7 +302,7 @@ export const baseStyles = css`
     width: 100%;
     gap: 10px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-soft);
     cursor: pointer;
   }

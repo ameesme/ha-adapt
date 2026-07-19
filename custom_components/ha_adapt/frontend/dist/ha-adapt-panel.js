@@ -263,8 +263,8 @@ T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[z("elementProper
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const de = globalThis, ve = (t) => t, Y = de.trustedTypes, be = Y ? Y.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Re = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Ie = "?" + A, et = `<${Ie}>`, C = document, F = () => C.createComment(""), V = (t) => t === null || typeof t != "object" && typeof t != "function", he = Array.isArray, tt = (t) => he(t) || typeof t?.[Symbol.iterator] == "function", ne = `[ 	
-\f\r]`, N = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, $e = /-->/g, we = />/g, k = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), xe = /'/g, ye = /"/g, Ne = /^(?:script|style|textarea|title)$/i, it = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = it(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Ae = /* @__PURE__ */ new WeakMap(), S = C.createTreeWalker(C, 129);
+\f\r]`, N = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, $e = /-->/g, we = />/g, S = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), xe = /'/g, ye = /"/g, Ne = /^(?:script|style|textarea|title)$/i, it = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = it(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Ae = /* @__PURE__ */ new WeakMap(), k = C.createTreeWalker(C, 129);
 function De(t, e) {
   if (!he(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return be !== void 0 ? be.createHTML(e) : e;
@@ -275,8 +275,8 @@ const st = (t, e) => {
   for (let c = 0; c < i; c++) {
     const a = t[c];
     let p, u, h = -1, m = 0;
-    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === N ? u[1] === "!--" ? o = $e : u[1] !== void 0 ? o = we : u[2] !== void 0 ? (Ne.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = k) : u[3] !== void 0 && (o = k) : o === k ? u[0] === ">" ? (o = r ?? N, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? k : u[3] === '"' ? ye : xe) : o === ye || o === xe ? o = k : o === $e || o === we ? o = N : (o = k, r = void 0);
-    const y = o === k && t[c + 1].startsWith("/>") ? " " : "";
+    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === N ? u[1] === "!--" ? o = $e : u[1] !== void 0 ? o = we : u[2] !== void 0 ? (Ne.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = S) : u[3] !== void 0 && (o = S) : o === S ? u[0] === ">" ? (o = r ?? N, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? S : u[3] === '"' ? ye : xe) : o === ye || o === xe ? o = S : o === $e || o === we ? o = N : (o = S, r = void 0);
+    const y = o === S && t[c + 1].startsWith("/>") ? " " : "";
     n += o === N ? a + et : h >= 0 ? (s.push(p), a.slice(0, h) + Re + a.slice(h) + A + y) : a + A + (h === -2 ? c : y);
   }
   return [De(t, n + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), s];
@@ -287,11 +287,11 @@ class q {
     this.parts = [];
     let n = 0, o = 0;
     const c = e.length - 1, a = this.parts, [p, u] = st(e, i);
-    if (this.el = q.createElement(p, s), S.currentNode = this.el.content, i === 2 || i === 3) {
+    if (this.el = q.createElement(p, s), k.currentNode = this.el.content, i === 2 || i === 3) {
       const h = this.el.content.firstChild;
       h.replaceWith(...h.childNodes);
     }
-    for (; (r = S.nextNode()) !== null && a.length < c; ) {
+    for (; (r = k.nextNode()) !== null && a.length < c; ) {
       if (r.nodeType === 1) {
         if (r.hasAttributes()) for (const h of r.getAttributeNames()) if (h.endsWith(Re)) {
           const m = u[o++], y = r.getAttribute(h).split(A), G = /([.?@])?(.*)/.exec(m);
@@ -301,7 +301,7 @@ class q {
           const h = r.textContent.split(A), m = h.length - 1;
           if (m > 0) {
             r.textContent = Y ? Y.emptyScript : "";
-            for (let y = 0; y < m; y++) r.append(h[y], F()), S.nextNode(), a.push({ type: 2, index: ++n });
+            for (let y = 0; y < m; y++) r.append(h[y], F()), k.nextNode(), a.push({ type: 2, index: ++n });
             r.append(h[m], F());
           }
         }
@@ -336,16 +336,16 @@ class rt {
   }
   u(e) {
     const { el: { content: i }, parts: s } = this._$AD, r = (e?.creationScope ?? C).importNode(i, !0);
-    S.currentNode = r;
-    let n = S.nextNode(), o = 0, c = 0, a = s[0];
+    k.currentNode = r;
+    let n = k.nextNode(), o = 0, c = 0, a = s[0];
     for (; a !== void 0; ) {
       if (o === a.index) {
         let p;
         a.type === 2 ? p = new K(n, n.nextSibling, this, e) : a.type === 1 ? p = new a.ctor(n, a.name, a.strings, this, e) : a.type === 6 && (p = new lt(n, this, e)), this._$AV.push(p), a = s[++c];
       }
-      o !== a?.index && (n = S.nextNode(), o++);
+      o !== a?.index && (n = k.nextNode(), o++);
     }
-    return S.currentNode = C, r;
+    return k.currentNode = C, r;
   }
   p(e) {
     let i = 0;
@@ -701,7 +701,7 @@ const _t = E`
     flex-direction: column;
     gap: 5px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-soft);
   }
 
@@ -710,7 +710,7 @@ const _t = E`
     flex-direction: column;
     gap: 5px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-soft);
   }
 
@@ -720,7 +720,7 @@ const _t = E`
   .section {
     margin: 28px 0 6px;
     color: var(--text);
-    font-size: 0.74rem;
+    font-size: 0.72rem;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.06em;
@@ -928,7 +928,7 @@ const _t = E`
     width: 100%;
     gap: 10px;
     font-size: 0.85rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--text-soft);
     cursor: pointer;
   }
@@ -1105,13 +1105,13 @@ function Ue() {
 }
 const M = (t) => l`<svg viewBox="0 0 24 24" aria-hidden="true">
     <path fill="currentColor" d=${t} />
-  </svg>`, ke = M("M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"), Se = M(
+  </svg>`, Se = M("M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"), ke = M(
   "M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"
 ), Ce = M(
   "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"
 ), Ee = M(
   "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
-), kt = M(
+), St = M(
   "M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
 ), Me = M(
   "M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7 7 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.31 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96a7 7 0 0 0 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54a7 7 0 0 0 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"
@@ -1120,7 +1120,7 @@ const M = (t) => l`<svg viewBox="0 0 24 24" aria-hidden="true">
 );
 function f(t, e) {
   return e ? l`<details class="section">
-    <summary>${t} ${kt}</summary>
+    <summary>${t} ${St}</summary>
     <p class="muted">${e}</p>
   </details>` : l`<div class="section">${t}</div>`;
 }
@@ -1179,7 +1179,7 @@ function D(t, e, i, s, r, n) {
     <span class="duration-preview">${o}</span>
   </label>`;
 }
-function St(t, e, i) {
+function kt(t, e, i) {
   return l`<label class="field"
     >${t}
     <input
@@ -1276,7 +1276,7 @@ let $ = class extends v {
           ${this._sunRow()}
           ${this._lightGroups().map(
       (e) => l`
-              <div class="gridrow">
+              <div class="gridrow section-row">
                 <div class="label section-label">${e.area}</div>
               </div>
               ${e.lights.map((i) => this._lightRow(i))}
@@ -1431,7 +1431,7 @@ $.styles = [
         align-items: center;
         gap: 4px;
         font-size: 0.82rem;
-        font-weight: 600;
+        font-weight: 500;
         color: var(--text);
         white-space: nowrap;
         overflow: hidden;
@@ -1466,12 +1466,13 @@ $.styles = [
       .gridrow.rowselected .label {
         color: var(--accent-strong);
       }
+      /* Matches the form section headings (.section in baseStyles). */
       .label.section-label {
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        font-size: 0.68rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        color: var(--text-soft);
+        color: var(--text);
         padding-top: 8px;
       }
       .hourhead {
@@ -1594,12 +1595,19 @@ $.styles = [
         .gridrow .label {
           grid-column: 1 / -1;
           font-size: 0.8rem;
-          font-weight: 500;
           padding: 4px 0 2px;
           margin-bottom: 3px;
         }
         .gridrow .label.section-label {
           padding-top: 18px;
+        }
+        /* Keep the room heading tight to the first light under it. */
+        .section-row {
+          margin-bottom: 0;
+        }
+        .section-row .label {
+          margin-bottom: 0;
+          padding-bottom: 0;
         }
         .headrow .label {
           display: none;
@@ -1922,7 +1930,7 @@ let R = class extends v {
       "Gap between the two turn-on calls for lights that get brightness and colour sent separately (e.g. IKEA)."
     )}
       <div class="grid">
-        ${St(
+        ${kt(
       "Split-command delay (ms)",
       t.send_split_delay,
       (i) => e({ send_split_delay: i })
@@ -2161,7 +2169,7 @@ let _ = class extends v {
         title="New schema"
         @click=${() => this._emit("schema-new", null)}
       >
-        ${ke}
+        ${Se}
       </button>
       <button
         class="icon-btn danger"
@@ -2176,7 +2184,7 @@ let _ = class extends v {
         title="Preview on lights"
         @click=${() => this._emit("preview-toggle", !this.preview)}
       >
-        ${Se}
+        ${ke}
       </button>
       <button
         class="icon-btn ${this._active ? "active" : ""}"
@@ -2195,7 +2203,7 @@ let _ = class extends v {
       </button>
     ` : l`
         <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
-          ${ke} New
+          ${Se} New
         </button>
         <button
           class="btn danger"
@@ -2209,7 +2217,7 @@ let _ = class extends v {
           class="btn ${this.preview ? "" : "ghost"}"
           @click=${() => this._emit("preview-toggle", !this.preview)}
         >
-          ${Se} Preview
+          ${ke} Preview
         </button>
         <button
           class="btn ghost"

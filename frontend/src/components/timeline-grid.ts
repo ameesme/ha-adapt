@@ -51,7 +51,7 @@ export class TimelineGrid extends LitElement {
         align-items: center;
         gap: 4px;
         font-size: 0.82rem;
-        font-weight: 600;
+        font-weight: 500;
         color: var(--text);
         white-space: nowrap;
         overflow: hidden;
@@ -86,12 +86,13 @@ export class TimelineGrid extends LitElement {
       .gridrow.rowselected .label {
         color: var(--accent-strong);
       }
+      /* Matches the form section headings (.section in baseStyles). */
       .label.section-label {
         text-transform: uppercase;
         letter-spacing: 0.06em;
-        font-size: 0.68rem;
+        font-size: 0.72rem;
         font-weight: 700;
-        color: var(--text-soft);
+        color: var(--text);
         padding-top: 8px;
       }
       .hourhead {
@@ -214,12 +215,19 @@ export class TimelineGrid extends LitElement {
         .gridrow .label {
           grid-column: 1 / -1;
           font-size: 0.8rem;
-          font-weight: 500;
           padding: 4px 0 2px;
           margin-bottom: 3px;
         }
         .gridrow .label.section-label {
           padding-top: 18px;
+        }
+        /* Keep the room heading tight to the first light under it. */
+        .section-row {
+          margin-bottom: 0;
+        }
+        .section-row .label {
+          margin-bottom: 0;
+          padding-bottom: 0;
         }
         .headrow .label {
           display: none;
@@ -271,7 +279,7 @@ export class TimelineGrid extends LitElement {
           ${this._sunRow()}
           ${this._lightGroups().map(
             (group) => html`
-              <div class="gridrow">
+              <div class="gridrow section-row">
                 <div class="label section-label">${group.area}</div>
               </div>
               ${group.lights.map((light) => this._lightRow(light))}
