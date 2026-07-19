@@ -138,7 +138,11 @@ export class SchemaEditor extends LitElement {
       }
       .icon-btn.danger {
         color: var(--danger);
-        border-color: var(--danger);
+      }
+      /* Borderless: visually separate from the schema actions. */
+      .icon-btn.plain {
+        border-color: transparent;
+        background: transparent;
       }
       .icon-btn:disabled {
         opacity: 0.45;
@@ -593,7 +597,7 @@ export class SchemaEditor extends LitElement {
           ${checkCircleIcon} ${this._active ? "Active" : "Apply"}
         </button>
         <button
-          class="btn ghost"
+          class="btn plain"
           title="Global settings"
           @click=${() => (this._sel = { kind: "settings" })}
         >
@@ -635,7 +639,7 @@ export class SchemaEditor extends LitElement {
         ${checkCircleIcon}
       </button>
       <button
-        class="icon-btn"
+        class="icon-btn plain"
         title="Global settings"
         @click=${() => (this._sel = { kind: "settings" })}
       >

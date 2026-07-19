@@ -329,10 +329,18 @@ export const baseStyles = css`
     color: var(--accent-strong);
   }
 
+  /* Danger differs by content colour only — the border stays like its
+     neighbours' so the button doesn't shout while idle. */
   button.btn.danger {
-    border-color: var(--danger);
     background: transparent;
     color: var(--danger);
+  }
+
+  /* Borderless variant for controls that aren't schema actions (settings). */
+  button.btn.plain {
+    border-color: transparent;
+    background: transparent;
+    color: var(--accent-strong);
   }
 
   button.btn:disabled {

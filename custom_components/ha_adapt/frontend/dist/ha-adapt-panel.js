@@ -955,10 +955,18 @@ const gt = L`
     color: var(--accent-strong);
   }
 
+  /* Danger differs by content colour only — the border stays like its
+     neighbours' so the button doesn't shout while idle. */
   button.btn.danger {
-    border-color: var(--danger);
     background: transparent;
     color: var(--danger);
+  }
+
+  /* Borderless variant for controls that aren't schema actions (settings). */
+  button.btn.plain {
+    border-color: transparent;
+    background: transparent;
+    color: var(--accent-strong);
   }
 
   button.btn:disabled {
@@ -2091,7 +2099,7 @@ let _ = class extends b {
         ${ke}
       </button>
       <button
-        class="icon-btn"
+        class="icon-btn plain"
         title="Global settings"
         @click=${() => this._sel = { kind: "settings" }}
       >
@@ -2124,7 +2132,7 @@ let _ = class extends b {
           ${ke} ${this._active ? "Active" : "Apply"}
         </button>
         <button
-          class="btn ghost"
+          class="btn plain"
           title="Global settings"
           @click=${() => this._sel = { kind: "settings" }}
         >
@@ -2406,7 +2414,11 @@ _.styles = [
       }
       .icon-btn.danger {
         color: var(--danger);
-        border-color: var(--danger);
+      }
+      /* Borderless: visually separate from the schema actions. */
+      .icon-btn.plain {
+        border-color: transparent;
+        background: transparent;
       }
       .icon-btn:disabled {
         opacity: 0.45;
