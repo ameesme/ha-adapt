@@ -118,10 +118,12 @@ export function numberField(
 }
 
 // An optional numeric field: blank maps to null (e.g. "use the default").
+// The placeholder shows the value the blank field falls back to.
 // Fires on change (blur/enter), so decimals and minus signs can be typed.
 export function coordField(
   label: string,
   value: number | null,
+  placeholder: string,
   onChange: (value: number | null) => void
 ): TemplateResult {
   return html`<label class="field"
@@ -129,7 +131,7 @@ export function coordField(
     <input
       type="number"
       step="any"
-      placeholder="Home location"
+      placeholder=${placeholder}
       .value=${value != null ? String(value) : ""}
       @change=${(e: Event) => {
         const raw = (e.target as HTMLInputElement).value.trim();

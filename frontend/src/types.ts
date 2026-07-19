@@ -70,6 +70,9 @@ export interface ConfigPayload {
   schemas: Record<string, Schema>;
   active_schema_id: string;
   lights: LightInfo[];
+  // The home's configured coordinates (the blank-field fallback).
+  home_latitude: number;
+  home_longitude: number;
 }
 
 // Computed per-hour values for rendering the timeline (from ha_adapt/timeline).

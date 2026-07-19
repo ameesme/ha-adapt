@@ -22,7 +22,7 @@ let Ee = class {
     return this.cssText;
   }
 };
-const ze = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, le), V = (t, ...e) => {
+const ze = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, le), F = (t, ...e) => {
   const i = t.length === 1 ? t[0] : e.reduce((s, r, n) => s + ((o) => {
     if (o._$cssResult$ === !0) return o.cssText;
     if (typeof o == "number") return o;
@@ -45,7 +45,7 @@ const ze = (t) => new Ee(typeof t == "string" ? t : t + "", void 0, le), V = (t,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: De, defineProperty: je, getOwnPropertyDescriptor: Be, getOwnPropertyNames: Ve, getOwnPropertySymbols: Fe, getPrototypeOf: qe } = Object, te = globalThis, me = te.trustedTypes, Ke = me ? me.emptyScript : "", We = te.reactiveElementPolyfillSupport, N = (t, e) => t, X = { toAttribute(t, e) {
+const { is: De, defineProperty: je, getOwnPropertyDescriptor: Be, getOwnPropertyNames: Fe, getOwnPropertySymbols: Ve, getPrototypeOf: qe } = Object, te = globalThis, me = te.trustedTypes, Ke = me ? me.emptyScript : "", We = te.reactiveElementPolyfillSupport, N = (t, e) => t, X = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
       t = t ? Ke : null;
@@ -110,7 +110,7 @@ let P = class extends HTMLElement {
   static finalize() {
     if (this.hasOwnProperty(N("finalized"))) return;
     if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(N("properties"))) {
-      const i = this.properties, s = [...Ve(i), ...Fe(i)];
+      const i = this.properties, s = [...Fe(i), ...Ve(i)];
       for (const r of s) this.createProperty(r, i[r]);
     }
     const e = this[Symbol.metadata];
@@ -341,7 +341,7 @@ class Ye {
     for (; a !== void 0; ) {
       if (o === a.index) {
         let p;
-        a.type === 2 ? p = new F(n, n.nextSibling, this, e) : a.type === 1 ? p = new a.ctor(n, a.name, a.strings, this, e) : a.type === 6 && (p = new it(n, this, e)), this._$AV.push(p), a = s[++c];
+        a.type === 2 ? p = new V(n, n.nextSibling, this, e) : a.type === 1 ? p = new a.ctor(n, a.name, a.strings, this, e) : a.type === 6 && (p = new it(n, this, e)), this._$AV.push(p), a = s[++c];
       }
       o !== a?.index && (n = k.nextNode(), o++);
     }
@@ -352,7 +352,7 @@ class Ye {
     for (const s of this._$AV) s !== void 0 && (s.strings !== void 0 ? (s._$AI(e, s, i), i += s.strings.length - 2) : s._$AI(e[i])), i++;
   }
 }
-class F {
+class V {
   get _$AU() {
     return this._$AM?._$AU ?? this._$Cv;
   }
@@ -398,7 +398,7 @@ class F {
     he(this._$AH) || (this._$AH = [], this._$AR());
     const i = this._$AH;
     let s, r = 0;
-    for (const n of e) r === i.length ? i.push(s = new F(this.O(D()), this.O(D()), this, this.options)) : s = i[r], s._$AI(n), r++;
+    for (const n of e) r === i.length ? i.push(s = new V(this.O(D()), this.O(D()), this, this.options)) : s = i[r], s._$AI(n), r++;
     r < i.length && (this._$AR(s && s._$AB.nextSibling, r), i.length = r);
   }
   _$AR(e = this._$AA.nextSibling, i) {
@@ -477,13 +477,13 @@ class it {
   }
 }
 const st = de.litHtmlPolyfillSupport;
-st?.(B, F), (de.litHtmlVersions ??= []).push("3.3.3");
+st?.(B, V), (de.litHtmlVersions ??= []).push("3.3.3");
 const rt = (t, e, i) => {
   const s = i?.renderBefore ?? e;
   let r = s._$litPart$;
   if (r === void 0) {
     const n = i?.renderBefore ?? null;
-    s._$litPart$ = r = new F(e.insertBefore(D(), n), n, void 0, i ?? {});
+    s._$litPart$ = r = new V(e.insertBefore(D(), n), n, void 0, i ?? {});
   }
   return r._$AI(t), r;
 };
@@ -632,7 +632,7 @@ class dt {
     return this.hass.connection.sendMessagePromise({ type: e, ...i });
   }
 }
-const ht = V`
+const ht = F`
   :host {
     --bg: #fbf3e9;
     --surface: #fffaf2;
@@ -653,7 +653,7 @@ const ht = V`
     color: var(--text);
     font-family: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
   }
-`, K = V`
+`, K = F`
   * {
     box-sizing: border-box;
   }
@@ -1118,17 +1118,17 @@ function Ae(t, e, i) {
     />
   </label>`;
 }
-function Se(t, e, i) {
+function Se(t, e, i, s) {
   return l`<label class="field"
     >${t}
     <input
       type="number"
       step="any"
-      placeholder="Home location"
+      placeholder=${i}
       .value=${e != null ? String(e) : ""}
-      @change=${(s) => {
-    const r = s.target.value.trim(), n = Number(r);
-    i(r === "" || !Number.isFinite(n) ? null : n);
+      @change=${(r) => {
+    const n = r.target.value.trim(), o = Number(n);
+    s(n === "" || !Number.isFinite(o) ? null : o);
   }}
     />
   </label>`;
@@ -1327,7 +1327,7 @@ let $ = class extends b {
 };
 $.styles = [
   K,
-  V`
+  F`
       :host {
         display: block;
         height: 100%;
@@ -1818,11 +1818,13 @@ let O = class extends b {
         ${Se(
       "Latitude",
       t.sun_latitude,
+      this.config.home_latitude.toFixed(4),
       (i) => e({ sun_latitude: i })
     )}
         ${Se(
       "Longitude",
       t.sun_longitude,
+      this.config.home_longitude.toFixed(4),
       (i) => e({ sun_longitude: i })
     )}
       </div>
@@ -2273,7 +2275,7 @@ let _ = class extends b {
 };
 _.styles = [
   K,
-  V`
+  F`
       .head {
         display: flex;
         align-items: center;
@@ -2660,7 +2662,7 @@ let w = class extends b {
 w.styles = [
   ht,
   K,
-  V`
+  F`
       .wrap {
         width: 100%;
         padding: 18px 20px 64px;

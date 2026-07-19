@@ -140,11 +140,17 @@ export class SettingsTab extends LitElement {
           "use your home's location."
       )}
       <div class="pair">
-        ${coordField("Latitude", s.sun_latitude, (v) =>
-          save({ sun_latitude: v })
+        ${coordField(
+          "Latitude",
+          s.sun_latitude,
+          this.config.home_latitude.toFixed(4),
+          (v) => save({ sun_latitude: v })
         )}
-        ${coordField("Longitude", s.sun_longitude, (v) =>
-          save({ sun_longitude: v })
+        ${coordField(
+          "Longitude",
+          s.sun_longitude,
+          this.config.home_longitude.toFixed(4),
+          (v) => save({ sun_longitude: v })
         )}
       </div>
       ${sectionHeading(

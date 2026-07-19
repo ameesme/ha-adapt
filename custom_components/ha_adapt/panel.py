@@ -125,6 +125,10 @@ def _config_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> dict:
         "schemas": {sid: schema.to_dict() for sid, schema in data.schemas.items()},
         "active_schema_id": data.active_schema_id,
         "lights": _lights_payload(hass, coordinator),
+        # The home's configured coordinates — the fallback when the settings
+        # leave latitude/longitude blank (shown as the fields' placeholder).
+        "home_latitude": hass.config.latitude,
+        "home_longitude": hass.config.longitude,
     }
 
 

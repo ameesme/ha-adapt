@@ -117,6 +117,8 @@ function configPayload(store: Store): ConfigPayload {
       area_name: l.area_name,
       supports_rgb: l.supports_rgb,
     })),
+    home_latitude: 52.3731,
+    home_longitude: 4.8922,
   };
 }
 
