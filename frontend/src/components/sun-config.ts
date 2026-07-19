@@ -11,7 +11,9 @@ import { KELVIN_MAX, KELVIN_MIN, kelvinGradientCss } from "../utils";
 import { baseStyles } from "../theme";
 import type { SunConfig } from "../types";
 
-// Slider bounds for offsets (± both ways) and ramp widths, in seconds.
+// Slider bounds for offsets (± both ways) and ramp widths, in seconds. Soft
+// caps: a stored value beyond them stretches the slider instead of being
+// clamped away on the first drag.
 const OFFSET_MAX = 4 * 3600;
 const RAMP_MAX = 4 * 3600;
 
@@ -66,11 +68,19 @@ export class SunConfigEditor extends LitElement {
         )}
       </div>
       <div class="pair">
-        ${durationField("Sunrise offset", s.sunrise_offset, -OFFSET_MAX, OFFSET_MAX, (v) =>
-          this._patch({ sunrise_offset: v })
+        ${durationField(
+          "Sunrise offset",
+          s.sunrise_offset,
+          Math.min(-OFFSET_MAX, s.sunrise_offset),
+          Math.max(OFFSET_MAX, s.sunrise_offset),
+          (v) => this._patch({ sunrise_offset: v })
         )}
-        ${durationField("Sunset offset", s.sunset_offset, -OFFSET_MAX, OFFSET_MAX, (v) =>
-          this._patch({ sunset_offset: v })
+        ${durationField(
+          "Sunset offset",
+          s.sunset_offset,
+          Math.min(-OFFSET_MAX, s.sunset_offset),
+          Math.max(OFFSET_MAX, s.sunset_offset),
+          (v) => this._patch({ sunset_offset: v })
         )}
       </div>
       ${sectionHeading(
@@ -79,11 +89,19 @@ export class SunConfigEditor extends LitElement {
           "dark side eases in from night, the light side out into full day."
       )}
       <div class="pair">
-        ${durationField("Dark side", s.ramp_dark, 0, RAMP_MAX, (v) =>
-          this._patch({ ramp_dark: v })
+        ${durationField(
+          "Dark side",
+          s.ramp_dark,
+          0,
+          Math.max(RAMP_MAX, s.ramp_dark),
+          (v) => this._patch({ ramp_dark: v })
         )}
-        ${durationField("Light side", s.ramp_light, 0, RAMP_MAX, (v) =>
-          this._patch({ ramp_light: v })
+        ${durationField(
+          "Light side",
+          s.ramp_light,
+          0,
+          Math.max(RAMP_MAX, s.ramp_light),
+          (v) => this._patch({ ramp_light: v })
         )}
       </div>
     `;
