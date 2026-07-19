@@ -108,11 +108,10 @@ export function hexToRgb(hex: string): [number, number, number] {
   ];
 }
 
-// Local hour-of-day right now, snapped to the timeline scrubber's half-hour
-// grid (e.g. 14.5 at 14:40) and clamped to its 0..23.5 range, so the clock
-// label always matches the thumb position.
+// Local hour-of-day right now, snapped to the scrubbers' 5-minute grid so
+// the readouts always match the thumb position.
 export function currentHour(): number {
   const now = new Date();
-  const hour = now.getHours() + now.getMinutes() / 60;
-  return Math.min(23.5, Math.round(hour * 2) / 2);
+  const minutes = now.getHours() * 60 + now.getMinutes();
+  return Math.min(1435, Math.round(minutes / 5) * 5) / 60;
 }

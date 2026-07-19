@@ -45,7 +45,7 @@ const Ve = (t) => new He(typeof t == "string" ? t : t + "", void 0, le), M = (t,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: Ke, defineProperty: We, getOwnPropertyDescriptor: Ge, getOwnPropertyNames: Ze, getOwnPropertySymbols: Je, getPrototypeOf: Xe } = Object, ie = globalThis, fe = ie.trustedTypes, Ye = fe ? fe.emptyScript : "", Qe = ie.reactiveElementPolyfillSupport, z = (t, e) => t, X = { toAttribute(t, e) {
+const { is: Ke, defineProperty: We, getOwnPropertyDescriptor: Ge, getOwnPropertyNames: Ze, getOwnPropertySymbols: Je, getPrototypeOf: Xe } = Object, ie = globalThis, fe = ie.trustedTypes, Ye = fe ? fe.emptyScript : "", Qe = ie.reactiveElementPolyfillSupport, D = (t, e) => t, X = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
       t = t ? Ye : null;
@@ -103,13 +103,13 @@ let T = class extends HTMLElement {
     return this.elementProperties.get(e) ?? ve;
   }
   static _$Ei() {
-    if (this.hasOwnProperty(z("elementProperties"))) return;
+    if (this.hasOwnProperty(D("elementProperties"))) return;
     const e = Xe(this);
     e.finalize(), e.l !== void 0 && (this.l = [...e.l]), this.elementProperties = new Map(e.elementProperties);
   }
   static finalize() {
-    if (this.hasOwnProperty(z("finalized"))) return;
-    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(z("properties"))) {
+    if (this.hasOwnProperty(D("finalized"))) return;
+    if (this.finalized = !0, this._$Ei(), this.hasOwnProperty(D("properties"))) {
       const i = this.properties, s = [...Ze(i), ...Je(i)];
       for (const r of s) this.createProperty(r, i[r]);
     }
@@ -256,30 +256,30 @@ let T = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[z("elementProperties")] = /* @__PURE__ */ new Map(), T[z("finalized")] = /* @__PURE__ */ new Map(), Qe?.({ ReactiveElement: T }), (ie.reactiveElementVersions ??= []).push("2.1.2");
+T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[D("elementProperties")] = /* @__PURE__ */ new Map(), T[D("finalized")] = /* @__PURE__ */ new Map(), Qe?.({ ReactiveElement: T }), (ie.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 const de = globalThis, _e = (t) => t, Y = de.trustedTypes, be = Y ? Y.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Re = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Ne = "?" + A, et = `<${Ne}>`, E = document, F = () => E.createComment(""), V = (t) => t === null || typeof t != "object" && typeof t != "function", he = Array.isArray, tt = (t) => he(t) || typeof t?.[Symbol.iterator] == "function", ne = `[ 	
-\f\r]`, D = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, $e = /-->/g, we = />/g, S = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), xe = /'/g, ye = /"/g, De = /^(?:script|style|textarea|title)$/i, it = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = it(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Ae = /* @__PURE__ */ new WeakMap(), C = E.createTreeWalker(E, 129);
-function Ie(t, e) {
+\f\r]`, I = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, $e = /-->/g, we = />/g, S = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), xe = /'/g, ye = /"/g, Ie = /^(?:script|style|textarea|title)$/i, it = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = it(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Ae = /* @__PURE__ */ new WeakMap(), C = E.createTreeWalker(E, 129);
+function ze(t, e) {
   if (!he(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return be !== void 0 ? be.createHTML(e) : e;
 }
 const st = (t, e) => {
   const i = t.length - 1, s = [];
-  let r, n = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", o = D;
+  let r, n = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", o = I;
   for (let c = 0; c < i; c++) {
     const a = t[c];
     let p, u, h = -1, m = 0;
-    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === D ? u[1] === "!--" ? o = $e : u[1] !== void 0 ? o = we : u[2] !== void 0 ? (De.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = S) : u[3] !== void 0 && (o = S) : o === S ? u[0] === ">" ? (o = r ?? D, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? S : u[3] === '"' ? ye : xe) : o === ye || o === xe ? o = S : o === $e || o === we ? o = D : (o = S, r = void 0);
+    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === I ? u[1] === "!--" ? o = $e : u[1] !== void 0 ? o = we : u[2] !== void 0 ? (Ie.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = S) : u[3] !== void 0 && (o = S) : o === S ? u[0] === ">" ? (o = r ?? I, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? S : u[3] === '"' ? ye : xe) : o === ye || o === xe ? o = S : o === $e || o === we ? o = I : (o = S, r = void 0);
     const y = o === S && t[c + 1].startsWith("/>") ? " " : "";
-    n += o === D ? a + et : h >= 0 ? (s.push(p), a.slice(0, h) + Re + a.slice(h) + A + y) : a + A + (h === -2 ? c : y);
+    n += o === I ? a + et : h >= 0 ? (s.push(p), a.slice(0, h) + Re + a.slice(h) + A + y) : a + A + (h === -2 ? c : y);
   }
-  return [Ie(t, n + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), s];
+  return [ze(t, n + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), s];
 };
 class q {
   constructor({ strings: e, _$litType$: i }, s) {
@@ -297,7 +297,7 @@ class q {
           const m = u[o++], y = r.getAttribute(h).split(A), G = /([.?@])?(.*)/.exec(m);
           a.push({ type: 1, index: n, name: G[2], strings: y, ctor: G[1] === "." ? nt : G[1] === "?" ? ot : G[1] === "@" ? at : se }), r.removeAttribute(h);
         } else h.startsWith(A) && (a.push({ type: 6, index: n }), r.removeAttribute(h));
-        if (De.test(r.tagName)) {
+        if (Ie.test(r.tagName)) {
           const h = r.textContent.split(A), m = h.length - 1;
           if (m > 0) {
             r.textContent = Y ? Y.emptyScript : "";
@@ -383,7 +383,7 @@ class K {
     this._$AH !== d && V(this._$AH) ? this._$AA.nextSibling.data = e : this.T(E.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    const { values: i, _$litType$: s } = e, r = typeof s == "number" ? this._$AC(e) : (s.el === void 0 && (s.el = q.createElement(Ie(s.h, s.h[0]), this.options)), s);
+    const { values: i, _$litType$: s } = e, r = typeof s == "number" ? this._$AC(e) : (s.el === void 0 && (s.el = q.createElement(ze(s.h, s.h[0]), this.options)), s);
     if (this._$AH?._$AD === r) this._$AH.p(i);
     else {
       const n = new rt(r, this), o = n.u(this.options);
@@ -1075,7 +1075,7 @@ function ue(t) {
   const n = (o) => Math.max(0, Math.min(255, Math.round(o)));
   return `rgb(${n(i)}, ${n(s)}, ${n(r)})`;
 }
-function ze(t, e) {
+function De(t, e) {
   const s = [];
   for (let r = 0; r <= 10; r++)
     s.push(ue(t + (e - t) * r / 10));
@@ -1100,8 +1100,8 @@ function At(t) {
   ];
 }
 function Ue() {
-  const t = /* @__PURE__ */ new Date(), e = t.getHours() + t.getMinutes() / 60;
-  return Math.min(23.5, Math.round(e * 2) / 2);
+  const t = /* @__PURE__ */ new Date(), e = t.getHours() * 60 + t.getMinutes();
+  return Math.min(1435, Math.round(e / 5) * 5) / 60;
 }
 const L = (t) => l`<svg viewBox="0 0 24 24" aria-hidden="true">
     <path fill="currentColor" d=${t} />
@@ -1164,7 +1164,7 @@ function Q(t, e, i, s, r, n, o, c, a) {
     </div>
   </div>`;
 }
-function I(t, e, i, s, r, n) {
+function z(t, e, i, s, r, n) {
   const o = e === 0 && n ? n : wt(e);
   return l`<label class="field">
     ${t}
@@ -1274,13 +1274,13 @@ let b = class extends _ {
         <div class="rows">
           ${this._scrubRow()}
           ${this._headerRow(t)}
-          ${this._sunRow(t)}
+          ${this._sunRow()}
           ${this._lightGroups().map(
       (e) => l`
               <div class="gridrow section-row">
                 <div class="label section-label">${e.area}</div>
               </div>
-              ${e.lights.map((i) => this._lightRow(i, t))}
+              ${e.lights.map((i) => this._lightRow(i))}
             `
     )}
         </div>
@@ -1295,14 +1295,18 @@ let b = class extends _ {
     const t = Math.floor(this.previewHour), e = Math.round((this.previewHour - t) * 60);
     return `${String(t).padStart(2, "0")}:${String(e).padStart(2, "0")}`;
   }
+  // Both scrubbers work in minutes with 5-minute steps.
+  get _minutes() {
+    return Math.round(this.previewHour * 60 / 5) * 5;
+  }
   _slider() {
     return l`<input
       type="range"
       min="0"
-      max="23.5"
-      step="0.5"
-      .value=${String(this.previewHour)}
-      @input=${(t) => this._emit("scrub", Number(t.target.value))}
+      max="1435"
+      step="5"
+      .value=${String(this._minutes)}
+      @input=${(t) => this._emit("scrub", Number(t.target.value) / 60)}
     />`;
   }
   // Desktop: part of the grid, so the track lines up with the hour columns.
@@ -1319,19 +1323,22 @@ let b = class extends _ {
   // min–max component's styling — whole hours, no readout (the playhead in
   // the charts shows the position).
   _scrubBar() {
-    const t = Math.round(this.previewHour);
+    const t = this._minutes;
     return l`<div class="scrub-bar">
       <div class="minmax">
         <div class="minmax-track">
-          <div class="minmax-fill" style="left:0;width:${t / 23 * 100}%"></div>
+          <div
+            class="minmax-fill"
+            style="left:0;width:${t / 1435 * 100}%"
+          ></div>
         </div>
         <input
           type="range"
           min="0"
-          max="23"
-          step="1"
+          max="1435"
+          step="5"
           .value=${String(t)}
-          @input=${(e) => this._emit("scrub", Number(e.target.value))}
+          @input=${(e) => this._emit("scrub", Number(e.target.value) / 60)}
         />
       </div>
     </div>`;
@@ -1342,16 +1349,23 @@ let b = class extends _ {
   _headerRow(t) {
     return l`<div class="gridrow headrow">
       <div class="label"></div>
-      ${oe.map(
+      <div class="hours">
+        ${oe.map(
       (e) => l`<div class="hourhead ${e === t ? "now" : ""}">
-          ${xt(e)}
-        </div>`
+            ${xt(e)}
+          </div>`
     )}
+      </div>
     </div>`;
   }
-  _sunRow(t) {
-    const e = this.timeline.sun, i = this.selectedRow === "sun" ? "rowselected" : "";
-    return l`<div class="gridrow sunrow ${i}">
+  /** Row-level playhead line at the currently shown time. */
+  _playhead() {
+    const t = this.previewHour % 24 / 24 * 100;
+    return l`<div class="playhead" style="left:${t}%"></div>`;
+  }
+  _sunRow() {
+    const t = this.timeline.sun, e = this.selectedRow === "sun" ? "rowselected" : "";
+    return l`<div class="gridrow sunrow ${e}">
       <div
         class="label clickable"
         title="Edit the sun"
@@ -1362,14 +1376,11 @@ let b = class extends _ {
         </span>
         ${Me}
       </div>
-      ${oe.map(
-      (s) => this._cell(e[s], this._marker(s, t), "readonly", !1, !1)
-    )}
+      <div class="cells">
+        ${oe.map((i) => this._cell(t[i], "readonly", !1, !1))}
+        ${this._playhead()}
+      </div>
     </div>`;
-  }
-  /** Fractional position of the playhead within hour ``h``, or null. */
-  _marker(t, e) {
-    return t === e ? this.previewHour % 1 : null;
   }
   // Consecutive lights that share an area render under one area heading (the
   // backend sorts by area already); unassigned lights group under "Other".
@@ -1381,9 +1392,9 @@ let b = class extends _ {
     }
     return t.length === 1 && t[0].area === "Other" && (t[0].area = "Lights"), t;
   }
-  _lightRow(t, e) {
-    const i = this.timeline.lights[t.entity_id] ?? [], s = this.selectedRow === t.entity_id ? "rowselected" : "";
-    return l`<div class="gridrow ${s}">
+  _lightRow(t) {
+    const e = this.timeline.lights[t.entity_id] ?? [], i = this.selectedRow === t.entity_id ? "rowselected" : "";
+    return l`<div class="gridrow ${i}">
       <div
         class="label clickable"
         title="Edit light range"
@@ -1394,33 +1405,34 @@ let b = class extends _ {
         </span>
         ${Me}
       </div>
-      ${oe.map((r) => {
-      const n = i[r], o = this.selected?.entityId === t.entity_id && this.selected?.hour === r;
+      <div class="cells">
+        ${oe.map((s) => {
+      const r = e[s], n = this.selected?.entityId === t.entity_id && this.selected?.hour === s;
       return this._cell(
-        n,
-        this._marker(r, e),
+        r,
         "",
-        !!n?.explicit,
-        o,
-        () => this._emit("select-cell", { entityId: t.entity_id, hour: r })
+        !!r?.explicit,
+        n,
+        () => this._emit("select-cell", { entityId: t.entity_id, hour: s })
       );
     })}
+        ${this._playhead()}
+      </div>
     </div>`;
   }
-  _cell(t, e, i, s, r, n) {
-    const o = t ? t.brightness : 0, c = t && "rgb_color" in t ? t.rgb_color : null, a = t ? c ? `rgb(${c[0]}, ${c[1]}, ${c[2]})` : ue(t.color_temp) : "transparent", p = [
+  _cell(t, e, i, s, r) {
+    const n = t ? t.brightness : 0, o = t && "rgb_color" in t ? t.rgb_color : null, c = t ? o ? `rgb(${o[0]}, ${o[1]}, ${o[2]})` : ue(t.color_temp) : "transparent", a = [
       "cell",
-      i,
-      s ? "explicit" : "",
-      r ? "selected" : ""
+      e,
+      i ? "explicit" : "",
+      s ? "selected" : ""
     ].join(" ");
     return l`<div
-      class=${p}
-      @click=${n}
+      class=${a}
+      @click=${r}
       title=${t ? `${t.brightness}% · ${t.color_temp} K` : ""}
     >
-      <div class="fill" style="height:${o}%;background:${a}"></div>
-      ${e === null ? d : l`<div class="playhead" style="left:${e * 100}%"></div>`}
+      <div class="fill" style="height:${n}%;background:${c}"></div>
     </div>`;
   }
   _emit(t, e) {
@@ -1450,9 +1462,45 @@ b.styles = [
       }
       .gridrow {
         display: grid;
-        grid-template-columns: 100px repeat(24, 1fr);
+        grid-template-columns: 100px 1fr;
         gap: 1px;
         align-items: center;
+      }
+      /* The 24 cells of one row, with row-level overlays (max line, playhead). */
+      .cells {
+        position: relative;
+        display: grid;
+        grid-template-columns: repeat(24, 1fr);
+        gap: 1px;
+      }
+      /* Continuous dim reference line at the 100% mark. */
+      .cells::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--border);
+        opacity: 0.5;
+        z-index: 2;
+        pointer-events: none;
+      }
+      /* Thin light playhead at the currently shown time. */
+      .cells .playhead {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 1px;
+        background: var(--accent);
+        opacity: 0.55;
+        z-index: 2;
+        pointer-events: none;
+      }
+      .hours {
+        display: grid;
+        grid-template-columns: repeat(24, 1fr);
+        gap: 1px;
       }
       .label {
         z-index: 3;
@@ -1548,25 +1596,6 @@ b.styles = [
         overflow: hidden;
         cursor: pointer;
       }
-      /* Dim 100% reference line across the top of every chart cell. */
-      .cell::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: var(--border);
-        opacity: 0.5;
-      }
-      /* Thin vertical playhead at the currently shown value. */
-      .cell .playhead {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        width: 2px;
-        background: var(--accent-strong);
-      }
       .cell.readonly {
         cursor: default;
       }
@@ -1643,15 +1672,18 @@ b.styles = [
           overflow: hidden;
           touch-action: none;
         }
-        /* Stacked rows: the name spans the full width and the 24 cells
-           auto-flow underneath, edge to edge. minmax(0, 1fr) so the cells
-           can shrink below the hour digits' width. */
+        /* Stacked rows: the name spans the full width and the 24 cells sit
+           underneath, edge to edge. minmax(0, 1fr) so the cells can shrink
+           below the hour digits' width. */
         .gridrow {
-          grid-template-columns: repeat(24, minmax(0, 1fr));
+          grid-template-columns: minmax(0, 1fr);
           margin-bottom: 6px;
         }
+        .cells,
+        .hours {
+          grid-template-columns: repeat(24, minmax(0, 1fr));
+        }
         .gridrow .label {
-          grid-column: 1 / -1;
           font-size: 0.8rem;
           padding: 4px 0 2px;
           margin-bottom: 3px;
@@ -1745,18 +1777,15 @@ ee.styles = M`
       display: block;
     }
     .strip {
+      position: relative;
       display: grid;
       grid-template-columns: repeat(24, minmax(0, 1fr));
       gap: 1px;
       height: 42px;
       overflow: hidden;
     }
-    .cell {
-      position: relative;
-      overflow: hidden;
-    }
-    /* Dim 100% reference line, mirroring the timeline cells. */
-    .cell::before {
+    /* Continuous dim reference line, mirroring the timeline rows. */
+    .strip::before {
       content: "";
       position: absolute;
       top: 0;
@@ -1765,6 +1794,12 @@ ee.styles = M`
       height: 1px;
       background: var(--border);
       opacity: 0.5;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .cell {
+      position: relative;
+      overflow: hidden;
     }
     .cell.explicit {
       background: var(--border);
@@ -1820,7 +1855,7 @@ let te = class extends _ {
       j,
       50,
       (e, i) => this._patch({ min_color_temp: e, max_color_temp: i }),
-      ze(U, j)
+      De(U, j)
     )}
       ${f(
       "Sunrise & sunset",
@@ -1839,14 +1874,14 @@ let te = class extends _ {
     )}
       </div>
       <div class="pair">
-        ${I(
+        ${z(
       "Sunrise offset",
       t.sunrise_offset,
       Math.min(-Z, t.sunrise_offset),
       Math.max(Z, t.sunrise_offset),
       (e) => this._patch({ sunrise_offset: e })
     )}
-        ${I(
+        ${z(
       "Sunset offset",
       t.sunset_offset,
       Math.min(-Z, t.sunset_offset),
@@ -1859,14 +1894,14 @@ let te = class extends _ {
       "Width of the smooth brightness ramp around sunrise and sunset: the dark side eases in from night, the light side out into full day."
     )}
       <div class="pair">
-        ${I(
+        ${z(
       "Dark side",
       t.ramp_dark,
       0,
       Math.max(Oe, t.ramp_dark),
       (e) => this._patch({ ramp_dark: e })
     )}
-        ${I(
+        ${z(
       "Light side",
       t.ramp_light,
       0,
@@ -1988,7 +2023,7 @@ let R = class extends _ {
     )}
       </div>
       <div class="grid">
-        ${I(
+        ${z(
       "Auto-reset override",
       t.autoreset_control,
       0,
@@ -2072,12 +2107,12 @@ re([
 R = re([
   N("sundial-settings-tab")
 ], R);
-var Nt = Object.defineProperty, Dt = Object.getOwnPropertyDescriptor, $ = (t, e, i, s) => {
-  for (var r = s > 1 ? void 0 : s ? Dt(e, i) : e, n = t.length - 1, o; n >= 0; n--)
+var Nt = Object.defineProperty, It = Object.getOwnPropertyDescriptor, $ = (t, e, i, s) => {
+  for (var r = s > 1 ? void 0 : s ? It(e, i) : e, n = t.length - 1, o; n >= 0; n--)
     (o = t[n]) && (r = (s ? o(e, i, r) : o(r)) || r);
   return s && r && Nt(e, i, r), r;
 };
-const It = "(max-width: 960px)";
+const zt = "(max-width: 960px)";
 let v = class extends _ {
   constructor() {
     super(...arguments), this.preview = !1, this._sel = null, this._previewHour = Ue(), this._isMobile = !1, this._onMqChange = (t) => {
@@ -2108,7 +2143,7 @@ let v = class extends _ {
     return this.schema.id === this.config.active_schema_id;
   }
   connectedCallback() {
-    super.connectedCallback(), this._mql = window.matchMedia(It), this._isMobile = this._mql.matches, this._mql.addEventListener("change", this._onMqChange);
+    super.connectedCallback(), this._mql = window.matchMedia(zt), this._isMobile = this._mql.matches, this._mql.addEventListener("change", this._onMqChange);
   }
   willUpdate(t) {
     t.has("schema") && (this._draft?.id !== this.schema.id ? (this._flushSave(), this._draft = structuredClone(this.schema), this._sel = null, this._loadTimeline()) : this._saveTimer === void 0 && JSON.stringify(this.schema) !== JSON.stringify(this._draft) && (this._draft = structuredClone(this.schema), this._loadTimeline())), t.has("preview") && t.get("preview") !== void 0 && (this.preview ? this._sendPreview() : this.api.apply());
@@ -2474,7 +2509,7 @@ let v = class extends _ {
       j,
       50,
       (i, s) => this._patchLight(t, { min_color_temp: i, max_color_temp: s }),
-      ze(U, j)
+      De(U, j)
     )}
       ${f(
       "Behaviour",
@@ -2871,10 +2906,10 @@ $([
 v = $([
   N("sundial-schema-editor")
 ], v);
-var zt = Object.defineProperty, Ut = Object.getOwnPropertyDescriptor, P = (t, e, i, s) => {
+var Dt = Object.defineProperty, Ut = Object.getOwnPropertyDescriptor, P = (t, e, i, s) => {
   for (var r = s > 1 ? void 0 : s ? Ut(e, i) : e, n = t.length - 1, o; n >= 0; n--)
     (o = t[n]) && (r = (s ? o(e, i, r) : o(r)) || r);
-  return s && r && zt(e, i, r), r;
+  return s && r && Dt(e, i, r), r;
 };
 let w = class extends _ {
   constructor() {

@@ -20,18 +20,15 @@ export class RowPreview extends LitElement {
       display: block;
     }
     .strip {
+      position: relative;
       display: grid;
       grid-template-columns: repeat(24, minmax(0, 1fr));
       gap: 1px;
       height: 42px;
       overflow: hidden;
     }
-    .cell {
-      position: relative;
-      overflow: hidden;
-    }
-    /* Dim 100% reference line, mirroring the timeline cells. */
-    .cell::before {
+    /* Continuous dim reference line, mirroring the timeline rows. */
+    .strip::before {
       content: "";
       position: absolute;
       top: 0;
@@ -40,6 +37,12 @@ export class RowPreview extends LitElement {
       height: 1px;
       background: var(--border);
       opacity: 0.5;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .cell {
+      position: relative;
+      overflow: hidden;
     }
     .cell.explicit {
       background: var(--border);
