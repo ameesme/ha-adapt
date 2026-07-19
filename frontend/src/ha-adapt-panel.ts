@@ -35,11 +35,13 @@ export class HaAdaptPanel extends LitElement {
         color: var(--danger);
       }
       @media (max-width: 960px) {
-        /* The page itself doesn't scroll on small screens: the header stays
-           put and the timeline scrolls internally. */
+        /* Pin the whole panel to the viewport on small screens: with the
+           host fixed, no drag anywhere can scroll the page — the timeline
+           scrolls internally and that's it. */
         :host {
-          height: 100vh;
-          height: 100dvh;
+          position: fixed;
+          inset: 0;
+          height: auto;
           min-height: 0;
           overflow: hidden;
           overscroll-behavior: none;

@@ -1,10 +1,11 @@
-import { LitElement, html, type TemplateResult } from "lit";
+import { LitElement, css, html, type TemplateResult } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 
 import type { HaAdaptApi } from "../api";
 import {
   checkboxField,
   coordField,
+  durationField,
   numberField,
   rangeField,
   sectionHeading,
@@ -16,7 +17,18 @@ import type { ConfigPayload, GlobalSettings } from "../types";
 // events so the panel owns state.
 @customElement("ha-adapt-settings-tab")
 export class SettingsTab extends LitElement {
-  static override styles = baseStyles;
+  static override styles = [
+    baseStyles,
+    css`
+      .about {
+        margin: 28px 0 2px;
+        text-align: center;
+        font-size: 0.72rem;
+        color: var(--text-soft);
+        opacity: 0.8;
+      }
+    `,
+  ];
 
   @property({ attribute: false }) config!: ConfigPayload;
   @property({ attribute: false }) api!: HaAdaptApi;
@@ -116,10 +128,13 @@ export class SettingsTab extends LitElement {
         )}
       </div>
       <div class="grid">
-        ${numberField(
-          "Auto-reset override (s)",
+        ${durationField(
+          "Auto-reset override",
           s.autoreset_control,
-          (v) => save({ autoreset_control: v })
+          0,
+          3600,
+          (v) => save({ autoreset_control: v }),
+          "Never"
         )}
       </div>
       ${sectionHeading(
@@ -158,20 +173,21 @@ export class SettingsTab extends LitElement {
         "Download the full configuration — every schema plus these settings " +
           "— as a JSON file, or restore a previous export."
       )}
-      <div class="actions">
+      <div class="pair">
         <button class="btn ghost" @click=${() => void this._export()}>
           Export
         </button>
         <button class="btn ghost" @click=${() => this._fileInput.click()}>
           Import
         </button>
-        <input
-          type="file"
-          accept=".json,application/json"
-          hidden
-          @change=${this._onImportFile}
-        />
       </div>
+      <input
+        type="file"
+        accept=".json,application/json"
+        hidden
+        @change=${this._onImportFile}
+      />
+      <p class="about">Adaptive Lighting · v${this.config.version}</p>
     `;
   }
 }

@@ -78,14 +78,18 @@ export function minMaxField(
 }
 
 // A duration slider (stored in seconds, 1-minute steps) with the parsed
-// value — "45 min" / "1 h 23 min" — previewed underneath.
+// value — "45 min" / "1 h 23 min" — previewed underneath. ``zeroText``
+// replaces the preview at exactly 0 (e.g. "Never").
 export function durationField(
   label: string,
   seconds: number,
   min: number,
   max: number,
-  onChange: (value: number) => void
+  onChange: (value: number) => void,
+  zeroText?: string
 ): TemplateResult {
+  const preview =
+    seconds === 0 && zeroText ? zeroText : formatDuration(seconds);
   return html`<label class="field">
     ${label}
     <input
@@ -97,7 +101,7 @@ export function durationField(
       @input=${(e: Event) =>
         onChange(Number((e.target as HTMLInputElement).value))}
     />
-    <span class="duration-preview">${formatDuration(seconds)}</span>
+    <span class="duration-preview">${preview}</span>
   </label>`;
 }
 

@@ -16,10 +16,12 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import area_registry as ar
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers import entity_registry as er
+from homeassistant.loader import async_get_integration
 import voluptuous as vol
 
 from .const import (
     DEFAULT_SCHEMA_ID,
+    DOMAIN,
     PANEL_ELEMENT,
     PANEL_ICON,
     PANEL_STATIC_PATH,
@@ -28,6 +30,10 @@ from .const import (
 )
 from .coordinator import AdaptCoordinator, get_coordinator
 from .models import GlobalSettings, Schema, StoreData
+
+# The manifest version, resolved once at panel setup (single instance) so the
+# sync payload builder can include it.
+_version: str = ""
 
 
 def _bundle_token(path: str) -> str:
@@ -43,6 +49,10 @@ async def async_setup_panel(
     hass: HomeAssistant, coordinator: AdaptCoordinator
 ) -> None:
     """Serve the bundle, register the sidebar panel, and the WS commands."""
+    global _version  # noqa: PLW0603
+    integration = await async_get_integration(hass, DOMAIN)
+    _version = str(integration.version or "")
+
     js_path = os.path.join(
         os.path.dirname(__file__), "frontend", "dist", "ha-adapt-panel.js"
     )
@@ -129,6 +139,7 @@ def _config_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> dict:
         # leave latitude/longitude blank (shown as the fields' placeholder).
         "home_latitude": hass.config.latitude,
         "home_longitude": hass.config.longitude,
+        "version": _version,
     }
 
 

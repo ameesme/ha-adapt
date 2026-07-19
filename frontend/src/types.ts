@@ -73,6 +73,8 @@ export interface ConfigPayload {
   // The home's configured coordinates (the blank-field fallback).
   home_latitude: number;
   home_longitude: number;
+  // Integration manifest version, for the settings footer.
+  version: string;
 }
 
 // Computed per-hour values for rendering the timeline (from ha_adapt/timeline).

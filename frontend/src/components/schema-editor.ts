@@ -67,11 +67,6 @@ export class SchemaEditor extends LitElement {
         flex-wrap: wrap;
         margin-bottom: 14px;
       }
-      .app-title {
-        font-size: 1.15rem;
-        font-weight: 700;
-        margin: 0;
-      }
       input.name {
         font-size: 1.3rem;
         font-weight: 700;
@@ -237,8 +232,20 @@ export class SchemaEditor extends LitElement {
         background: rgba(61, 44, 30, 0.4);
         animation: backdrop-fade 240ms ease-out;
       }
+      /* Slide back out before actually closing (see _closeDrawer). */
+      dialog.drawer[open].closing {
+        animation: drawer-down 240ms cubic-bezier(0.32, 0.72, 0, 1) forwards;
+      }
+      dialog.drawer[open].closing::backdrop {
+        animation: backdrop-fade 240ms ease-out reverse forwards;
+      }
       @keyframes drawer-up {
         from {
+          transform: translateY(100%);
+        }
+      }
+      @keyframes drawer-down {
+        to {
           transform: translateY(100%);
         }
       }
@@ -306,9 +313,6 @@ export class SchemaEditor extends LitElement {
           flex-direction: column;
           height: 100%;
           min-height: 0;
-        }
-        .app-title {
-          display: none;
         }
         /* Fixed-height single-row sticky bar on a soft surface, full-bleed
            across the wrap's side padding. */
@@ -494,7 +498,6 @@ export class SchemaEditor extends LitElement {
   override render(): TemplateResult {
     return html`
       <div class="head">
-        <h1 class="app-title">Adaptive Lighting</h1>
         <div class="switcher" title="Switch schema">
           <svg class="chev" viewBox="0 0 24 24" aria-hidden="true">
             <path
@@ -563,7 +566,7 @@ export class SchemaEditor extends LitElement {
     if (!this._isMobile) {
       return html`
         <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
-          + New
+          ${plusIcon} New
         </button>
         <button
           class="btn danger"
@@ -573,13 +576,13 @@ export class SchemaEditor extends LitElement {
             : "The default schema cannot be deleted"}
           @click=${this._delete}
         >
-          Delete
+          ${trashIcon} Delete
         </button>
         <button
           class="btn ${this.preview ? "" : "ghost"}"
           @click=${() => this._emit("preview-toggle", !this.preview)}
         >
-          Preview
+          ${eyeIcon} Preview
         </button>
         <button
           class="btn ghost"
@@ -587,7 +590,14 @@ export class SchemaEditor extends LitElement {
           title=${this._active ? "This schema is active" : "Apply this schema"}
           @click=${this._setActive}
         >
-          ${this._active ? "Active" : "Apply"}
+          ${checkCircleIcon} ${this._active ? "Active" : "Apply"}
+        </button>
+        <button
+          class="btn ghost"
+          title="Global settings"
+          @click=${() => (this._sel = { kind: "settings" })}
+        >
+          ${cogIcon} Settings
         </button>
       `;
     }
@@ -657,6 +667,7 @@ export class SchemaEditor extends LitElement {
     return html`<dialog
       class="drawer"
       @close=${() => (this._sel = null)}
+      @cancel=${this._onDrawerCancel}
       @click=${this._onDrawerClick}
     >
       <div class="drawer-head">
@@ -670,13 +681,33 @@ export class SchemaEditor extends LitElement {
     </dialog>`;
   }
 
+  // Slide the sheet out (and fade the backdrop) before actually closing.
   private _closeDrawer = (): void => {
-    this.renderRoot.querySelector<HTMLDialogElement>("dialog.drawer")?.close();
+    const dlg = this.renderRoot.querySelector<HTMLDialogElement>("dialog.drawer");
+    if (!dlg || !dlg.open || dlg.classList.contains("closing")) return;
+    dlg.classList.add("closing");
+    const finish = (): void => {
+      window.clearTimeout(fallback);
+      dlg.removeEventListener("animationend", onEnd);
+      if (dlg.open) dlg.close();
+    };
+    const onEnd = (e: AnimationEvent): void => {
+      if (e.animationName === "drawer-down") finish();
+    };
+    dlg.addEventListener("animationend", onEnd);
+    // Safety net in case the animation never fires (reduced motion etc.).
+    const fallback = window.setTimeout(finish, 350);
+  };
+
+  // Esc: intercept the native instant close and run the slide-out instead.
+  private _onDrawerCancel = (e: Event): void => {
+    e.preventDefault();
+    this._closeDrawer();
   };
 
   // A click on the backdrop lands on the <dialog> element itself.
   private _onDrawerClick = (e: MouseEvent): void => {
-    if (e.target instanceof HTMLDialogElement) e.target.close();
+    if (e.target instanceof HTMLDialogElement) this._closeDrawer();
   };
 
   private get _selectedRow(): string | null {

@@ -130,14 +130,18 @@ export const baseStyles = css`
     line-height: 1.4;
   }
 
-  /* Two-part values (e.g. sunrise + sunset) on one row. */
+  /* Two-part values (e.g. sunrise + sunset) on one row. minmax(0, 1fr) so
+     wide intrinsic inputs (type=time) can't stretch their column. */
   .pair {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 12px;
   }
   .pair + .pair {
     margin-top: 14px;
+  }
+  .pair > button.btn {
+    width: 100%;
   }
 
   /* Indication strip above a slider (e.g. the Kelvin spectrum). */
@@ -149,8 +153,9 @@ export const baseStyles = css`
 
   /* Parsed value shown underneath duration sliders. */
   .duration-preview {
-    text-align: center;
-    font-size: 0.8rem;
+    margin-top: -4px;
+    text-align: right;
+    font-size: 0.72rem;
     font-weight: 600;
     color: var(--accent-strong);
     font-variant-numeric: tabular-nums;
@@ -299,6 +304,10 @@ export const baseStyles = css`
   }
 
   button.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
     font: inherit;
     font-weight: 600;
     cursor: pointer;
@@ -307,6 +316,12 @@ export const baseStyles = css`
     border: 1px solid var(--accent);
     background: var(--accent);
     color: #fff8ef;
+  }
+
+  button.btn svg {
+    width: 16px;
+    height: 16px;
+    flex: none;
   }
 
   button.btn.ghost {

@@ -119,6 +119,7 @@ function configPayload(store: Store): ConfigPayload {
     })),
     home_latitude: 52.3731,
     home_longitude: 4.8922,
+    version: "0.0.0-dev",
   };
 }
 

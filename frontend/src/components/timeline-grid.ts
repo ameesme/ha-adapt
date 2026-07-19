@@ -64,6 +64,10 @@ export class TimelineGrid extends LitElement {
         flex-direction: column;
         overflow: hidden;
       }
+      .label .lname {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
       .label svg {
         width: 12px;
         height: 12px;
@@ -72,17 +76,6 @@ export class TimelineGrid extends LitElement {
       }
       .label.clickable:hover svg {
         opacity: 0.9;
-      }
-      .label .area {
-        font-size: 0.65rem;
-        font-weight: 400;
-        color: var(--text-soft);
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
-      .label .lname {
-        overflow: hidden;
-        text-overflow: ellipsis;
       }
       .label.clickable {
         cursor: pointer;
@@ -238,9 +231,6 @@ export class TimelineGrid extends LitElement {
         .label {
           font-size: 0.72rem;
         }
-        .label .area {
-          font-size: 0.58rem;
-        }
         .hourhead {
           font-size: 0.55rem;
           overflow: hidden;
@@ -283,10 +273,14 @@ export class TimelineGrid extends LitElement {
           ${this._scrubRow()}
           ${this._headerRow(nowHour)}
           ${this._sunRow()}
-          <div class="gridrow">
-            <div class="label section-label">Lights</div>
-          </div>
-          ${this.lights.map((light) => this._lightRow(light))}
+          ${this._lightGroups().map(
+            (group) => html`
+              <div class="gridrow">
+                <div class="label section-label">${group.area}</div>
+              </div>
+              ${group.lights.map((light) => this._lightRow(light))}
+            `
+          )}
         </div>
       </div>
       <div class="legend">
@@ -368,6 +362,22 @@ export class TimelineGrid extends LitElement {
     </div>`;
   }
 
+  // Consecutive lights that share an area render under one area heading (the
+  // backend sorts by area already); unassigned lights group under "Other".
+  private _lightGroups(): { area: string; lights: LightInfo[] }[] {
+    const groups: { area: string; lights: LightInfo[] }[] = [];
+    for (const light of this.lights) {
+      const area = light.area_name ?? "Other";
+      const last = groups[groups.length - 1];
+      if (last && last.area === area) last.lights.push(light);
+      else groups.push({ area, lights: [light] });
+    }
+    if (groups.length === 1 && groups[0].area === "Other") {
+      groups[0].area = "Lights";
+    }
+    return groups;
+  }
+
   private _lightRow(light: LightInfo): TemplateResult {
     const row = this.timeline!.lights[light.entity_id] ?? [];
     const selected = this.selectedRow === light.entity_id ? "rowselected" : "";
@@ -378,7 +388,6 @@ export class TimelineGrid extends LitElement {
         @click=${() => this._emit("select-light", light.entity_id)}
       >
         <span class="text-col">
-          ${light.area_name ? html`<span class="area">${light.area_name}</span>` : ""}
           <span class="lname">${light.name}</span>
         </span>
         ${cogIcon}
