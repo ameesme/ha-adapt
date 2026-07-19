@@ -935,7 +935,7 @@ export class SchemaEditor extends LitElement {
     ) {
       return nothing;
     }
-    return html`<div class="center-cta">
+    return html`<div class="actions">
       <button
         class="btn ghost small"
         title="Set the bounds to ${range[0]}–${range[1]} K"

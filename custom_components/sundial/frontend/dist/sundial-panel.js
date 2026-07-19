@@ -2548,7 +2548,7 @@ let v = class extends _ {
   /** A one-tap reset when the configured range deviates from the bulb's. */
   _renderBulbRangeReset(t, e) {
     const i = this._bulbCtRange(t);
-    return !i || e.min_color_temp === i[0] && e.max_color_temp === i[1] ? d : a`<div class="center-cta">
+    return !i || e.min_color_temp === i[0] && e.max_color_temp === i[1] ? d : a`<div class="actions">
       <button
         class="btn ghost small"
         title="Set the bounds to ${i[0]}–${i[1]} K"
