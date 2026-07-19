@@ -433,8 +433,13 @@ export class SchemaEditor extends LitElement {
     }
     // React to the preview toggle (driven from the header or the timeline).
     if (changed.has("preview") && changed.get("preview") !== undefined) {
-      if (this.preview) this._sendPreview();
-      else void this.api.apply();
+      if (this.preview) {
+        this._sendPreview();
+      } else {
+        // Back to reality: real values on the lights, playhead at now.
+        this._previewHour = currentHour();
+        void this.api.apply();
+      }
     }
   }
 
