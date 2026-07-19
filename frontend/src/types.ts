@@ -36,6 +36,9 @@ export interface LightConfig {
   // "cap" clamps the sun's value into the range; "scale" maps the sun's 0..1
   // signal onto the range (used on sun-following hours).
   limit_mode: "cap" | "scale";
+  // "auto" sends native colour temperature when supported; "rgb" renders the
+  // temperature as an RGB colour (for lights that support both).
+  render_mode: "auto" | "rgb";
   hours: HourCell[]; // length 24
 }
 

@@ -391,6 +391,12 @@ export const baseStyles = css`
     color: var(--danger);
   }
 
+  /* Compact variant for secondary corrective actions. */
+  button.btn.small {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+
   /* Borderless variant for controls that aren't schema actions (settings). */
   button.btn.plain {
     border-color: transparent;

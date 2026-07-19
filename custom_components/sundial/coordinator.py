@@ -441,11 +441,13 @@ class SundialCoordinator:
         )
         brightness = target.brightness_pct if supports_brightness else None
         # An RGB override wins on RGB-capable lights; otherwise use the
-        # colour-temperature baseline — natively if supported, else approximated
-        # as RGB so RGB-only lights still follow the sun.
+        # colour-temperature baseline — natively if supported (and the light
+        # isn't configured to render as RGB), else approximated as RGB so
+        # RGB-only lights still follow the sun.
+        use_native_ct = supports_color and light_cfg.render_mode != "rgb"
         if target.rgb_color is not None and supports_rgb:
             color = {ATTR_RGB_COLOR: list(target.rgb_color)}
-        elif target.color_temp_kelvin is not None and supports_color:
+        elif target.color_temp_kelvin is not None and use_native_ct:
             color = {ATTR_COLOR_TEMP_KELVIN: target.color_temp_kelvin}
         elif target.color_temp_kelvin is not None and supports_rgb:
             color = {

@@ -46,6 +46,12 @@ DEFAULT_MAX_COLOR_TEMP: Final = 5500  # Kelvin
 #   "scale" — map the sun's 0..1 signal onto the range (use the full range)
 LIMIT_MODES: Final = ("cap", "scale")
 DEFAULT_LIMIT_MODE: Final = "cap"
+
+# How colour is sent to lights that support both colour temperature and RGB:
+#   "auto" — native colour temperature when available (default)
+#   "rgb"  — always render the temperature as an RGB colour
+RENDER_MODES: Final = ("auto", "rgb")
+DEFAULT_RENDER_MODE: Final = "auto"
 # --- Sun defaults ----------------------------------------------------------
 DEFAULT_SUN_MIN_BRIGHTNESS: Final = 5  # percent
 DEFAULT_SUNRISE_OFFSET: Final = 5000  # seconds

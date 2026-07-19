@@ -33,6 +33,7 @@ export function defaultLightConfig(): LightConfig {
     max_color_temp: 5500,
     separate_turn_on_commands: false,
     limit_mode: "cap",
+    render_mode: "auto",
     hours: Array.from({ length: 24 }, () => null),
   };
 }

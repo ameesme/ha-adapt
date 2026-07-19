@@ -53,6 +53,11 @@ def test_lightconfig_drops_corrupt_cell_values_not_whole_config():
     assert cfg.hours[2] == {"brightness": 40, "color_temp": 3000}
 
 
+def test_invalid_render_mode_falls_back_to_auto():
+    assert LightConfig(render_mode="nonsense").render_mode == "auto"
+    assert LightConfig(render_mode="rgb").render_mode == "rgb"
+
+
 def test_inverted_ranges_are_reordered():
     light = LightConfig(
         min_brightness=90, max_brightness=10, min_color_temp=5000, max_color_temp=2000

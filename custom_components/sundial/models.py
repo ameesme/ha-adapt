@@ -33,6 +33,7 @@ from .const import (
     DEFAULT_MIN_COLOR_TEMP,
     DEFAULT_RAMP_DARK,
     DEFAULT_RAMP_LIGHT,
+    DEFAULT_RENDER_MODE,
     DEFAULT_SCHEMA_ID,
     DEFAULT_SEND_SPLIT_DELAY,
     DEFAULT_SUN_MIN_BRIGHTNESS,
@@ -41,6 +42,7 @@ from .const import (
     DEFAULT_TRANSITION,
     HOURS_PER_DAY,
     LIMIT_MODES,
+    RENDER_MODES,
 )
 
 # An hour cell is either None (fall back to the sun) or a mapping with explicit
@@ -140,6 +142,9 @@ class LightConfig:
     # How the per-light min/max apply on sun-following hours: "cap" (clamp the
     # sun's value into the range) or "scale" (map the sun's 0..1 onto the range).
     limit_mode: str = DEFAULT_LIMIT_MODE
+    # How colour is sent when the light supports both temperature and RGB:
+    # "auto" (native colour temperature) or "rgb" (render as RGB).
+    render_mode: str = DEFAULT_RENDER_MODE
     # 24 cells; None = follow the sun for that hour.
     hours: list[HourCell] = field(
         default_factory=lambda: [None] * HOURS_PER_DAY
@@ -149,6 +154,8 @@ class LightConfig:
         self.hours = _normalize_hours(self.hours)
         if self.limit_mode not in LIMIT_MODES:
             self.limit_mode = DEFAULT_LIMIT_MODE
+        if self.render_mode not in RENDER_MODES:
+            self.render_mode = DEFAULT_RENDER_MODE
         self.min_brightness, self.max_brightness = _order_range(
             self.min_brightness, self.max_brightness
         )

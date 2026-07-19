@@ -937,16 +937,37 @@ export class SchemaEditor extends LitElement {
     }
     return html`<div class="center-cta">
       <button
-        class="btn ghost"
+        class="btn ghost small"
+        title="Set the bounds to ${range[0]}–${range[1]} K"
         @click=${() =>
           this._patchLight(entityId, {
             min_color_temp: range[0],
             max_color_temp: range[1],
           })}
       >
-        Use bulb range (${range[0]}–${range[1]} K)
+        Use reported range
       </button>
     </div>`;
+  }
+
+  /** Colour-rendering choice, only for lights supporting both CT and RGB. */
+  private _renderRenderModeSelect(
+    entityId: string,
+    cfg: LightConfig
+  ): TemplateResult | typeof nothing {
+    const light = this.config.lights.find((l) => l.entity_id === entityId);
+    if (!light?.supports_rgb || light.min_color_temp_kelvin == null) {
+      return nothing;
+    }
+    return selectField(
+      "Rendering",
+      cfg.render_mode,
+      [
+        { value: "auto", label: "Color temperature" },
+        { value: "rgb", label: "RGB" },
+      ],
+      (v) => this._patchLight(entityId, { render_mode: v as "auto" | "rgb" })
+    );
   }
 
   private _renderLightEditor(entityId: string): TemplateResult {
@@ -1001,6 +1022,7 @@ export class SchemaEditor extends LitElement {
         (v) =>
           this._patchLight(entityId, { limit_mode: v as "cap" | "scale" })
       )}
+      ${this._renderRenderModeSelect(entityId, cfg)}
       <div class="actions">
         ${checkboxField(
           "Send brightness and colour separately",
