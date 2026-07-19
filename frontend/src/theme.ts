@@ -296,11 +296,50 @@ export const baseStyles = css`
   .toggle {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-soft);
     cursor: pointer;
+  }
+
+  /* Custom switch in the panel's palette instead of the system checkbox. */
+  .toggle input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    flex: none;
+    width: 40px;
+    height: 24px;
+    margin: 0;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--accent-soft);
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+  .toggle input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(120, 80, 40, 0.4);
+    transition: transform 150ms ease;
+  }
+  .toggle input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .toggle input[type="checkbox"]:checked::before {
+    transform: translateX(16px);
+  }
+  .toggle input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   button.btn {

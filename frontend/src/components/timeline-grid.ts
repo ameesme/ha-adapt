@@ -179,11 +179,6 @@ export class TimelineGrid extends LitElement {
         background: var(--surface-alt);
         border: 2px var(--accent-strong) solid;
       }
-      /* The standalone scrubber shown above the grid on small screens (the
-         in-grid scrub row would be wider than the viewport there). */
-      .scrub-bar {
-        display: none;
-      }
       @media (max-width: 960px) {
         :host {
           min-height: 0;
@@ -196,11 +191,6 @@ export class TimelineGrid extends LitElement {
           display: flex;
           flex-direction: column;
           margin-bottom: 8px;
-        }
-        .scrub-bar {
-          display: block;
-          padding: 10px 2px 6px;
-          flex: none;
         }
         .scrubrow {
           display: none;
@@ -228,6 +218,7 @@ export class TimelineGrid extends LitElement {
           grid-column: 1 / -1;
           font-size: 0.8rem;
           padding: 4px 0 2px;
+          margin-bottom: 3px;
         }
         .headrow .label {
           display: none;
@@ -271,7 +262,6 @@ export class TimelineGrid extends LitElement {
     }
     const nowHour = Math.floor(this.previewHour) % 24;
     return html`<div class="card">
-      ${this._scrubBar()}
       <div class="scroll ${this.scrollLocked ? "locked" : ""}">
         <div class="rows">
           ${this._scrubRow()}
@@ -321,29 +311,6 @@ export class TimelineGrid extends LitElement {
         <button class="now-btn" @click=${this._jumpToNow} title="Jump to now">now</button>
       </div>
       <div class="track">${this._slider()}</div>
-    </div>`;
-  }
-
-  // Small screens: a full-width custom slider above the grid instead — no
-  // time readout, full-hour steps (the highlighted hour column shows the
-  // selection). Reuses the min–max slider's track/thumb styling.
-  private _scrubBar(): TemplateResult {
-    const hour = Math.round(this.previewHour);
-    return html`<div class="scrub-bar">
-      <div class="minmax">
-        <div class="minmax-track">
-          <div class="minmax-fill" style="left:0;width:${(hour / 23) * 100}%"></div>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="23"
-          step="1"
-          .value=${String(hour)}
-          @input=${(e: Event) =>
-            this._emit("scrub", Number((e.target as HTMLInputElement).value))}
-        />
-      </div>
     </div>`;
   }
 

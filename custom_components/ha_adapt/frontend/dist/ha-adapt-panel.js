@@ -45,10 +45,10 @@ const Fe = (t) => new He(typeof t == "string" ? t : t + "", void 0, ce), E = (t,
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const { is: qe, defineProperty: Ke, getOwnPropertyDescriptor: We, getOwnPropertyNames: Ge, getOwnPropertySymbols: Je, getPrototypeOf: Ze } = Object, se = globalThis, _e = se.trustedTypes, Ye = _e ? _e.emptyScript : "", Xe = se.reactiveElementPolyfillSupport, z = (t, e) => t, Y = { toAttribute(t, e) {
+const { is: qe, defineProperty: Ke, getOwnPropertyDescriptor: We, getOwnPropertyNames: Ge, getOwnPropertySymbols: Je, getPrototypeOf: Ze } = Object, se = globalThis, _e = se.trustedTypes, Xe = _e ? _e.emptyScript : "", Ye = se.reactiveElementPolyfillSupport, z = (t, e) => t, X = { toAttribute(t, e) {
   switch (e) {
     case Boolean:
-      t = t ? Ye : null;
+      t = t ? Xe : null;
       break;
     case Object:
     case Array:
@@ -73,7 +73,7 @@ const { is: qe, defineProperty: Ke, getOwnPropertyDescriptor: We, getOwnProperty
       }
   }
   return i;
-} }, de = (t, e) => !qe(t, e), ve = { attribute: !0, type: String, converter: Y, reflect: !1, useDefault: !1, hasChanged: de };
+} }, de = (t, e) => !qe(t, e), ve = { attribute: !0, type: String, converter: X, reflect: !1, useDefault: !1, hasChanged: de };
 Symbol.metadata ??= Symbol("metadata"), se.litPropertyMetadata ??= /* @__PURE__ */ new WeakMap();
 let T = class extends HTMLElement {
   static addInitializer(e) {
@@ -172,14 +172,14 @@ let T = class extends HTMLElement {
   _$ET(e, i) {
     const s = this.constructor.elementProperties.get(e), r = this.constructor._$Eu(e, s);
     if (r !== void 0 && s.reflect === !0) {
-      const n = (s.converter?.toAttribute !== void 0 ? s.converter : Y).toAttribute(i, s.type);
+      const n = (s.converter?.toAttribute !== void 0 ? s.converter : X).toAttribute(i, s.type);
       this._$Em = e, n == null ? this.removeAttribute(r) : this.setAttribute(r, n), this._$Em = null;
     }
   }
   _$AK(e, i) {
     const s = this.constructor, r = s._$Eh.get(e);
     if (r !== void 0 && this._$Em !== r) {
-      const n = s.getPropertyOptions(r), o = typeof n.converter == "function" ? { fromAttribute: n.converter } : n.converter?.fromAttribute !== void 0 ? n.converter : Y;
+      const n = s.getPropertyOptions(r), o = typeof n.converter == "function" ? { fromAttribute: n.converter } : n.converter?.fromAttribute !== void 0 ? n.converter : X;
       this._$Em = r;
       const c = o.fromAttribute(i, n.type);
       this[r] = c ?? this._$Ej?.get(r) ?? c, this._$Em = null;
@@ -256,15 +256,15 @@ let T = class extends HTMLElement {
   firstUpdated(e) {
   }
 };
-T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[z("elementProperties")] = /* @__PURE__ */ new Map(), T[z("finalized")] = /* @__PURE__ */ new Map(), Xe?.({ ReactiveElement: T }), (se.reactiveElementVersions ??= []).push("2.1.2");
+T.elementStyles = [], T.shadowRootOptions = { mode: "open" }, T[z("elementProperties")] = /* @__PURE__ */ new Map(), T[z("finalized")] = /* @__PURE__ */ new Map(), Ye?.({ ReactiveElement: T }), (se.reactiveElementVersions ??= []).push("2.1.2");
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const he = globalThis, be = (t) => t, X = he.trustedTypes, $e = X ? X.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Re = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Le = "?" + A, Qe = `<${Le}>`, C = document, F = () => C.createComment(""), V = (t) => t === null || typeof t != "object" && typeof t != "function", pe = Array.isArray, et = (t) => pe(t) || typeof t?.[Symbol.iterator] == "function", oe = `[ 	
-\f\r]`, I = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, we = /-->/g, xe = />/g, S = RegExp(`>|${oe}(?:([^\\s"'>=/]+)(${oe}*=${oe}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), ye = /'/g, Ae = /"/g, Ne = /^(?:script|style|textarea|title)$/i, tt = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = tt(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), Se = /* @__PURE__ */ new WeakMap(), k = C.createTreeWalker(C, 129);
+const he = globalThis, be = (t) => t, Y = he.trustedTypes, $e = Y ? Y.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, Re = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Le = "?" + A, Qe = `<${Le}>`, C = document, F = () => C.createComment(""), V = (t) => t === null || typeof t != "object" && typeof t != "function", pe = Array.isArray, et = (t) => pe(t) || typeof t?.[Symbol.iterator] == "function", oe = `[ 	
+\f\r]`, I = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, we = /-->/g, xe = />/g, k = RegExp(`>|${oe}(?:([^\\s"'>=/]+)(${oe}*=${oe}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), ye = /'/g, Ae = /"/g, Ne = /^(?:script|style|textarea|title)$/i, tt = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = tt(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), ke = /* @__PURE__ */ new WeakMap(), S = C.createTreeWalker(C, 129);
 function Ie(t, e) {
   if (!pe(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return $e !== void 0 ? $e.createHTML(e) : e;
@@ -275,8 +275,8 @@ const it = (t, e) => {
   for (let c = 0; c < i; c++) {
     const a = t[c];
     let p, u, h = -1, m = 0;
-    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === I ? u[1] === "!--" ? o = we : u[1] !== void 0 ? o = xe : u[2] !== void 0 ? (Ne.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = S) : u[3] !== void 0 && (o = S) : o === S ? u[0] === ">" ? (o = r ?? I, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? S : u[3] === '"' ? Ae : ye) : o === Ae || o === ye ? o = S : o === we || o === xe ? o = I : (o = S, r = void 0);
-    const y = o === S && t[c + 1].startsWith("/>") ? " " : "";
+    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === I ? u[1] === "!--" ? o = we : u[1] !== void 0 ? o = xe : u[2] !== void 0 ? (Ne.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = k) : u[3] !== void 0 && (o = k) : o === k ? u[0] === ">" ? (o = r ?? I, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? k : u[3] === '"' ? Ae : ye) : o === Ae || o === ye ? o = k : o === we || o === xe ? o = I : (o = k, r = void 0);
+    const y = o === k && t[c + 1].startsWith("/>") ? " " : "";
     n += o === I ? a + Qe : h >= 0 ? (s.push(p), a.slice(0, h) + Re + a.slice(h) + A + y) : a + A + (h === -2 ? c : y);
   }
   return [Ie(t, n + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), s];
@@ -287,11 +287,11 @@ class q {
     this.parts = [];
     let n = 0, o = 0;
     const c = e.length - 1, a = this.parts, [p, u] = it(e, i);
-    if (this.el = q.createElement(p, s), k.currentNode = this.el.content, i === 2 || i === 3) {
+    if (this.el = q.createElement(p, s), S.currentNode = this.el.content, i === 2 || i === 3) {
       const h = this.el.content.firstChild;
       h.replaceWith(...h.childNodes);
     }
-    for (; (r = k.nextNode()) !== null && a.length < c; ) {
+    for (; (r = S.nextNode()) !== null && a.length < c; ) {
       if (r.nodeType === 1) {
         if (r.hasAttributes()) for (const h of r.getAttributeNames()) if (h.endsWith(Re)) {
           const m = u[o++], y = r.getAttribute(h).split(A), G = /([.?@])?(.*)/.exec(m);
@@ -300,8 +300,8 @@ class q {
         if (Ne.test(r.tagName)) {
           const h = r.textContent.split(A), m = h.length - 1;
           if (m > 0) {
-            r.textContent = X ? X.emptyScript : "";
-            for (let y = 0; y < m; y++) r.append(h[y], F()), k.nextNode(), a.push({ type: 2, index: ++n });
+            r.textContent = Y ? Y.emptyScript : "";
+            for (let y = 0; y < m; y++) r.append(h[y], F()), S.nextNode(), a.push({ type: 2, index: ++n });
             r.append(h[m], F());
           }
         }
@@ -336,16 +336,16 @@ class st {
   }
   u(e) {
     const { el: { content: i }, parts: s } = this._$AD, r = (e?.creationScope ?? C).importNode(i, !0);
-    k.currentNode = r;
-    let n = k.nextNode(), o = 0, c = 0, a = s[0];
+    S.currentNode = r;
+    let n = S.nextNode(), o = 0, c = 0, a = s[0];
     for (; a !== void 0; ) {
       if (o === a.index) {
         let p;
         a.type === 2 ? p = new K(n, n.nextSibling, this, e) : a.type === 1 ? p = new a.ctor(n, a.name, a.strings, this, e) : a.type === 6 && (p = new at(n, this, e)), this._$AV.push(p), a = s[++c];
       }
-      o !== a?.index && (n = k.nextNode(), o++);
+      o !== a?.index && (n = S.nextNode(), o++);
     }
-    return k.currentNode = C, r;
+    return S.currentNode = C, r;
   }
   p(e) {
     let i = 0;
@@ -391,8 +391,8 @@ class K {
     }
   }
   _$AC(e) {
-    let i = Se.get(e.strings);
-    return i === void 0 && Se.set(e.strings, i = new q(e)), i;
+    let i = ke.get(e.strings);
+    return i === void 0 && ke.set(e.strings, i = new q(e)), i;
   }
   k(e) {
     pe(this._$AH) || (this._$AH = [], this._$AR());
@@ -534,7 +534,7 @@ const L = (t) => (e, i) => {
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const ht = { attribute: !0, type: String, converter: Y, reflect: !1, hasChanged: de }, pt = (t = ht, e, i) => {
+const ht = { attribute: !0, type: String, converter: X, reflect: !1, hasChanged: de }, pt = (t = ht, e, i) => {
   const { kind: s, metadata: r } = i;
   let n = globalThis.litPropertyMetadata.get(r);
   if (n === void 0 && globalThis.litPropertyMetadata.set(r, n = /* @__PURE__ */ new Map()), s === "setter" && ((t = Object.create(t)).wrapped = !0), n.set(i.name, t), s === "accessor") {
@@ -922,11 +922,50 @@ const ft = E`
   .toggle {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-size: 0.85rem;
     font-weight: 600;
     color: var(--text-soft);
     cursor: pointer;
+  }
+
+  /* Custom switch in the panel's palette instead of the system checkbox. */
+  .toggle input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    position: relative;
+    flex: none;
+    width: 40px;
+    height: 24px;
+    margin: 0;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--accent-soft);
+    cursor: pointer;
+    transition: background 150ms ease, border-color 150ms ease;
+  }
+  .toggle input[type="checkbox"]::before {
+    content: "";
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--surface);
+    box-shadow: 0 1px 3px rgba(120, 80, 40, 0.4);
+    transition: transform 150ms ease;
+  }
+  .toggle input[type="checkbox"]:checked {
+    background: var(--accent);
+    border-color: var(--accent);
+  }
+  .toggle input[type="checkbox"]:checked::before {
+    transform: translateX(16px);
+  }
+  .toggle input[type="checkbox"]:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 
   button.btn {
@@ -1060,7 +1099,7 @@ function ze() {
 }
 const N = (t) => l`<svg viewBox="0 0 24 24" aria-hidden="true">
     <path fill="currentColor" d=${t} />
-  </svg>`, ke = N("M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"), Ce = N(
+  </svg>`, Se = N("M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"), Ce = N(
   "M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"
 ), Ee = N(
   "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"
@@ -1132,7 +1171,7 @@ function D(t, e, i, s, r, n) {
     <span class="duration-preview">${o}</span>
   </label>`;
 }
-function St(t, e, i) {
+function kt(t, e, i) {
   return l`<label class="field"
     >${t}
     <input
@@ -1194,7 +1233,7 @@ function Ue(t, e, i) {
     ${t}
   </label>`;
 }
-function kt(t, e, i, s) {
+function St(t, e, i, s) {
   return l`<label class="field"
     >${t}
     <select
@@ -1222,7 +1261,6 @@ let $ = class extends v {
       return l`<div class="card"><div class="empty">Loading timeline…</div></div>`;
     const t = Math.floor(this.previewHour) % 24;
     return l`<div class="card">
-      ${this._scrubBar()}
       <div class="scroll ${this.scrollLocked ? "locked" : ""}">
         <div class="rows">
           ${this._scrubRow()}
@@ -1267,27 +1305,6 @@ let $ = class extends v {
         <button class="now-btn" @click=${this._jumpToNow} title="Jump to now">now</button>
       </div>
       <div class="track">${this._slider()}</div>
-    </div>`;
-  }
-  // Small screens: a full-width custom slider above the grid instead — no
-  // time readout, full-hour steps (the highlighted hour column shows the
-  // selection). Reuses the min–max slider's track/thumb styling.
-  _scrubBar() {
-    const t = Math.round(this.previewHour);
-    return l`<div class="scrub-bar">
-      <div class="minmax">
-        <div class="minmax-track">
-          <div class="minmax-fill" style="left:0;width:${t / 23 * 100}%"></div>
-        </div>
-        <input
-          type="range"
-          min="0"
-          max="23"
-          step="1"
-          .value=${String(t)}
-          @input=${(e) => this._emit("scrub", Number(e.target.value))}
-        />
-      </div>
     </div>`;
   }
   _jumpToNow() {
@@ -1535,11 +1552,6 @@ $.styles = [
         background: var(--surface-alt);
         border: 2px var(--accent-strong) solid;
       }
-      /* The standalone scrubber shown above the grid on small screens (the
-         in-grid scrub row would be wider than the viewport there). */
-      .scrub-bar {
-        display: none;
-      }
       @media (max-width: 960px) {
         :host {
           min-height: 0;
@@ -1552,11 +1564,6 @@ $.styles = [
           display: flex;
           flex-direction: column;
           margin-bottom: 8px;
-        }
-        .scrub-bar {
-          display: block;
-          padding: 10px 2px 6px;
-          flex: none;
         }
         .scrubrow {
           display: none;
@@ -1584,6 +1591,7 @@ $.styles = [
           grid-column: 1 / -1;
           font-size: 0.8rem;
           padding: 4px 0 2px;
+          margin-bottom: 3px;
         }
         .headrow .label {
           display: none;
@@ -1662,8 +1670,7 @@ te.styles = E`
       display: grid;
       grid-template-columns: repeat(24, minmax(0, 1fr));
       gap: 1px;
-      height: 28px;
-      border-radius: 6px;
+      height: 42px;
       overflow: hidden;
     }
     .cell {
@@ -1907,7 +1914,7 @@ let R = class extends v {
       "Gap between the two turn-on calls for lights that get brightness and colour sent separately (e.g. IKEA)."
     )}
       <div class="grid">
-        ${St(
+        ${kt(
       "Split-command delay (ms)",
       t.send_split_delay,
       (i) => e({ send_split_delay: i })
@@ -2146,7 +2153,7 @@ let _ = class extends v {
         title="New schema"
         @click=${() => this._emit("schema-new", null)}
       >
-        ${ke}
+        ${Se}
       </button>
       <button
         class="icon-btn danger"
@@ -2180,7 +2187,7 @@ let _ = class extends v {
       </button>
     ` : l`
         <button class="btn ghost" @click=${() => this._emit("schema-new", null)}>
-          ${ke} New
+          ${Se} New
         </button>
         <button
           class="btn danger"
@@ -2343,7 +2350,7 @@ let _ = class extends v {
     ` : l`
         <div class="sun-indicator">
           <span class="sun-emoji">☀️</span>
-          Following the sun — set a value to override.
+          Following the sun
         </div>
         <div class="center-cta">
           <button class="btn" @click=${() => c({})}>Override</button>
@@ -2384,7 +2391,7 @@ let _ = class extends v {
       "Behaviour",
       "Cap keeps the light tracking the sun, clamped into its range; Scale sweeps the whole range across the day. Sending brightness and colour separately helps lights that drop combined commands (e.g. IKEA)."
     )}
-      ${kt(
+      ${St(
       "Limits",
       e.limit_mode,
       [

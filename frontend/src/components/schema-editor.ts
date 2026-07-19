@@ -838,7 +838,7 @@ export class SchemaEditor extends LitElement {
       return html`
         <div class="sun-indicator">
           <span class="sun-emoji">☀️</span>
-          Following the sun — set a value to override.
+          Following the sun
         </div>
         <div class="center-cta">
           <button class="btn" @click=${() => setCell({})}>Override</button>

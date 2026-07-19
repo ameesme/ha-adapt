@@ -23,8 +23,7 @@ export class RowPreview extends LitElement {
       display: grid;
       grid-template-columns: repeat(24, minmax(0, 1fr));
       gap: 1px;
-      height: 28px;
-      border-radius: 6px;
+      height: 42px;
       overflow: hidden;
     }
     .cell {
