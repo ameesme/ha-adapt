@@ -919,9 +919,13 @@ const ft = E`
     font-variant-numeric: tabular-nums;
   }
 
+  /* iOS-style row: label on the left, switch pinned to the right edge. */
   .toggle {
-    display: inline-flex;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
     align-items: center;
+    width: 100%;
     gap: 10px;
     font-size: 0.85rem;
     font-weight: 600;
@@ -1031,7 +1035,7 @@ const ft = E`
     color: var(--text-soft);
     padding: 28px;
   }
-`, ae = Array.from({ length: 24 }, (t, e) => e), z = 1500, j = 6500;
+`, ae = Array.from({ length: 24 }, (t, e) => e), j = 1500, z = 6500;
 function _t() {
   return {
     min_brightness: 5,
@@ -1225,7 +1229,7 @@ function Pe(t, e, i) {
     />
   </label>`;
 }
-function ze(t, e, i) {
+function je(t, e, i) {
   return l`<label class="toggle">
     <input
       type="checkbox"
@@ -1592,14 +1596,19 @@ $.styles = [
         .gridrow .label {
           grid-column: 1 / -1;
           font-size: 0.8rem;
+          font-weight: 500;
           padding: 4px 0 2px;
           margin-bottom: 3px;
+        }
+        .gridrow .label.section-label {
+          padding-top: 18px;
         }
         .headrow .label {
           display: none;
         }
         .headrow {
           margin-bottom: 0;
+          padding-bottom: 4px;
         }
         .hourhead {
           font-size: 0.55rem;
@@ -1652,7 +1661,7 @@ M([
 $ = M([
   R("ha-adapt-timeline-grid")
 ], $);
-var Mt = Object.defineProperty, Lt = Object.getOwnPropertyDescriptor, je = (t, e, i, s) => {
+var Mt = Object.defineProperty, Lt = Object.getOwnPropertyDescriptor, ze = (t, e, i, s) => {
   for (var r = s > 1 ? void 0 : s ? Lt(e, i) : e, n = t.length - 1, o; n >= 0; n--)
     (o = t[n]) && (r = (s ? o(e, i, r) : o(r)) || r);
   return s && r && Mt(e, i, r), r;
@@ -1701,10 +1710,10 @@ te.styles = E`
       bottom: 0;
     }
   `;
-je([
+ze([
   g({ attribute: !1 })
 ], te.prototype, "cells", 2);
-te = je([
+te = ze([
   R("ha-adapt-row-preview")
 ], te);
 var Pt = Object.defineProperty, Tt = Object.getOwnPropertyDescriptor, Be = (t, e, i, s) => {
@@ -1741,11 +1750,11 @@ let ie = class extends v {
       " K",
       t.min_color_temp,
       t.max_color_temp,
-      z,
       j,
+      z,
       50,
       (e, i) => this._patch({ min_color_temp: e, max_color_temp: i }),
-      De(z, j)
+      De(j, z)
     )}
       ${f(
       "Sunrise & sunset",
@@ -1906,7 +1915,7 @@ let H = class extends v {
       "When a light is changed by hand, adaptation pauses for it. Auto-reset hands control back after this many seconds (0 = never)."
     )}
       <div class="actions">
-        ${ze(
+        ${je(
       "Pause when controlled manually",
       t.take_over_control,
       (i) => e({ take_over_control: i })
@@ -2332,8 +2341,8 @@ let _ = class extends v {
       ${B(
       "Color temp",
       n,
-      z,
       j,
+      z,
       50,
       "K",
       (a) => c({ color_temp: a })
@@ -2394,11 +2403,11 @@ let _ = class extends v {
       " K",
       e.min_color_temp,
       e.max_color_temp,
-      z,
       j,
+      z,
       50,
       (i, s) => this._patchLight(t, { min_color_temp: i, max_color_temp: s }),
-      De(z, j)
+      De(j, z)
     )}
       ${f(
       "Behaviour",
@@ -2414,7 +2423,7 @@ let _ = class extends v {
       (i) => this._patchLight(t, { limit_mode: i })
     )}
       <div class="actions">
-        ${ze(
+        ${je(
       "Send brightness and colour separately",
       e.separate_turn_on_commands,
       (i) => this._patchLight(t, { separate_turn_on_commands: i })

@@ -217,14 +217,19 @@ export class TimelineGrid extends LitElement {
         .gridrow .label {
           grid-column: 1 / -1;
           font-size: 0.8rem;
+          font-weight: 500;
           padding: 4px 0 2px;
           margin-bottom: 3px;
+        }
+        .gridrow .label.section-label {
+          padding-top: 18px;
         }
         .headrow .label {
           display: none;
         }
         .headrow {
           margin-bottom: 0;
+          padding-bottom: 4px;
         }
         .hourhead {
           font-size: 0.55rem;

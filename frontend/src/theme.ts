@@ -293,9 +293,13 @@ export const baseStyles = css`
     font-variant-numeric: tabular-nums;
   }
 
+  /* iOS-style row: label on the left, switch pinned to the right edge. */
   .toggle {
-    display: inline-flex;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
     align-items: center;
+    width: 100%;
     gap: 10px;
     font-size: 0.85rem;
     font-weight: 600;
