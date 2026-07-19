@@ -577,6 +577,7 @@ export class SchemaEditor extends LitElement {
             .selected=${this._sel?.kind === "cell" ? this._sel.ref : null}
             .selectedRow=${this._selectedRow}
             .previewHour=${this._previewHour}
+            .previewActive=${this.preview}
             .scrollLocked=${this._isMobile && this._sel !== null}
             @select-cell=${(e: CustomEvent<CellRef>) => this._onSelectCell(e.detail)}
             @select-light=${(e: CustomEvent<string>) =>

@@ -30,6 +30,17 @@ export class RowPreview extends LitElement {
       position: relative;
       overflow: hidden;
     }
+    /* Dim 100% reference line, mirroring the timeline cells. */
+    .cell::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: var(--border);
+      opacity: 0.5;
+    }
     .cell.explicit {
       background: var(--border);
     }

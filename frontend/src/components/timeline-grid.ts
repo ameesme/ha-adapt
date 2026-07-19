@@ -1,4 +1,4 @@
-import { LitElement, html, css, type TemplateResult } from "lit";
+import { LitElement, html, css, nothing, type TemplateResult } from "lit";
 import { customElement, property } from "lit/decorators.js";
 
 import { cogFilledIcon } from "../icons";
@@ -138,6 +138,25 @@ export class TimelineGrid extends LitElement {
         overflow: hidden;
         cursor: pointer;
       }
+      /* Dim 100% reference line across the top of every chart cell. */
+      .cell::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: var(--border);
+        opacity: 0.5;
+      }
+      /* Thin vertical playhead at the currently shown value. */
+      .cell .playhead {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--accent-strong);
+      }
       .cell.readonly {
         cursor: default;
       }
@@ -177,6 +196,10 @@ export class TimelineGrid extends LitElement {
       .legend-dot.selected {
         border: 2px var(--accent-strong) solid;
       }
+      /* Preview-only scrub bar above the grid on small screens. */
+      .scrub-bar {
+        display: none;
+      }
       @media (max-width: 960px) {
         :host {
           min-height: 0;
@@ -188,7 +211,12 @@ export class TimelineGrid extends LitElement {
           height: 100%;
           display: flex;
           flex-direction: column;
-          margin-bottom: 8px;
+          margin-bottom: 4px;
+        }
+        .scrub-bar {
+          display: block;
+          padding: 10px 2px 6px;
+          flex: none;
         }
         .scrubrow {
           display: none;
@@ -246,11 +274,11 @@ export class TimelineGrid extends LitElement {
           z-index: 4;
           background: var(--bg);
         }
-        /* Keep the legend clear of the iOS home indicator / navigation bar. */
+        /* Clear the iOS home indicator without stacking extra margin on it. */
         .legend {
           flex: none;
           padding-top: 8px;
-          padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+          padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
         }
       }
     `,
@@ -265,6 +293,8 @@ export class TimelineGrid extends LitElement {
   // True while a modal drawer is open: freezes the internal scroll so touch
   // scrolling can't chain through to the timeline behind the sheet.
   @property({ type: Boolean }) scrollLocked = false;
+  // True while preview mode is on: shows the mobile scrub bar.
+  @property({ type: Boolean }) previewActive = false;
 
   override render(): TemplateResult {
     if (!this.timeline) {
@@ -272,17 +302,18 @@ export class TimelineGrid extends LitElement {
     }
     const nowHour = Math.floor(this.previewHour) % 24;
     return html`<div class="card">
+      ${this.previewActive ? this._scrubBar() : nothing}
       <div class="scroll ${this.scrollLocked ? "locked" : ""}">
         <div class="rows">
           ${this._scrubRow()}
           ${this._headerRow(nowHour)}
-          ${this._sunRow()}
+          ${this._sunRow(nowHour)}
           ${this._lightGroups().map(
             (group) => html`
               <div class="gridrow section-row">
                 <div class="label section-label">${group.area}</div>
               </div>
-              ${group.lights.map((light) => this._lightRow(light))}
+              ${group.lights.map((light) => this._lightRow(light, nowHour))}
             `
           )}
         </div>
@@ -323,6 +354,29 @@ export class TimelineGrid extends LitElement {
     </div>`;
   }
 
+  // Mobile-only, shown while previewing: a full-width custom slider in the
+  // min–max component's styling — whole hours, no readout (the playhead in
+  // the charts shows the position).
+  private _scrubBar(): TemplateResult {
+    const hour = Math.round(this.previewHour);
+    return html`<div class="scrub-bar">
+      <div class="minmax">
+        <div class="minmax-track">
+          <div class="minmax-fill" style="left:0;width:${(hour / 23) * 100}%"></div>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="23"
+          step="1"
+          .value=${String(hour)}
+          @input=${(e: Event) =>
+            this._emit("scrub", Number((e.target as HTMLInputElement).value))}
+        />
+      </div>
+    </div>`;
+  }
+
   private _jumpToNow(): void {
     this._emit("scrub", currentHour());
   }
@@ -338,7 +392,7 @@ export class TimelineGrid extends LitElement {
     </div>`;
   }
 
-  private _sunRow(): TemplateResult {
+  private _sunRow(nowHour: number): TemplateResult {
     const row = this.timeline!.sun;
     const selected = this.selectedRow === "sun" ? "rowselected" : "";
     return html`<div class="gridrow sunrow ${selected}">
@@ -352,8 +406,15 @@ export class TimelineGrid extends LitElement {
         </span>
         ${cogFilledIcon}
       </div>
-      ${HOURS.map((h) => this._cell(row[h], "readonly", false, false))}
+      ${HOURS.map((h) =>
+        this._cell(row[h], this._marker(h, nowHour), "readonly", false, false)
+      )}
     </div>`;
+  }
+
+  /** Fractional position of the playhead within hour ``h``, or null. */
+  private _marker(h: number, nowHour: number): number | null {
+    return h === nowHour ? this.previewHour % 1 : null;
   }
 
   // Consecutive lights that share an area render under one area heading (the
@@ -372,7 +433,7 @@ export class TimelineGrid extends LitElement {
     return groups;
   }
 
-  private _lightRow(light: LightInfo): TemplateResult {
+  private _lightRow(light: LightInfo, nowHour: number): TemplateResult {
     const row = this.timeline!.lights[light.entity_id] ?? [];
     const selected = this.selectedRow === light.entity_id ? "rowselected" : "";
     return html`<div class="gridrow ${selected}">
@@ -391,8 +452,13 @@ export class TimelineGrid extends LitElement {
         const selected =
           this.selected?.entityId === light.entity_id &&
           this.selected?.hour === h;
-        return this._cell(cell, "", Boolean(cell?.explicit), selected, () =>
-          this._emit("select-cell", { entityId: light.entity_id, hour: h })
+        return this._cell(
+          cell,
+          this._marker(h, nowHour),
+          "",
+          Boolean(cell?.explicit),
+          selected,
+          () => this._emit("select-cell", { entityId: light.entity_id, hour: h })
         );
       })}
     </div>`;
@@ -400,6 +466,7 @@ export class TimelineGrid extends LitElement {
 
   private _cell(
     cell: GridCell | undefined,
+    marker: number | null,
     extra: string,
     explicit: boolean,
     selected: boolean,
@@ -424,6 +491,9 @@ export class TimelineGrid extends LitElement {
       title=${cell ? `${cell.brightness}% · ${cell.color_temp} K` : ""}
     >
       <div class="fill" style="height:${brightness}%;background:${color}"></div>
+      ${marker === null
+        ? nothing
+        : html`<div class="playhead" style="left:${marker * 100}%"></div>`}
     </div>`;
   }
 
