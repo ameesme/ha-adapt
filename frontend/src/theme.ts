@@ -21,7 +21,8 @@ export const tokenStyles = css`
     min-height: 100vh;
     background: var(--bg);
     color: var(--text);
-    font-family: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+    /* Home Assistant's own typography (Roboto), themable via its token. */
+    font-family: var(--ha-font-family-body, Roboto, Noto, sans-serif);
   }
 `;
 

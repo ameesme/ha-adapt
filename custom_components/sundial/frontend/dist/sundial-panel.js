@@ -262,22 +262,22 @@ R.elementStyles = [], R.shadowRootOptions = { mode: "open" }, R[U("elementProper
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const pe = globalThis, $e = (t) => t, Y = pe.trustedTypes, xe = Y ? Y.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, De = "$lit$", S = `lit$${Math.random().toFixed(9).slice(2)}$`, Ie = "?" + S, it = `<${Ie}>`, P = document, V = () => P.createComment(""), F = (t) => t === null || typeof t != "object" && typeof t != "function", ue = Array.isArray, st = (t) => ue(t) || typeof t?.[Symbol.iterator] == "function", re = `[ 	
-\f\r]`, I = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, we = /-->/g, ye = />/g, C = RegExp(`>|${re}(?:([^\\s"'>=/]+)(${re}*=${re}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), Ae = /'/g, Se = /"/g, je = /^(?:script|style|textarea|title)$/i, nt = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), a = nt(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), ke = /* @__PURE__ */ new WeakMap(), L = P.createTreeWalker(P, 129);
+const pe = globalThis, $e = (t) => t, Y = pe.trustedTypes, xe = Y ? Y.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, De = "$lit$", S = `lit$${Math.random().toFixed(9).slice(2)}$`, je = "?" + S, it = `<${je}>`, P = document, V = () => P.createComment(""), F = (t) => t === null || typeof t != "object" && typeof t != "function", ue = Array.isArray, st = (t) => ue(t) || typeof t?.[Symbol.iterator] == "function", re = `[ 	
+\f\r]`, j = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, we = /-->/g, ye = />/g, C = RegExp(`>|${re}(?:([^\\s"'>=/]+)(${re}*=${re}*(?:[^ 	
+\f\r"'\`<>=]|("|')|))|$)`, "g"), Ae = /'/g, Se = /"/g, Ie = /^(?:script|style|textarea|title)$/i, nt = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), a = nt(1), O = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), ke = /* @__PURE__ */ new WeakMap(), L = P.createTreeWalker(P, 129);
 function Ue(t, e) {
   if (!ue(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return xe !== void 0 ? xe.createHTML(e) : e;
 }
 const rt = (t, e) => {
   const i = t.length - 1, s = [];
-  let n, r = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", o = I;
+  let n, r = e === 2 ? "<svg>" : e === 3 ? "<math>" : "", o = j;
   for (let c = 0; c < i; c++) {
     const l = t[c];
     let p, u, h = -1, m = 0;
-    for (; m < l.length && (o.lastIndex = m, u = o.exec(l), u !== null); ) m = o.lastIndex, o === I ? u[1] === "!--" ? o = we : u[1] !== void 0 ? o = ye : u[2] !== void 0 ? (je.test(u[2]) && (n = RegExp("</" + u[2], "g")), o = C) : u[3] !== void 0 && (o = C) : o === C ? u[0] === ">" ? (o = n ?? I, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? C : u[3] === '"' ? Se : Ae) : o === Se || o === Ae ? o = C : o === we || o === ye ? o = I : (o = C, n = void 0);
+    for (; m < l.length && (o.lastIndex = m, u = o.exec(l), u !== null); ) m = o.lastIndex, o === j ? u[1] === "!--" ? o = we : u[1] !== void 0 ? o = ye : u[2] !== void 0 ? (Ie.test(u[2]) && (n = RegExp("</" + u[2], "g")), o = C) : u[3] !== void 0 && (o = C) : o === C ? u[0] === ">" ? (o = n ?? j, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? C : u[3] === '"' ? Se : Ae) : o === Se || o === Ae ? o = C : o === we || o === ye ? o = j : (o = C, n = void 0);
     const A = o === C && t[c + 1].startsWith("/>") ? " " : "";
-    r += o === I ? l + it : h >= 0 ? (s.push(p), l.slice(0, h) + De + l.slice(h) + S + A) : l + S + (h === -2 ? c : A);
+    r += o === j ? l + it : h >= 0 ? (s.push(p), l.slice(0, h) + De + l.slice(h) + S + A) : l + S + (h === -2 ? c : A);
   }
   return [Ue(t, r + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), s];
 };
@@ -297,7 +297,7 @@ class q {
           const m = u[o++], A = n.getAttribute(h).split(S), G = /([.?@])?(.*)/.exec(m);
           l.push({ type: 1, index: r, name: G[2], strings: A, ctor: G[1] === "." ? at : G[1] === "?" ? lt : G[1] === "@" ? ct : se }), n.removeAttribute(h);
         } else h.startsWith(S) && (l.push({ type: 6, index: r }), n.removeAttribute(h));
-        if (je.test(n.tagName)) {
+        if (Ie.test(n.tagName)) {
           const h = n.textContent.split(S), m = h.length - 1;
           if (m > 0) {
             n.textContent = Y ? Y.emptyScript : "";
@@ -305,7 +305,7 @@ class q {
             n.append(h[m], V());
           }
         }
-      } else if (n.nodeType === 8) if (n.data === Ie) l.push({ type: 2, index: r });
+      } else if (n.nodeType === 8) if (n.data === je) l.push({ type: 2, index: r });
       else {
         let h = -1;
         for (; (h = n.data.indexOf(S, h + 1)) !== -1; ) l.push({ type: 7, index: r }), h += S.length - 1;
@@ -651,7 +651,8 @@ const bt = T`
     min-height: 100vh;
     background: var(--bg);
     color: var(--text);
-    font-family: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
+    /* Home Assistant's own typography (Roboto), themable via its token. */
+    font-family: var(--ha-font-family-body, Roboto, Noto, sans-serif);
   }
 `, Z = T`
   * {
@@ -1203,7 +1204,7 @@ function Q(t, e, i, s, n, r, o, c, l) {
     </div>
   </div>`;
 }
-function j(t, e, i, s, n, r) {
+function I(t, e, i, s, n, r) {
   const o = e === 0 && r ? r : yt(e);
   return a`<label class="field">
     ${t}
@@ -1934,14 +1935,14 @@ let te = class extends _ {
     )}
       </div>
       <div class="pair">
-        ${j(
+        ${I(
       "Sunrise offset",
       t.sunrise_offset,
       Math.min(-W, t.sunrise_offset),
       Math.max(W, t.sunrise_offset),
       (e) => this._patch({ sunrise_offset: e })
     )}
-        ${j(
+        ${I(
       "Sunset offset",
       t.sunset_offset,
       Math.min(-W, t.sunset_offset),
@@ -1954,14 +1955,14 @@ let te = class extends _ {
       "Width of the smooth brightness ramp around sunrise and sunset: the dark side eases in from night, the light side out into full day."
     )}
       <div class="pair">
-        ${j(
+        ${I(
       "Dark side",
       t.ramp_dark,
       0,
       Math.max(ze, t.ramp_dark),
       (e) => this._patch({ ramp_dark: e })
     )}
-        ${j(
+        ${I(
       "Light side",
       t.ramp_light,
       0,
@@ -2083,7 +2084,7 @@ let N = class extends _ {
     )}
       </div>
       <div class="grid">
-        ${j(
+        ${I(
       "Auto-reset override",
       t.autoreset_control,
       0,
@@ -2167,10 +2168,10 @@ ne([
 N = ne([
   D("sundial-settings-tab")
 ], N);
-var It = Object.defineProperty, jt = Object.getOwnPropertyDescriptor, $ = (t, e, i, s) => {
-  for (var n = s > 1 ? void 0 : s ? jt(e, i) : e, r = t.length - 1, o; r >= 0; r--)
+var jt = Object.defineProperty, It = Object.getOwnPropertyDescriptor, $ = (t, e, i, s) => {
+  for (var n = s > 1 ? void 0 : s ? It(e, i) : e, r = t.length - 1, o; r >= 0; r--)
     (o = t[r]) && (n = (s ? o(e, i, n) : o(n)) || n);
-  return s && n && It(e, i, n), n;
+  return s && n && jt(e, i, n), n;
 };
 const Ut = "(max-width: 960px)";
 let v = class extends _ {
