@@ -1,4 +1,4 @@
-"""Select entity for HA Adapt.
+"""Select entity for Sundial.
 
 Exposes the active schema as an editable dropdown so it can be read and switched
 from Home Assistant (dashboards, automations, scripts) — not only the web-ui
@@ -15,7 +15,7 @@ from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from .const import DOMAIN, PANEL_TITLE, SIGNAL_CONFIG_UPDATED
-from .coordinator import AdaptCoordinator
+from .coordinator import SundialCoordinator
 
 
 async def async_setup_entry(
@@ -24,11 +24,11 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the active-schema select."""
-    coordinator: AdaptCoordinator = hass.data[DOMAIN]
-    async_add_entities([AdaptSchemaSelect(coordinator, entry)])
+    coordinator: SundialCoordinator = hass.data[DOMAIN]
+    async_add_entities([SundialSchemaSelect(coordinator, entry)])
 
 
-class AdaptSchemaSelect(SelectEntity):
+class SundialSchemaSelect(SelectEntity):
     """Read/choose which schema currently drives the lights."""
 
     _attr_has_entity_name = True
@@ -36,7 +36,7 @@ class AdaptSchemaSelect(SelectEntity):
     _attr_name = "Active schema"
     _attr_icon = "mdi:palette"
 
-    def __init__(self, coordinator: AdaptCoordinator, entry: ConfigEntry) -> None:
+    def __init__(self, coordinator: SundialCoordinator, entry: ConfigEntry) -> None:
         self.coordinator = coordinator
         self._entry = entry
 
@@ -49,7 +49,7 @@ class AdaptSchemaSelect(SelectEntity):
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
             name=PANEL_TITLE,
-            manufacturer="HA Adapt",
+            manufacturer="Sundial",
             entry_type=None,
         )
 

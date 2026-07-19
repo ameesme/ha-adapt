@@ -6,8 +6,8 @@ import datetime as dt
 
 import pytest
 
-from ha_adapt import engine
-from ha_adapt.models import LightConfig, SunConfig
+from sundial import engine
+from sundial.models import LightConfig, SunConfig
 
 UTC = dt.UTC
 

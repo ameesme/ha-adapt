@@ -1,4 +1,4 @@
-"""Data model for HA Adapt.
+"""Data model for Sundial.
 
 Plain, JSON-serialisable dataclasses with **no** Home Assistant references, so
 they can be created and tested without a running HA instance.

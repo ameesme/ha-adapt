@@ -1,4 +1,4 @@
-// A small JavaScript port of custom_components/ha_adapt/engine.py, used only by
+// A small JavaScript port of custom_components/sundial/engine.py, used only by
 // the local dev harness (mock-backend.ts) so the fake timeline and preview look
 // exactly like the real integration. The production panel never imports this —
 // the real computation runs in Python. Keep it in step with engine.py.

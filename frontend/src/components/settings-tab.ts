@@ -1,7 +1,7 @@
 import { LitElement, css, html, type TemplateResult } from "lit";
 import { customElement, property, query } from "lit/decorators.js";
 
-import type { HaAdaptApi } from "../api";
+import type { SundialApi } from "../api";
 import {
   checkboxField,
   coordField,
@@ -15,7 +15,7 @@ import type { ConfigPayload, GlobalSettings } from "../types";
 
 // Receives the current config + api, and reports results upward via bubbling
 // events so the panel owns state.
-@customElement("ha-adapt-settings-tab")
+@customElement("sundial-settings-tab")
 export class SettingsTab extends LitElement {
   static override styles = [
     baseStyles,
@@ -31,7 +31,7 @@ export class SettingsTab extends LitElement {
   ];
 
   @property({ attribute: false }) config!: ConfigPayload;
-  @property({ attribute: false }) api!: HaAdaptApi;
+  @property({ attribute: false }) api!: SundialApi;
 
   @query("input[type=file]") private _fileInput!: HTMLInputElement;
 
@@ -70,7 +70,7 @@ export class SettingsTab extends LitElement {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = "ha-adapt-config.json";
+      a.download = "sundial-config.json";
       a.click();
       URL.revokeObjectURL(url);
     } catch (err) {
@@ -187,13 +187,13 @@ export class SettingsTab extends LitElement {
         hidden
         @change=${this._onImportFile}
       />
-      <p class="about">Adaptive Lighting · v${this.config.version}</p>
+      <p class="about">Sundial · v${this.config.version}</p>
     `;
   }
 }
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ha-adapt-settings-tab": SettingsTab;
+    "sundial-settings-tab": SettingsTab;
   }
 }

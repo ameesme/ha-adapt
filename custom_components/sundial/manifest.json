@@ -1,6 +1,6 @@
 {
-  "domain": "ha_adapt",
-  "name": "HA Adapt — Adaptive Lighting",
+  "domain": "sundial",
+  "name": "Sundial",
   "codeowners": ["@ameesme"],
   "config_flow": true,
   "dependencies": ["http", "frontend", "websocket_api"],

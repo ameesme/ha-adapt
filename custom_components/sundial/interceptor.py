@@ -1,4 +1,4 @@
-"""Turn-on interception for HA Adapt.
+"""Turn-on interception for Sundial.
 
 This is deliberately the *only* place that reaches into service-call plumbing,
 and it does so with a robust, public API: it listens for ``light.turn_on``
@@ -8,7 +8,7 @@ Responsibilities:
 - When a user/automation turns a controlled light on with explicit brightness
   or color, flag it as manually controlled (so adaptation backs off).
 - Bare ``turn_on`` calls and physical-switch turn-ons are adapted by the
-  coordinator's state listener (see :meth:`AdaptCoordinator._handle_state_event`).
+  coordinator's state listener (see :meth:`SundialCoordinator._handle_state_event`).
 
 A pre-emptive wrapper that rewrites the call *before* it executes (to avoid a
 brief flash of the previous value) could be added later behind a flag; keeping
@@ -27,7 +27,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import Event, HomeAssistant, callback
 
-from .coordinator import AdaptCoordinator
+from .coordinator import SundialCoordinator
 
 # Service-data keys that mean "the caller wants a specific look" -> manual.
 EXPLICIT_KEYS: frozenset[str] = frozenset(
@@ -73,7 +73,7 @@ def _resolve_entities(service_data: dict) -> set[str]:
 
 
 async def async_setup_interceptor(
-    hass: HomeAssistant, coordinator: AdaptCoordinator
+    hass: HomeAssistant, coordinator: SundialCoordinator
 ) -> Callable[[], None]:
     """Register the turn-on listener; returns an unsubscribe callback."""
 

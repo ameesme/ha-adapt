@@ -1,7 +1,7 @@
 import { LitElement, html, css, nothing, type TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
-import { HaAdaptApi } from "./api";
+import { SundialApi } from "./api";
 import { baseStyles, tokenStyles } from "./theme";
 import type { ConfigPayload, HomeAssistant } from "./types";
 import { defaultSchema } from "./utils";
@@ -19,8 +19,8 @@ if (import.meta.hot) {
 // schema selector lives in the header; the schema editor renders the timeline
 // plus a right-hand side panel. Children report changes via bubbling
 // `config-changed` / `panel-error` events.
-@customElement("ha-adapt-panel")
-export class HaAdaptPanel extends LitElement {
+@customElement("sundial-panel")
+export class SundialPanel extends LitElement {
   static override styles = [
     tokenStyles,
     baseStyles,
@@ -58,7 +58,7 @@ export class HaAdaptPanel extends LitElement {
           flex: none;
           margin-top: 8px;
         }
-        ha-adapt-schema-editor {
+        sundial-schema-editor {
           flex: 1 1 auto;
           min-height: 0;
         }
@@ -74,13 +74,13 @@ export class HaAdaptPanel extends LitElement {
   @state() private _selectedId?: string;
   @state() private _preview = false;
 
-  private _api?: HaAdaptApi;
+  private _api?: SundialApi;
   private _loaded = false;
 
   protected override updated(): void {
     if (!this.hass) return;
     if (!this._api) {
-      this._api = new HaAdaptApi(this.hass);
+      this._api = new SundialApi(this.hass);
     } else {
       this._api.setHass(this.hass);
     }
@@ -138,13 +138,13 @@ export class HaAdaptPanel extends LitElement {
         : nothing}
 
       ${schema
-        ? html`<ha-adapt-schema-editor
+        ? html`<sundial-schema-editor
             .schema=${schema}
             .config=${config}
             .api=${this._api!}
             .preview=${this._preview}
             @schema-delete=${this._onDelete}
-          ></ha-adapt-schema-editor>`
+          ></sundial-schema-editor>`
         : nothing}
     </div>`;
   }
@@ -173,6 +173,6 @@ export class HaAdaptPanel extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ha-adapt-panel": HaAdaptPanel;
+    "sundial-panel": SundialPanel;
   }
 }

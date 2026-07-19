@@ -1,9 +1,9 @@
 {
-  "name": "ha-adapt-frontend",
+  "name": "sundial-frontend",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Web-ui panel for the HA Adapt adaptive lighting integration.",
+  "description": "Web-ui panel for the Sundial adaptive lighting integration.",
   "scripts": {
     "build": "tsc --noEmit && vite build",
     "watch": "vite build --watch",

@@ -1,113 +1,77 @@
-# HA Adapt — Adaptive Lighting
+# Sundial
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/release/ameesme/ha-adapt.svg)](https://github.com/ameesme/ha-adapt/releases)
 [![License](https://img.shields.io/github/license/ameesme/ha-adapt.svg)](LICENSE)
 
-[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=ameesme&repository=ha-adapt&category=integration)
+Adaptive lighting for Home Assistant, configured on a timeline.
 
-A Home Assistant custom integration that adapts the **brightness** and **color
-temperature** of your lights over the day. It offers an API surface comparable
-to [`basnijholt/adaptive-lighting`](https://github.com/basnijholt/adaptive-lighting),
-but everything except the list of controlled lights is configured from a warm,
-purpose-built **web-ui panel** in the sidebar.
+Sundial adapts the brightness and colour temperature of your lights across the
+day. A configurable **sun** drives every light by default; a 24-hour
+**timeline** lets you pin exact values for any light at any hour. Everything is
+edited in a purpose-built panel that works just as well on a phone as on a
+desktop.
 
-## Highlights
+## How it works
 
-- **Schemas are timelines.** A schema covers *all* your lights. It has a
-  configurable **sun** plus a **24-hour timeline** with one row per light:
-  - The **sun row** (top) shows the computed brightness/color per hour.
-  - Each **light row** can pin an explicit brightness + color temp for any
-    hour; empty cells follow the sun, scaled into that light's range.
-  - Each light has its own **min/max brightness and color temp**.
-  - **Step through the day** with the time slider and optionally push the
-    preview live to your lights.
-- **One active schema at a time** — switch which schema drives the lights.
-- **Location-based sun temperature** — uses your Home Assistant location
-  (astral), with fixed `sunrise`/`sunset` times and offsets.
-- **Tanh dawn/dusk ramps** — a single smooth brightness curve around
-  sunrise/sunset (ramp widths configurable).
-- **Turn-on interception & override detection** — manual changes pause
-  adaptation, with a configurable **auto-reset** that hands control back.
-- **Split commands** — per light, send brightness and color as separate
-  `light.turn_on` calls for devices that need it (e.g. IKEA).
-- **File-backed storage** — all configuration lives in
-  `<config>/.storage/ha_adapt`.
-- **Warm, monotone web-ui** — themed in a single amber/terracotta palette.
+- **Schemas are timelines.** A schema covers all your lights: the sun row on
+  top, one row per light beneath it, grouped by room.
+- **The sun is the default.** Empty timeline cells follow the sun's curve —
+  smooth tanh ramps around sunrise and sunset, warm at night, cool at midday —
+  scaled into each light's own brightness and colour-temperature range.
+- **Override any hour.** Tap a cell to pin an explicit brightness, colour
+  temperature, or RGB colour for that light at that hour. Values between hours
+  are interpolated smoothly around the clock.
+- **One schema is active at a time.** Build variants (movie night, holiday…)
+  and switch between them from the panel, a dashboard, or an automation.
 
-## Configuration that maps to adaptive-lighting
+## Features
 
-These familiar options are exposed in the panel:
-
-| Option         | Where    | Meaning                                    |
-| -------------- | -------- | ------------------------------------------ |
-| `interval`     | Settings | How often to adapt the lights (seconds).   |
-| `transition`   | Settings | Light transition duration (seconds).       |
-| `sunset_time`  | Sun      | Fixed `HH:MM:SS` sunset overriding astral. |
-| `autoreset`    | Settings | Auto-reset manual control after N seconds. |
-| split commands | Light    | Separate brightness/color calls (IKEA).    |
-| `send_split_delay` | Settings | Gap between the two split calls (ms).  |
+- Live **preview**: scrub through the day and optionally push the values to
+  your lights as you drag.
+- **Manual-control detection** — changing a light by hand pauses adaptation
+  for it, with an optional auto-reset that hands control back.
+- **Per-light ranges** with cap (clamp to range) or scale (sweep the whole
+  range) behaviour.
+- **Split commands** for lights that drop combined brightness + colour calls
+  (e.g. IKEA), with a configurable delay.
+- Fixed sunrise/sunset times, offsets, and ramp widths; custom coordinates or
+  your home's location.
+- **Backup**: export and import the whole configuration as JSON.
+- Master **switch** and active-schema **select** entities for automations.
 
 ## Installation
 
-### HACS (custom repository)
+**HACS** — add `https://github.com/ameesme/ha-adapt` as a custom repository
+(category *Integration*), install **Sundial**, restart Home Assistant.
 
-Click the **"Open in HACS"** badge above, or in HACS go to ⋮ →
-**Custom repositories**, add `https://github.com/ameesme/ha-adapt` with the
-category **Integration**, then install **HA Adapt — Adaptive Lighting** and
-restart Home Assistant.
+**Manual** — copy `custom_components/sundial` into
+`<config>/custom_components/` and restart.
 
-### Manual
+Then: **Settings → Devices & Services → Add Integration → Sundial**, pick the
+lights to control, and open **Sundial** in the sidebar. That's the only thing
+the config flow asks — everything else lives in the panel.
 
-Copy `custom_components/ha_adapt` into your `<config>/custom_components/` and
-restart Home Assistant.
+## Services
 
-## Usage
-
-1. **Settings → Devices & Services → Add Integration → Adaptive Lighting.**
-2. Select the lights or light groups to control. (This is the *only* thing the
-   config flow asks — by design.)
-3. Open **Adaptive Lighting** in the sidebar:
-   - **Timeline** — the schema editor: tune the sun, click timeline cells to
-     pin per-hour values, set per-light ranges, mark a schema active, and step
-     the day with the preview slider.
-   - **Global settings** (side panel; behind the gear on mobile) — adaptation
-     timing, manual-control behaviour, split-command delay, location, and a
-     JSON export/import of the whole configuration.
-
-A master *Adaptive lighting* switch is also created to enable/disable
-adaptation for the whole instance, plus an *Active schema* select that reads and
-switches which schema drives the lights (usable from dashboards and automations).
-
-### Services
-
-- `ha_adapt.apply` — force an immediate adaptation (optionally for specific
-  lights).
-- `ha_adapt.set_manual_control` — pause/resume adaptation for given lights.
+- `sundial.apply` — force an immediate adaptation (optionally per light, with
+  `turn_on` to light up lights that are off).
+- `sundial.set_manual_control` — pause or resume adaptation for given lights.
 
 ## Architecture
 
-The integration is split into small, focused modules:
+| File             | Responsibility                                                 |
+| ---------------- | -------------------------------------------------------------- |
+| `engine.py`      | **Pure** math: sun curve, hourly anchors, cyclic interpolation. |
+| `coordinator.py` | Runtime: scheduling, applying values, override tracking.        |
+| `interceptor.py` | Flags manual control from explicit `light.turn_on` calls.       |
+| `models.py`      | JSON-serialisable dataclasses (schema, sun, lights, settings).  |
+| `panel.py`       | Sidebar panel, static asset, WebSocket API.                     |
+| `store.py`       | Persistence via HA's `Store` (`<config>/.storage/sundial`).     |
 
-| File             | Responsibility                                                  |
-| ---------------- | --------------------------------------------------------------- |
-| `engine.py`      | **Pure** math: sun snapshot, tanh ramp, per-light hour anchors. |
-| `coordinator.py` | The runtime manager: scheduling, applying, override + auto-reset. |
-| `interceptor.py` | Listens for `light.turn_on` to flag manual control.             |
-| `models.py`      | Dataclasses (`Schema`, `SunConfig`, `LightConfig`, `StoreData`). |
-| `store.py`       | File-backed persistence via HA's `Store`.                       |
-| `panel.py`       | Static asset, sidebar panel, and WebSocket API.                 |
-| `switch.py`      | Master switch.                                                  |
-| `config_flow.py` | Entity-id selection only.                                       |
-
-The key idea: the sun produces a normalized `DriveSignal`; scaling it into a
-light's range yields that light's hourly fallback. For each light the engine
-builds 24 **anchors** — explicit cells where set, sun-derived otherwise — and
-the live value is a cyclic interpolation across them. The same `DriveSignal`
-shape means a real sensor could feed the pipeline later instead of the sun.
-
-The web-ui (`frontend/`, Lit + TypeScript) is built with Vite into a single
-bundle committed at `custom_components/ha_adapt/frontend/dist/ha-adapt-panel.js`.
+The sun produces a normalized drive signal; each light builds 24 hourly
+anchors from it (explicit cells win) and interpolates between them. The
+engine has no Home Assistant imports and is unit-tested standalone.
 
 ## Development
 
@@ -116,52 +80,21 @@ bundle committed at `custom_components/ha_adapt/frontend/dist/ha-adapt-panel.js`
 ruff check .
 python -m pytest
 
-# Frontend: type-check + build the panel bundle
+# Frontend (Lit + TypeScript, built with Vite)
 cd frontend
 npm install
-npm run build   # outputs to ../custom_components/ha_adapt/frontend/dist
+npm run build   # type-check + bundle into custom_components/sundial/frontend/dist
+npm run dev     # dev harness on :5173 — the real panel against a mock backend
 ```
 
-The engine and model tests run without Home Assistant installed. Re-run
-`npm run build` and commit the bundle whenever the panel changes.
+The dev harness runs the full panel in a plain browser with fake lights and a
+TypeScript port of the engine — no Home Assistant needed. Re-run
+`npm run build` and commit the regenerated bundle whenever the frontend
+changes; CI fails if the committed bundle is stale.
 
-### Live UI (dev harness)
-
-You can develop the whole panel in your browser with **no Home Assistant** — no
-add-on rebuilds, no restarts. A small harness mounts the real `<ha-adapt-panel>`
-against an in-memory mock backend (`frontend/dev/`) with a few fake lights (a
-mix of RGB and colour-temp-only) and a ported copy of the lighting engine, so
-the timeline, preview scrubbing, RGB overrides, and schema switching all behave
-as they would in Home Assistant.
-
-```bash
-cd frontend
-npm install
-npm run dev      # Vite dev server on :5173, opens the harness in your browser
-```
-
-Edit anything under `frontend/src` and the page hot-reloads (custom elements
-can't be re-registered, so the panel reloads on module updates rather than
-swapping in place). Edits saved through the UI persist in memory until you
-refresh. This is ideal on Home Assistant OS, where setting environment variables
-or live-mounting files into the container is awkward.
-
-The harness is dev-only: `vite build` bundles just the panel (`src/`), so
-`frontend/dev/` and `frontend/index.html` never reach the shipped asset. The
-mock engine in `frontend/dev/engine.ts` mirrors `engine.py` — keep the two in
-step if you change the lighting math.
-
-When you're done, run `npm run build` and commit the regenerated bundle.
-
-### Releasing
-
-1. Bump `version` in `custom_components/ha_adapt/manifest.json`.
-2. Commit, then tag and push: `git tag vX.Y.Z && git push origin vX.Y.Z`.
-
-The release workflow checks the tag matches the manifest version, rebuilds and
-verifies the panel bundle, and publishes a GitHub release (with a `ha_adapt.zip`
-asset). HACS then offers that version; without a release it installs from the
-default branch.
+**Releasing** — bump `version` in `custom_components/sundial/manifest.json`,
+commit, tag `vX.Y.Z`, push the tag. The release workflow validates the tag and
+bundle, then publishes a zip.
 
 ## License
 

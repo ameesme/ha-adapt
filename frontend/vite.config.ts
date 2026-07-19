@@ -1,6 +1,6 @@
 import { defineConfig } from "vite";
 
-// Build a single, self-contained ES module that registers <ha-adapt-panel>.
+// Build a single, self-contained ES module that registers <sundial-panel>.
 // The bundle (lit included) is written into the Python component so Home
 // Assistant can serve it directly — no Node toolchain at install time.
 //
@@ -16,12 +16,12 @@ export default defineConfig({
   },
   build: {
     target: "es2021",
-    outDir: "../custom_components/ha_adapt/frontend/dist",
+    outDir: "../custom_components/sundial/frontend/dist",
     emptyOutDir: true,
     lib: {
-      entry: "src/ha-adapt-panel.ts",
+      entry: "src/sundial-panel.ts",
       formats: ["es"],
-      fileName: () => "ha-adapt-panel.js",
+      fileName: () => "sundial-panel.js",
     },
     rollupOptions: {
       output: {

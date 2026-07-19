@@ -8,7 +8,7 @@ import {
 } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 
-import type { HaAdaptApi } from "../api";
+import type { SundialApi } from "../api";
 import {
   checkboxField,
   minMaxField,
@@ -56,7 +56,7 @@ const MOBILE_QUERY = "(max-width: 960px)";
 // (the sun, a light, or an hour cell) plus the global settings. On small
 // screens the side panel is replaced by a bottom drawer (a native <dialog>)
 // and the header collapses to a single sticky row of icon buttons.
-@customElement("ha-adapt-schema-editor")
+@customElement("sundial-schema-editor")
 export class SchemaEditor extends LitElement {
   static override styles = [
     baseStyles,
@@ -228,12 +228,12 @@ export class SchemaEditor extends LitElement {
         margin-top: 14px;
       }
 
-      ha-adapt-row-preview {
+      sundial-row-preview {
         margin-bottom: 14px;
       }
       /* The strip provides the top spacing; the first heading after it
          shouldn't add its own. */
-      ha-adapt-row-preview + .section {
+      sundial-row-preview + .section {
         margin-top: 0;
       }
 
@@ -385,7 +385,7 @@ export class SchemaEditor extends LitElement {
 
   @property({ attribute: false }) schema!: Schema;
   @property({ attribute: false }) config!: ConfigPayload;
-  @property({ attribute: false }) api!: HaAdaptApi;
+  @property({ attribute: false }) api!: SundialApi;
   @property({ type: Boolean }) preview = false;
 
   @state() private _draft!: Schema;
@@ -571,7 +571,7 @@ export class SchemaEditor extends LitElement {
 
       <div class="layout">
         <div class="main">
-          <ha-adapt-timeline-grid
+          <sundial-timeline-grid
             .lights=${this.config.lights}
             .timeline=${this._timeline}
             .selected=${this._sel?.kind === "cell" ? this._sel.ref : null}
@@ -583,7 +583,7 @@ export class SchemaEditor extends LitElement {
               (this._sel = { kind: "light", entityId: e.detail })}
             @select-sun=${() => (this._sel = { kind: "sun" })}
             @scrub=${(e: CustomEvent<number>) => this._onScrub(e.detail)}
-          ></ha-adapt-timeline-grid>
+          ></sundial-timeline-grid>
         </div>
 
         ${this._isMobile ? nothing : this._renderSide()}
@@ -790,11 +790,11 @@ export class SchemaEditor extends LitElement {
     if (sel?.kind === "sun") {
       return html`
         ${this._renderRowPreview(this._timeline?.sun)}
-        <ha-adapt-sun-config
+        <sundial-sun-config
           .sun=${this._draft.sun}
           @sun-changed=${(e: CustomEvent<SunConfig>) =>
             this._patchSchema({ sun: e.detail })}
-        ></ha-adapt-sun-config>
+        ></sundial-sun-config>
       `;
     }
     if (sel?.kind === "light") {
@@ -804,10 +804,10 @@ export class SchemaEditor extends LitElement {
       `;
     }
     if (sel?.kind === "cell") return this._renderCellEditor(sel.ref);
-    return html`<ha-adapt-settings-tab
+    return html`<sundial-settings-tab
       .config=${this.config}
       .api=${this.api}
-    ></ha-adapt-settings-tab>`;
+    ></sundial-settings-tab>`;
   }
 
   // The edited row's 24 cells, mirrored live above the editor.
@@ -815,7 +815,7 @@ export class SchemaEditor extends LitElement {
     cells: { brightness: number; color_temp: number }[] | undefined
   ): TemplateResult | typeof nothing {
     if (!cells?.length) return nothing;
-    return html`<ha-adapt-row-preview .cells=${cells}></ha-adapt-row-preview>`;
+    return html`<sundial-row-preview .cells=${cells}></sundial-row-preview>`;
   }
 
   private _renderCellEditor(ref: CellRef): TemplateResult {
@@ -998,6 +998,6 @@ export class SchemaEditor extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ha-adapt-schema-editor": SchemaEditor;
+    "sundial-schema-editor": SchemaEditor;
   }
 }

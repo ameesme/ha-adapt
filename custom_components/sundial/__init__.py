@@ -1,4 +1,4 @@
-"""HA Adapt — adaptive lighting for Home Assistant.
+"""Sundial — adaptive lighting for Home Assistant.
 
 Setup wiring: one coordinator per config entry, the web-ui panel and services
 registered once, and the turn-on interceptor attached. Most logic lives in the
@@ -21,21 +21,21 @@ from .const import (
     SERVICE_APPLY,
     SERVICE_SET_MANUAL_CONTROL,
 )
-from .coordinator import AdaptCoordinator, get_coordinator
+from .coordinator import SundialCoordinator, get_coordinator
 from .interceptor import async_setup_interceptor
 from .panel import async_remove_panel, async_setup_panel
-from .store import HaAdaptStore
+from .store import SundialStore
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
-    """Set up HA Adapt from a config entry.
+    """Set up Sundial from a config entry.
 
     ``single_config_entry`` is enforced in the manifest, so ``hass.data[DOMAIN]``
     holds the one coordinator directly.
     """
-    store = HaAdaptStore(hass)
+    store = SundialStore(hass)
     await store.async_load()
-    coordinator = AdaptCoordinator(hass, entry, store)
+    coordinator = SundialCoordinator(hass, entry, store)
     await coordinator.async_start()
     hass.data[DOMAIN] = coordinator
 
@@ -50,13 +50,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
 async def _async_update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """React to the controlled-lights list changing via the options flow."""
-    coordinator: AdaptCoordinator = hass.data[DOMAIN]
+    coordinator: SundialCoordinator = hass.data[DOMAIN]
     await coordinator.async_update_lights()
 
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Tear down the config entry."""
-    coordinator: AdaptCoordinator = hass.data[DOMAIN]
+    coordinator: SundialCoordinator = hass.data[DOMAIN]
     await coordinator.async_unload()
 
     unloaded = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)

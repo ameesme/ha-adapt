@@ -1,6 +1,6 @@
-"""The runtime manager for HA Adapt.
+"""The runtime manager for Sundial.
 
-One :class:`AdaptCoordinator` per integration instance owns everything that
+One :class:`SundialCoordinator` per integration instance owns everything that
 needs Home Assistant: the periodic adaptation pass, applying values to lights
 (including the IKEA-friendly split commands), the astral/timezone work behind
 the sun snapshots, and manual-override tracking with auto-reset.
@@ -59,7 +59,7 @@ from .const import (
 )
 from .engine import DriveSignal, Target
 from .models import LightConfig, Schema, SunConfig
-from .store import HaAdaptStore
+from .store import SundialStore
 
 # Transition (seconds) used when stepping the timeline preview, so the lights
 # follow the slider quickly instead of starting a long fade each step.
@@ -100,11 +100,11 @@ class LightRuntime:
     settle_deadline: float = 0.0
 
 
-class AdaptCoordinator:
+class SundialCoordinator:
     """Schedules and applies adaptive lighting for one instance."""
 
     def __init__(
-        self, hass: HomeAssistant, entry: ConfigEntry, store: HaAdaptStore
+        self, hass: HomeAssistant, entry: ConfigEntry, store: SundialStore
     ) -> None:
         self.hass = hass
         self.entry = entry
@@ -697,7 +697,7 @@ class AdaptCoordinator:
         self._set_manual_control(entity_id, False)
 
     def set_manual_control(self, entity_id: str, manual: bool) -> None:
-        """Public setter used by the ``ha_adapt.set_manual_control`` service."""
+        """Public setter used by the ``sundial.set_manual_control`` service."""
         self._set_manual_control(entity_id, manual)
 
     def supports_rgb(self, entity_id: str) -> bool:
@@ -762,7 +762,7 @@ def _local_hour(now: datetime) -> float:
     return local.hour + local.minute / 60.0 + local.second / 3600.0
 
 
-def get_coordinator(hass: HomeAssistant) -> AdaptCoordinator | None:
+def get_coordinator(hass: HomeAssistant) -> SundialCoordinator | None:
     """Return the (single) coordinator instance, if set up.
 
     ``single_config_entry`` is enforced in the manifest, so ``hass.data`` holds

@@ -1,4 +1,4 @@
-"""Switch entities for HA Adapt.
+"""Switch entities for Sundial.
 
 A single master "adaptive lighting" switch toggles adaptation for the whole
 instance. Everything else is configured in the web-ui panel.
@@ -15,7 +15,7 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import DOMAIN, PANEL_TITLE, SIGNAL_CONFIG_UPDATED
-from .coordinator import AdaptCoordinator
+from .coordinator import SundialCoordinator
 
 
 async def async_setup_entry(
@@ -24,11 +24,11 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up the master switch."""
-    coordinator: AdaptCoordinator = hass.data[DOMAIN]
-    async_add_entities([AdaptMasterSwitch(coordinator, entry)])
+    coordinator: SundialCoordinator = hass.data[DOMAIN]
+    async_add_entities([SundialMasterSwitch(coordinator, entry)])
 
 
-class AdaptMasterSwitch(SwitchEntity, RestoreEntity):
+class SundialMasterSwitch(SwitchEntity, RestoreEntity):
     """Enable/disable adaptation for the whole instance."""
 
     _attr_has_entity_name = True
@@ -36,7 +36,7 @@ class AdaptMasterSwitch(SwitchEntity, RestoreEntity):
     _attr_name = "Adaptive lighting"
     _attr_icon = "mdi:theme-light-dark"
 
-    def __init__(self, coordinator: AdaptCoordinator, entry: ConfigEntry) -> None:
+    def __init__(self, coordinator: SundialCoordinator, entry: ConfigEntry) -> None:
         self.coordinator = coordinator
         self._entry = entry
 
@@ -45,7 +45,7 @@ class AdaptMasterSwitch(SwitchEntity, RestoreEntity):
         return DeviceInfo(
             identifiers={(DOMAIN, self._entry.entry_id)},
             name=PANEL_TITLE,
-            manufacturer="HA Adapt",
+            manufacturer="Sundial",
             entry_type=None,
         )
 

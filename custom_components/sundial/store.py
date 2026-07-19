@@ -1,7 +1,7 @@
-"""File-backed persistence for HA Adapt.
+"""File-backed persistence for Sundial.
 
 Thin wrapper around Home Assistant's :class:`Store`, which writes JSON to
-``<config>/.storage/ha_adapt`` — that file *is* the backup of all schemas,
+``<config>/.storage/sundial`` — that file *is* the backup of all schemas,
 assignments and global settings.
 """
 
@@ -14,7 +14,7 @@ from .const import STORAGE_KEY, STORAGE_VERSION
 from .models import StoreData
 
 
-class HaAdaptStore:
+class SundialStore:
     """Load/save the single :class:`StoreData` document."""
 
     def __init__(self, hass: HomeAssistant) -> None:

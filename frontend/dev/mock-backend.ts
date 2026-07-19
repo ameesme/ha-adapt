@@ -1,6 +1,6 @@
 // In-memory fake of the integration's WebSocket backend, so the panel can run
 // fully in the browser (npm run dev) with no Home Assistant. It mirrors the WS
-// commands in custom_components/ha_adapt/panel.py and computes timeline/preview
+// commands in custom_components/sundial/panel.py and computes timeline/preview
 // with the ported engine in ./engine.ts.
 
 import type {
@@ -127,34 +127,34 @@ type Msg = Record<string, unknown>;
 
 function handle(store: Store, msg: Msg): unknown {
   switch (msg.type) {
-    case "ha_adapt/get_config":
+    case "sundial/get_config":
       return configPayload(store);
 
-    case "ha_adapt/update_settings":
+    case "sundial/update_settings":
       store.settings = { ...store.settings, ...(msg.settings as Partial<GlobalSettings>) };
       return configPayload(store);
 
-    case "ha_adapt/save_schema": {
+    case "sundial/save_schema": {
       const schema = msg.schema as Schema;
       store.schemas[schema.id] = schema;
       return configPayload(store);
     }
 
-    case "ha_adapt/delete_schema": {
+    case "sundial/delete_schema": {
       const id = msg.schema_id as string;
       delete store.schemas[id];
       if (store.active_schema_id === id) store.active_schema_id = "default";
       return configPayload(store);
     }
 
-    case "ha_adapt/set_active_schema":
+    case "sundial/set_active_schema":
       store.active_schema_id = msg.schema_id as string;
       return configPayload(store);
 
-    case "ha_adapt/timeline":
+    case "sundial/timeline":
       return computeTimeline(msg.schema as Schema, entityIds(), defaultLightConfig);
 
-    case "ha_adapt/preview":
+    case "sundial/preview":
       return {
         targets: computeTargets(
           msg.schema as Schema,
@@ -164,17 +164,17 @@ function handle(store: Store, msg: Msg): unknown {
         ),
       };
 
-    case "ha_adapt/apply":
+    case "sundial/apply":
       return configPayload(store);
 
-    case "ha_adapt/export":
+    case "sundial/export":
       return {
         settings: store.settings,
         schemas: store.schemas,
         active_schema_id: store.active_schema_id,
       };
 
-    case "ha_adapt/import": {
+    case "sundial/import": {
       const data = msg.data as Partial<Store>;
       store.settings = data.settings ?? store.settings;
       store.schemas = data.schemas ?? store.schemas;

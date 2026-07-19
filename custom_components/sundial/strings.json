@@ -2,22 +2,22 @@
   "config": {
     "step": {
       "user": {
-        "title": "Adaptive Lighting",
-        "description": "Select the lights or light groups to control. Everything else is configured in the Adaptive Lighting panel in the sidebar.",
+        "title": "Sundial",
+        "description": "Select the lights or light groups to control. Everything else is configured in the Sundial panel in the sidebar.",
         "data": {
           "lights": "Lights"
         }
       }
     },
     "abort": {
-      "single_instance_allowed": "Adaptive Lighting is already configured. Only one instance is supported."
+      "single_instance_allowed": "Sundial is already configured. Only one instance is supported."
     }
   },
   "options": {
     "step": {
       "init": {
         "title": "Controlled lights",
-        "description": "Choose which lights or light groups Adaptive Lighting controls.",
+        "description": "Choose which lights or light groups Sundial controls.",
         "data": {
           "lights": "Lights"
         }

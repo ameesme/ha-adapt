@@ -15,7 +15,7 @@ interface PreviewResult {
   >;
 }
 
-export class HaAdaptApi {
+export class SundialApi {
   constructor(private hass: HomeAssistant) {}
 
   setHass(hass: HomeAssistant): void {
@@ -23,46 +23,46 @@ export class HaAdaptApi {
   }
 
   getConfig(): Promise<ConfigPayload> {
-    return this.send("ha_adapt/get_config");
+    return this.send("sundial/get_config");
   }
 
   updateSettings(settings: Partial<GlobalSettings>): Promise<ConfigPayload> {
-    return this.send("ha_adapt/update_settings", { settings });
+    return this.send("sundial/update_settings", { settings });
   }
 
   saveSchema(schema: Schema): Promise<ConfigPayload> {
-    return this.send("ha_adapt/save_schema", { schema });
+    return this.send("sundial/save_schema", { schema });
   }
 
   deleteSchema(schemaId: string): Promise<ConfigPayload> {
-    return this.send("ha_adapt/delete_schema", { schema_id: schemaId });
+    return this.send("sundial/delete_schema", { schema_id: schemaId });
   }
 
   setActiveSchema(schemaId: string): Promise<ConfigPayload> {
-    return this.send("ha_adapt/set_active_schema", { schema_id: schemaId });
+    return this.send("sundial/set_active_schema", { schema_id: schemaId });
   }
 
   // Pass the (possibly unsaved) draft schema so the timeline/preview reflect
   // edits live, without persisting on every change.
   timeline(schema: Schema): Promise<TimelineData> {
-    return this.send("ha_adapt/timeline", { schema });
+    return this.send("sundial/timeline", { schema });
   }
 
   preview(schema: Schema, hour: number, apply: boolean): Promise<PreviewResult> {
-    return this.send("ha_adapt/preview", { schema, hour, apply });
+    return this.send("sundial/preview", { schema, hour, apply });
   }
 
   apply(entityId?: string): Promise<ConfigPayload> {
-    return this.send("ha_adapt/apply", entityId ? { entity_id: entityId } : {});
+    return this.send("sundial/apply", entityId ? { entity_id: entityId } : {});
   }
 
   // Full-configuration backup: the raw store document (all schemas + settings).
   exportConfig(): Promise<unknown> {
-    return this.send("ha_adapt/export");
+    return this.send("sundial/export");
   }
 
   importConfig(data: unknown): Promise<ConfigPayload> {
-    return this.send("ha_adapt/import", { data: data as Record<string, unknown> });
+    return this.send("sundial/import", { data: data as Record<string, unknown> });
   }
 
   private send<T>(type: string, payload: Record<string, unknown> = {}): Promise<T> {

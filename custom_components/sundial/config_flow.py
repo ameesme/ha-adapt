@@ -1,4 +1,4 @@
-"""Config flow for HA Adapt.
+"""Config flow for Sundial.
 
 By design this is intentionally tiny: the only thing configured here is *which*
 light/group entities to control. Everything else (schemas, curves, modes,
@@ -26,7 +26,7 @@ _LIGHTS_SELECTOR = selector.EntitySelector(
 )
 
 
-class HaAdaptConfigFlow(ConfigFlow, domain=DOMAIN):
+class SundialConfigFlow(ConfigFlow, domain=DOMAIN):
     """Handle the initial setup (entity selection only)."""
 
     VERSION = 1
@@ -51,10 +51,10 @@ class HaAdaptConfigFlow(ConfigFlow, domain=DOMAIN):
     @staticmethod
     @callback
     def async_get_options_flow(config_entry: ConfigEntry) -> OptionsFlow:
-        return HaAdaptOptionsFlow(config_entry)
+        return SundialOptionsFlow(config_entry)
 
 
-class HaAdaptOptionsFlow(OptionsFlow):
+class SundialOptionsFlow(OptionsFlow):
     """Let the user change the controlled lights after setup."""
 
     def __init__(self, config_entry: ConfigEntry) -> None:

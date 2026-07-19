@@ -4,11 +4,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-A Home Assistant **custom integration** (`ha_adapt`) for adaptive lighting,
+A Home Assistant **custom integration** (`sundial`) for adaptive lighting,
 plus a Lit/TypeScript **web-ui panel**. It adapts brightness and color
 temperature of lights across the day. The config entry holds *only the list of
 controlled light entity-ids*; everything else is configured in the panel and
-persisted via Home Assistant's `Store` (`<config>/.storage/ha_adapt`).
+persisted via Home Assistant's `Store` (`<config>/.storage/sundial`).
 
 ## Commands
 
@@ -21,7 +21,7 @@ python -m pytest tests/test_engine.py -k tanh   # one test / pattern
 
 # Frontend (run from frontend/)
 npm install
-npm run build    # tsc --noEmit && vite build -> commits to ../custom_components/ha_adapt/frontend/dist
+npm run build    # tsc --noEmit && vite build -> commits to ../custom_components/sundial/frontend/dist
 npm run dev      # standalone dev harness on :5173 (no Home Assistant; see below)
 npm run watch    # rebuild the bundle on every change
 ```
@@ -29,7 +29,7 @@ npm run watch    # rebuild the bundle on every change
 CI (`.github/workflows/ci.yml`) runs `ruff check .`, `python -m pytest`,
 `npm run build`, and **fails if the committed bundle differs from a fresh
 build**. Always run `npm run build` and commit the regenerated
-`custom_components/ha_adapt/frontend/dist/ha-adapt-panel.js` whenever you touch
+`custom_components/sundial/frontend/dist/sundial-panel.js` whenever you touch
 `frontend/src`.
 
 ## Architecture
@@ -40,7 +40,7 @@ The codebase is deliberately split so the lighting math is pure and unit-testabl
 without Home Assistant:
 
 - `engine.py` and `models.py` have **no Home Assistant imports**. They are plain
-  math + JSON-serialisable dataclasses. `tests/conftest.py` exposes `ha_adapt`
+  math + JSON-serialisable dataclasses. `tests/conftest.py` exposes `sundial`
   as a bare package when HA isn't installed, so tests import only
   `engine`/`models`/`const`. Do not add HA imports to these two modules.
 - `coordinator.py` is the only HA-heavy module: it feeds HA data (states, astral
@@ -100,9 +100,9 @@ IKEA-style lights can send brightness and color as **separate** `turn_on` calls
 ### Web-ui
 
 - `panel.py` registers the sidebar panel (serving the built bundle with a
-  content-hash cache token) and a set of `ha_adapt/*` **WebSocket commands**.
+  content-hash cache token) and a set of `sundial/*` **WebSocket commands**.
   The bundle is single-file (lit inlined) so HA needs no Node toolchain.
-- `frontend/src/`: `ha-adapt-panel.ts` is the thin shell; `api.ts` wraps the WS
+- `frontend/src/`: `sundial-panel.ts` is the thin shell; `api.ts` wraps the WS
   connection; the timeline editor lives in `components/`
   (`schema-editor.ts`, `timeline-grid.ts`, `sun-config.ts`, `settings-tab.ts`).
 - **WS contract** flows three ways and must stay consistent: the commands in
@@ -112,7 +112,7 @@ IKEA-style lights can send brightness and color as **separate** `turn_on` calls
 ### Dev harness (`frontend/dev/`)
 
 `npm run dev` serves `frontend/index.html` + `frontend/dev/`, mounting the real
-`<ha-adapt-panel>` against an in-memory mock backend with fake lights — no Home
+`<sundial-panel>` against an in-memory mock backend with fake lights — no Home
 Assistant. `frontend/dev/engine.ts` is a JavaScript **port of `engine.py`**; if
 you change the lighting math in Python, mirror it there so the harness matches
 production. The harness is dev-only: `vite build` bundles only `src/`, so
@@ -122,7 +122,7 @@ production. The harness is dev-only: `vite build` bundles only `src/`, so
 ## Conventions
 
 - Ruff: line-length 88, `force-sort-within-sections` isort, `known-first-party
-  = ha_adapt`. `frontend/` is excluded from ruff.
+  = sundial`. `frontend/` is excluded from ruff.
 - Releasing: bump `version` in `manifest.json`, then tag `vX.Y.Z`. The release
   workflow asserts the tag matches the manifest version and that the committed
   bundle is current.

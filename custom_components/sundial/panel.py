@@ -1,4 +1,4 @@
-"""Web-ui backend for HA Adapt: static asset, sidebar panel, WebSocket API.
+"""Web-ui backend for Sundial: static asset, sidebar panel, WebSocket API.
 
 The Lit panel (served from ``frontend/dist``) talks to these WebSocket commands
 to read and write the stored configuration. All mutations go through the
@@ -28,7 +28,7 @@ from .const import (
     PANEL_TITLE,
     PANEL_URL_PATH,
 )
-from .coordinator import AdaptCoordinator, get_coordinator
+from .coordinator import SundialCoordinator, get_coordinator
 from .models import GlobalSettings, Schema, StoreData
 
 # The manifest version, resolved once at panel setup (single instance) so the
@@ -46,7 +46,7 @@ def _bundle_token(path: str) -> str:
 
 
 async def async_setup_panel(
-    hass: HomeAssistant, coordinator: AdaptCoordinator
+    hass: HomeAssistant, coordinator: SundialCoordinator
 ) -> None:
     """Serve the bundle, register the sidebar panel, and the WS commands."""
     global _version  # noqa: PLW0603
@@ -54,7 +54,7 @@ async def async_setup_panel(
     _version = str(integration.version or "")
 
     js_path = os.path.join(
-        os.path.dirname(__file__), "frontend", "dist", "ha-adapt-panel.js"
+        os.path.dirname(__file__), "frontend", "dist", "sundial-panel.js"
     )
     await hass.http.async_register_static_paths(
         [StaticPathConfig(PANEL_STATIC_PATH, js_path, False)]
@@ -90,7 +90,7 @@ def async_remove_panel(hass: HomeAssistant) -> None:
 # --- payload helpers ---------------------------------------------------------
 
 
-def _lights_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> list[dict]:
+def _lights_payload(hass: HomeAssistant, coordinator: SundialCoordinator) -> list[dict]:
     ent_reg = er.async_get(hass)
     area_reg = ar.async_get(hass)
     dev_reg = dr.async_get(hass)
@@ -128,7 +128,7 @@ def _lights_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> list[
     return lights
 
 
-def _config_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> dict:
+def _config_payload(hass: HomeAssistant, coordinator: SundialCoordinator) -> dict:
     data = coordinator.data
     return {
         "settings": data.settings.to_dict(),
@@ -143,7 +143,7 @@ def _config_payload(hass: HomeAssistant, coordinator: AdaptCoordinator) -> dict:
     }
 
 
-def _error_if_not_ready(connection, msg) -> AdaptCoordinator | None:
+def _error_if_not_ready(connection, msg) -> SundialCoordinator | None:
     coordinator = get_coordinator(connection.hass)
     if coordinator is None:
         connection.send_error(msg["id"], "not_ready", "Integration not set up")
@@ -170,7 +170,7 @@ def _register_ws_commands(hass: HomeAssistant) -> None:
         websocket_api.async_register_command(hass, handler)
 
 
-@websocket_api.websocket_command({vol.Required("type"): "ha_adapt/get_config"})
+@websocket_api.websocket_command({vol.Required("type"): "sundial/get_config"})
 @websocket_api.async_response
 async def ws_get_config(hass, connection, msg) -> None:
     coordinator = _error_if_not_ready(connection, msg)
@@ -180,7 +180,7 @@ async def ws_get_config(hass, connection, msg) -> None:
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "ha_adapt/update_settings",
+        vol.Required("type"): "sundial/update_settings",
         vol.Required("settings"): dict,
     }
 )
@@ -198,7 +198,7 @@ async def ws_update_settings(hass, connection, msg) -> None:
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "ha_adapt/save_schema",
+        vol.Required("type"): "sundial/save_schema",
         vol.Required("schema"): dict,
     }
 )
@@ -218,7 +218,7 @@ async def ws_save_schema(hass, connection, msg) -> None:
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "ha_adapt/delete_schema",
+        vol.Required("type"): "sundial/delete_schema",
         vol.Required("schema_id"): str,
     }
 )
@@ -242,7 +242,7 @@ async def ws_delete_schema(hass, connection, msg) -> None:
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "ha_adapt/set_active_schema",
+        vol.Required("type"): "sundial/set_active_schema",
         vol.Required("schema_id"): str,
     }
 )
@@ -256,7 +256,7 @@ async def ws_set_active_schema(hass, connection, msg) -> None:
     connection.send_result(msg["id"], _config_payload(hass, coordinator))
 
 
-def _resolve_schema(coordinator: AdaptCoordinator, msg) -> Schema | None:
+def _resolve_schema(coordinator: SundialCoordinator, msg) -> Schema | None:
     """The inline draft ``schema`` if given, else the stored one by id."""
     if msg.get("schema"):
         return Schema.from_dict(msg["schema"])
@@ -265,7 +265,7 @@ def _resolve_schema(coordinator: AdaptCoordinator, msg) -> Schema | None:
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "ha_adapt/timeline",
+        vol.Required("type"): "sundial/timeline",
         vol.Optional("schema_id"): str,
         vol.Optional("schema"): dict,
     }
@@ -284,7 +284,7 @@ async def ws_timeline(hass, connection, msg) -> None:
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "ha_adapt/preview",
+        vol.Required("type"): "sundial/preview",
         vol.Optional("schema_id"): str,
         vol.Optional("schema"): dict,
         vol.Required("hour"): vol.Coerce(float),
@@ -303,7 +303,7 @@ async def ws_preview(hass, connection, msg) -> None:
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "ha_adapt/apply",
+        vol.Required("type"): "sundial/apply",
         vol.Optional("entity_id"): vol.Any(str, [str], None),
     }
 )
@@ -318,7 +318,7 @@ async def ws_apply(hass, connection, msg) -> None:
     connection.send_result(msg["id"], _config_payload(hass, coordinator))
 
 
-@websocket_api.websocket_command({vol.Required("type"): "ha_adapt/export"})
+@websocket_api.websocket_command({vol.Required("type"): "sundial/export"})
 @websocket_api.async_response
 async def ws_export(hass, connection, msg) -> None:
     """The raw store document, used by the panel's backup download."""
@@ -329,7 +329,7 @@ async def ws_export(hass, connection, msg) -> None:
 
 @websocket_api.websocket_command(
     {
-        vol.Required("type"): "ha_adapt/import",
+        vol.Required("type"): "sundial/import",
         vol.Required("data"): dict,
     }
 )

@@ -39,8 +39,8 @@ jobs:
         run: npm run build
       - name: Verify committed bundle is up to date
         run: |
-          if ! git diff --quiet -- custom_components/ha_adapt/frontend/dist; then
+          if ! git diff --quiet -- custom_components/sundial/frontend/dist; then
             echo "::error::Built panel bundle differs from the committed one. Run 'npm run build' and commit the result."
-            git --no-pager diff --stat -- custom_components/ha_adapt/frontend/dist
+            git --no-pager diff --stat -- custom_components/sundial/frontend/dist
             exit 1
           fi

@@ -18,7 +18,7 @@ jobs:
       - name: Check tag matches manifest version
         run: |
           tag="${GITHUB_REF_NAME#v}"
-          manifest="custom_components/ha_adapt/manifest.json"
+          manifest="custom_components/sundial/manifest.json"
           version="$(jq -r .version "$manifest")"
           if [ "$tag" != "$version" ]; then
             echo "::error::Tag v$tag does not match manifest version $version. Bump $manifest before tagging."
@@ -37,18 +37,18 @@ jobs:
 
       - name: Ensure committed bundle is up to date
         run: |
-          if ! git diff --quiet -- custom_components/ha_adapt/frontend/dist; then
+          if ! git diff --quiet -- custom_components/sundial/frontend/dist; then
             echo "::error::Committed panel bundle is stale. Run 'npm run build' and commit before tagging."
             exit 1
           fi
 
       - name: Create integration zip
         run: |
-          cd custom_components/ha_adapt
-          zip -r "$GITHUB_WORKSPACE/ha_adapt.zip" .
+          cd custom_components/sundial
+          zip -r "$GITHUB_WORKSPACE/sundial.zip" .
 
       - name: Publish GitHub release
         uses: softprops/action-gh-release@v2
         with:
-          files: ha_adapt.zip
+          files: sundial.zip
           generate_release_notes: true

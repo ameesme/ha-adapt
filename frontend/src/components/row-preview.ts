@@ -13,7 +13,7 @@ export interface PreviewCell {
 
 // A non-interactive 24-hour strip mirroring a timeline row, rendered above
 // the sun/light editors as a live preview of the edits.
-@customElement("ha-adapt-row-preview")
+@customElement("sundial-row-preview")
 export class RowPreview extends LitElement {
   static override styles = css`
     :host {
@@ -63,6 +63,6 @@ export class RowPreview extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ha-adapt-row-preview": RowPreview;
+    "sundial-row-preview": RowPreview;
   }
 }

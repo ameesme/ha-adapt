@@ -17,7 +17,7 @@ type GridCell = TimelineCell | { brightness: number; color_temp: number };
 // sun row, and one clickable row per light. Row labels stay pinned while the
 // columns scroll horizontally. Emits `select-cell`, `select-light`,
 // `select-sun`, and `scrub`.
-@customElement("ha-adapt-timeline-grid")
+@customElement("sundial-timeline-grid")
 export class TimelineGrid extends LitElement {
   static override styles = [
     baseStyles,
@@ -436,6 +436,6 @@ export class TimelineGrid extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ha-adapt-timeline-grid": TimelineGrid;
+    "sundial-timeline-grid": TimelineGrid;
   }
 }

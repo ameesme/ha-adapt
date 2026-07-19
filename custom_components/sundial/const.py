@@ -1,14 +1,14 @@
-"""Constants for the HA Adapt adaptive lighting integration."""
+"""Constants for the Sundial adaptive lighting integration."""
 
 from __future__ import annotations
 
 from typing import Final
 
-DOMAIN: Final = "ha_adapt"
+DOMAIN: Final = "sundial"
 PLATFORMS: Final = ["select", "switch"]
 
 # --- Storage -----------------------------------------------------------------
-STORAGE_KEY: Final = "ha_adapt"
+STORAGE_KEY: Final = "sundial"
 STORAGE_VERSION: Final = 1
 
 # --- Config entry ------------------------------------------------------------
@@ -64,11 +64,11 @@ ATTR_MANUAL_CONTROL: Final = "manual_control"
 ATTR_TURN_ON: Final = "turn_on"
 
 # --- Frontend ----------------------------------------------------------------
-PANEL_URL_PATH: Final = "ha-adapt"
-PANEL_TITLE: Final = "Adaptive Lighting"
+PANEL_URL_PATH: Final = "sundial"
+PANEL_TITLE: Final = "Sundial"
 PANEL_ICON: Final = "mdi:theme-light-dark"
-PANEL_STATIC_PATH: Final = "/ha_adapt_panel/ha-adapt-panel.js"
-PANEL_ELEMENT: Final = "ha-adapt-panel"
+PANEL_STATIC_PATH: Final = "/sundial_panel/sundial-panel.js"
+PANEL_ELEMENT: Final = "sundial-panel"
 
 # Dispatcher signal fired when stored config changes so entities can refresh.
 SIGNAL_CONFIG_UPDATED: Final = f"{DOMAIN}_config_updated"

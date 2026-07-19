@@ -77,7 +77,7 @@ export interface ConfigPayload {
   version: string;
 }
 
-// Computed per-hour values for rendering the timeline (from ha_adapt/timeline).
+// Computed per-hour values for rendering the timeline (from sundial/timeline).
 export interface TimelineCell {
   brightness: number;
   color_temp: number;

@@ -1,5 +1,5 @@
 [project]
-name = "ha-adapt"
+name = "sundial"
 version = "1.0.0"
 description = "Adaptive lighting for Home Assistant with a web-ui configuration panel."
 readme = "README.md"
@@ -18,7 +18,7 @@ ignore = [
 
 [tool.ruff.lint.isort]
 force-sort-within-sections = true
-known-first-party = ["ha_adapt"]
+known-first-party = ["sundial"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

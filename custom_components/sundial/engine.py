@@ -1,4 +1,4 @@
-"""Pure lighting math for HA Adapt.
+"""Pure lighting math for Sundial.
 
 No Home Assistant imports, so everything here is unit-testable on its own.
 

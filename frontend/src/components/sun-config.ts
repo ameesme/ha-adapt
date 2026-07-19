@@ -19,7 +19,7 @@ const RAMP_MAX = 4 * 3600;
 
 // Editor for a schema's sun. Emits `sun-changed` with the updated SunConfig.
 // The title header is rendered by the container (side panel / drawer).
-@customElement("ha-adapt-sun-config")
+@customElement("sundial-sun-config")
 export class SunConfigEditor extends LitElement {
   static override styles = baseStyles;
 
@@ -120,6 +120,6 @@ export class SunConfigEditor extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    "ha-adapt-sun-config": SunConfigEditor;
+    "sundial-sun-config": SunConfigEditor;
   }
 }

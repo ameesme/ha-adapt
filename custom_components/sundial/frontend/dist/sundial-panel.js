@@ -596,37 +596,37 @@ class ft {
     this.hass = e;
   }
   getConfig() {
-    return this.send("ha_adapt/get_config");
+    return this.send("sundial/get_config");
   }
   updateSettings(e) {
-    return this.send("ha_adapt/update_settings", { settings: e });
+    return this.send("sundial/update_settings", { settings: e });
   }
   saveSchema(e) {
-    return this.send("ha_adapt/save_schema", { schema: e });
+    return this.send("sundial/save_schema", { schema: e });
   }
   deleteSchema(e) {
-    return this.send("ha_adapt/delete_schema", { schema_id: e });
+    return this.send("sundial/delete_schema", { schema_id: e });
   }
   setActiveSchema(e) {
-    return this.send("ha_adapt/set_active_schema", { schema_id: e });
+    return this.send("sundial/set_active_schema", { schema_id: e });
   }
   // Pass the (possibly unsaved) draft schema so the timeline/preview reflect
   // edits live, without persisting on every change.
   timeline(e) {
-    return this.send("ha_adapt/timeline", { schema: e });
+    return this.send("sundial/timeline", { schema: e });
   }
   preview(e, i, s) {
-    return this.send("ha_adapt/preview", { schema: e, hour: i, apply: s });
+    return this.send("sundial/preview", { schema: e, hour: i, apply: s });
   }
   apply(e) {
-    return this.send("ha_adapt/apply", e ? { entity_id: e } : {});
+    return this.send("sundial/apply", e ? { entity_id: e } : {});
   }
   // Full-configuration backup: the raw store document (all schemas + settings).
   exportConfig() {
-    return this.send("ha_adapt/export");
+    return this.send("sundial/export");
   }
   importConfig(e) {
-    return this.send("ha_adapt/import", { data: e });
+    return this.send("sundial/import", { data: e });
   }
   send(e, i = {}) {
     return this.hass.connection.sendMessagePromise({ type: e, ...i });
@@ -1654,7 +1654,7 @@ L([
   g({ type: Boolean })
 ], $.prototype, "scrollLocked", 2);
 $ = L([
-  I("ha-adapt-timeline-grid")
+  I("sundial-timeline-grid")
 ], $);
 var Lt = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, Be = (t, e, i, s) => {
   for (var r = s > 1 ? void 0 : s ? Pt(e, i) : e, n = t.length - 1, o; n >= 0; n--)
@@ -1708,7 +1708,7 @@ Be([
   g({ attribute: !1 })
 ], ee.prototype, "cells", 2);
 ee = Be([
-  I("ha-adapt-row-preview")
+  I("sundial-row-preview")
 ], ee);
 var Tt = Object.defineProperty, Ot = Object.getOwnPropertyDescriptor, Fe = (t, e, i, s) => {
   for (var r = s > 1 ? void 0 : s ? Ot(e, i) : e, n = t.length - 1, o; n >= 0; n--)
@@ -1819,7 +1819,7 @@ Fe([
   g({ attribute: !1 })
 ], te.prototype, "sun", 2);
 te = Fe([
-  I("ha-adapt-sun-config")
+  I("sundial-sun-config")
 ], te);
 var Ht = Object.defineProperty, Rt = Object.getOwnPropertyDescriptor, re = (t, e, i, s) => {
   for (var r = s > 1 ? void 0 : s ? Rt(e, i) : e, n = t.length - 1, o; n >= 0; n--)
@@ -1856,7 +1856,7 @@ let R = class extends v {
       const t = await this.api.exportConfig(), e = new Blob([JSON.stringify(t, null, 2)], {
         type: "application/json"
       }), i = URL.createObjectURL(e), s = document.createElement("a");
-      s.href = i, s.download = "ha-adapt-config.json", s.click(), URL.revokeObjectURL(i);
+      s.href = i, s.download = "sundial-config.json", s.click(), URL.revokeObjectURL(i);
     } catch (t) {
       this._error(t);
     }
@@ -1972,7 +1972,7 @@ let R = class extends v {
         hidden
         @change=${this._onImportFile}
       />
-      <p class="about">Adaptive Lighting · v${this.config.version}</p>
+      <p class="about">Sundial · v${this.config.version}</p>
     `;
   }
 };
@@ -1998,7 +1998,7 @@ re([
   mt("input[type=file]")
 ], R.prototype, "_fileInput", 2);
 R = re([
-  I("ha-adapt-settings-tab")
+  I("sundial-settings-tab")
 ], R);
 var It = Object.defineProperty, Nt = Object.getOwnPropertyDescriptor, b = (t, e, i, s) => {
   for (var r = s > 1 ? void 0 : s ? Nt(e, i) : e, n = t.length - 1, o; n >= 0; n--)
@@ -2139,7 +2139,7 @@ let _ = class extends v {
 
       <div class="layout">
         <div class="main">
-          <ha-adapt-timeline-grid
+          <sundial-timeline-grid
             .lights=${this.config.lights}
             .timeline=${this._timeline}
             .selected=${this._sel?.kind === "cell" ? this._sel.ref : null}
@@ -2150,7 +2150,7 @@ let _ = class extends v {
             @select-light=${(t) => this._sel = { kind: "light", entityId: t.detail }}
             @select-sun=${() => this._sel = { kind: "sun" }}
             @scrub=${(t) => this._onScrub(t.detail)}
-          ></ha-adapt-timeline-grid>
+          ></sundial-timeline-grid>
         </div>
 
         ${this._isMobile ? d : this._renderSide()}
@@ -2295,21 +2295,21 @@ let _ = class extends v {
     const t = this._sel;
     return t?.kind === "sun" ? l`
         ${this._renderRowPreview(this._timeline?.sun)}
-        <ha-adapt-sun-config
+        <sundial-sun-config
           .sun=${this._draft.sun}
           @sun-changed=${(e) => this._patchSchema({ sun: e.detail })}
-        ></ha-adapt-sun-config>
+        ></sundial-sun-config>
       ` : t?.kind === "light" ? l`
         ${this._renderRowPreview(this._timeline?.lights[t.entityId])}
         ${this._renderLightEditor(t.entityId)}
-      ` : t?.kind === "cell" ? this._renderCellEditor(t.ref) : l`<ha-adapt-settings-tab
+      ` : t?.kind === "cell" ? this._renderCellEditor(t.ref) : l`<sundial-settings-tab
       .config=${this.config}
       .api=${this.api}
-    ></ha-adapt-settings-tab>`;
+    ></sundial-settings-tab>`;
   }
   // The edited row's 24 cells, mirrored live above the editor.
   _renderRowPreview(t) {
-    return t?.length ? l`<ha-adapt-row-preview .cells=${t}></ha-adapt-row-preview>` : d;
+    return t?.length ? l`<sundial-row-preview .cells=${t}></sundial-row-preview>` : d;
   }
   _renderCellEditor(t) {
     const e = this.config.lights.find((a) => a.entity_id === t.entityId), i = this._lightCfg(t.entityId).hours[t.hour], s = this._timeline?.lights[t.entityId]?.[t.hour], r = i?.brightness ?? s?.brightness ?? 50, n = i?.color_temp ?? s?.color_temp ?? 3e3, o = i?.rgb_color ?? null, c = (a) => this._setCell(t, {
@@ -2614,12 +2614,12 @@ _.styles = [
         margin-top: 14px;
       }
 
-      ha-adapt-row-preview {
+      sundial-row-preview {
         margin-bottom: 14px;
       }
       /* The strip provides the top spacing; the first heading after it
          shouldn't add its own. */
-      ha-adapt-row-preview + .section {
+      sundial-row-preview + .section {
         margin-top: 0;
       }
 
@@ -2796,7 +2796,7 @@ b([
   x()
 ], _.prototype, "_isMobile", 2);
 _ = b([
-  I("ha-adapt-schema-editor")
+  I("sundial-schema-editor")
 ], _);
 var zt = Object.defineProperty, Ut = Object.getOwnPropertyDescriptor, P = (t, e, i, s) => {
   for (var r = s > 1 ? void 0 : s ? Ut(e, i) : e, n = t.length - 1, o; n >= 0; n--)
@@ -2843,13 +2843,13 @@ let w = class extends v {
     >
       ${this._error ? l`<div class="card error">${this._error}</div>` : d}
 
-      ${i ? l`<ha-adapt-schema-editor
+      ${i ? l`<sundial-schema-editor
             .schema=${i}
             .config=${t}
             .api=${this._api}
             .preview=${this._preview}
             @schema-delete=${this._onDelete}
-          ></ha-adapt-schema-editor>` : d}
+          ></sundial-schema-editor>` : d}
     </div>`;
   }
   async _new() {
@@ -2904,7 +2904,7 @@ w.styles = [
           flex: none;
           margin-top: 8px;
         }
-        ha-adapt-schema-editor {
+        sundial-schema-editor {
           flex: 1 1 auto;
           min-height: 0;
         }
@@ -2930,8 +2930,8 @@ P([
   x()
 ], w.prototype, "_preview", 2);
 w = P([
-  I("ha-adapt-panel")
+  I("sundial-panel")
 ], w);
 export {
-  w as HaAdaptPanel
+  w as SundialPanel
 };

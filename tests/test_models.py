@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from ha_adapt.const import DEFAULT_SCHEMA_ID, HOURS_PER_DAY
-from ha_adapt.models import (
+from sundial.const import DEFAULT_SCHEMA_ID, HOURS_PER_DAY
+from sundial.models import (
     GlobalSettings,
     LightConfig,
     Schema,
