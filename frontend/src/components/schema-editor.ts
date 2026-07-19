@@ -16,7 +16,14 @@ import {
   sectionHeading,
   selectField,
 } from "../form-fields";
-import { checkCircleIcon, cogIcon, eyeIcon, plusIcon, trashIcon } from "../icons";
+import {
+  bulbIcon,
+  checkCircleIcon,
+  cogIcon,
+  eyeIcon,
+  plusIcon,
+  trashIcon,
+} from "../icons";
 import { baseStyles } from "../theme";
 import type {
   ConfigPayload,
@@ -186,6 +193,23 @@ export class SchemaEditor extends LitElement {
         font-size: 1.05rem;
         font-weight: 650;
         padding-right: 28px;
+      }
+      /* Empty-selection state, centred across the card's full height. */
+      .side-placeholder {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        color: var(--text-soft);
+        text-align: center;
+        font-size: 0.9rem;
+      }
+      .side-placeholder svg {
+        width: 34px;
+        height: 34px;
+        opacity: 0.5;
       }
       .close {
         position: absolute;
@@ -704,17 +728,21 @@ export class SchemaEditor extends LitElement {
   }
 
   private _renderSide(): TemplateResult {
+    if (!this._sel) {
+      // Nothing selected: a quiet placeholder (settings live behind the
+      // gear button).
+      return html`<div class="side">
+        <div class="side-placeholder">
+          ${bulbIcon}
+          <span>Select a light to configure it</span>
+        </div>
+      </div>`;
+    }
     const subtitle = this._contextSubtitle();
-    return html`<div class="side ${this._sel ? "editing" : ""}">
-      ${this._sel
-        ? html`<button
-            class="close"
-            title="Close"
-            @click=${() => (this._sel = null)}
-          >
-            ✕
-          </button>`
-        : nothing}
+    return html`<div class="side editing">
+      <button class="close" title="Close" @click=${() => (this._sel = null)}>
+        ✕
+      </button>
       <h2>${this._contextTitle()}</h2>
       ${subtitle ? html`<p class="subtitle">${subtitle}</p>` : nothing}
       ${this._renderContextBody()}
