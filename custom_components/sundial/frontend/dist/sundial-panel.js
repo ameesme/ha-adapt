@@ -2994,11 +2994,16 @@ w.styles = [
       @media (max-width: 960px) {
         /* Pin the whole panel to the viewport on small screens: with the
            host fixed, no drag anywhere can scroll the page — the timeline
-           scrolls internally and that's it. */
+           scrolls internally and that's it. The explicit height matters:
+           inside Home Assistant an ancestor with transform/contain can
+           become the fixed-position containing block, and inset alone would
+           then size the panel to that (possibly short) ancestor instead of
+           the screen. */
         :host {
           position: fixed;
           inset: 0;
-          height: auto;
+          height: 100vh;
+          height: 100dvh;
           min-height: 0;
           overflow: hidden;
           overscroll-behavior: none;
