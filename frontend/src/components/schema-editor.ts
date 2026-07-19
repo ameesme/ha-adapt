@@ -982,12 +982,14 @@ export class SchemaEditor extends LitElement {
     if (this.preview) this._sendPreview();
   }
 
-  // Selecting an hour cell opens its editor and moves the playhead/preview to
-  // that hour.
+  // Selecting an hour cell opens its editor; the playhead only follows the
+  // selection while preview mode is on.
   private _onSelectCell(ref: CellRef): void {
     this._sel = { kind: "cell", ref };
-    this._previewHour = ref.hour;
-    if (this.preview) this._sendPreview();
+    if (this.preview) {
+      this._previewHour = ref.hour;
+      this._sendPreview();
+    }
   }
 
   private _sendPreview(): void {

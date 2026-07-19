@@ -17,6 +17,33 @@ export function sectionHeading(title: string, info?: string): TemplateResult {
   </details>`;
 }
 
+// The panel's custom single-value slider (same styling as the min–max
+// control): a soft track with a fill up to the thumb, and the styled native
+// input on top.
+function slider(
+  value: number,
+  min: number,
+  max: number,
+  step: number,
+  onChange: (value: number) => void
+): TemplateResult {
+  const pct = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+  return html`<div class="minmax">
+    <div class="minmax-track">
+      <div class="minmax-fill" style="left:0;width:${pct}%"></div>
+    </div>
+    <input
+      type="range"
+      min=${min}
+      max=${max}
+      step=${step}
+      .value=${String(value)}
+      @input=${(e: Event) =>
+        onChange(Number((e.target as HTMLInputElement).value))}
+    />
+  </div>`;
+}
+
 // A dual-thumb min–max range slider built from two overlapped native range
 // inputs (pointer events on the thumbs only). Optional `gradient` renders an
 // indication strip above the track (e.g. the Kelvin spectrum).
@@ -92,15 +119,7 @@ export function durationField(
     seconds === 0 && zeroText ? zeroText : formatDuration(seconds);
   return html`<label class="field">
     ${label}
-    <input
-      type="range"
-      min=${min}
-      max=${max}
-      step="60"
-      .value=${String(seconds)}
-      @input=${(e: Event) =>
-        onChange(Number((e.target as HTMLInputElement).value))}
-    />
+    ${slider(seconds, min, max, 60, onChange)}
     <span class="duration-preview">${preview}</span>
   </label>`;
 }
@@ -164,15 +183,7 @@ export function rangeField(
     ${gradient
       ? html`<div class="temp-gradient" style="background:${gradient}"></div>`
       : nothing}
-    <input
-      type="range"
-      min=${min}
-      max=${max}
-      step=${step}
-      .value=${String(value)}
-      @input=${(e: Event) =>
-        onChange(Number((e.target as HTMLInputElement).value))}
-    />
+    ${slider(value, min, max, step, onChange)}
   </label>`;
 }
 
