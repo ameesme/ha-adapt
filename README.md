@@ -1,4 +1,6 @@
-# Sundial
+<p align="center">
+  <img src="assets/logo.png" alt="Sundial" width="371" />
+</p>
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
 [![GitHub release](https://img.shields.io/github/release/ameesme/sundial.svg)](https://github.com/ameesme/sundial/releases)
@@ -11,6 +13,8 @@ day. By default, all lights that you enable Sundial for follow the sun; but you
 can easily pin your lights to specific values using the 24-hour **timeline**.
 Everything can be configured in a purpose-built panel that works just as well on
 a phone as on a desktop.
+
+![The Sundial panel](assets/screenshot.png)
 
 ## How it works
 ### Schemas
