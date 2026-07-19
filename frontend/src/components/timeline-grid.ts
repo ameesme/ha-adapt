@@ -13,10 +13,11 @@ export interface CellRef {
 
 type GridCell = TimelineCell | { brightness: number; color_temp: number };
 
-// The 24-hour grid: an integrated time scrubber, an hour header, a distinct
-// sun row, and one clickable row per light. Row labels stay pinned while the
-// columns scroll horizontally. Emits `select-cell`, `select-light`,
-// `select-sun`, and `scrub`.
+// The 24-hour grid: an hour header, a distinct sun row, and one clickable
+// row per light, grouped by area. Desktop shows an in-grid scrub row and a
+// label column; small screens stack each name above its full-width cells,
+// scroll internally, and show a scrub bar only while previewing. Emits
+// `select-cell`, `select-light`, `select-sun`, and `scrub`.
 @customElement("sundial-timeline-grid")
 export class TimelineGrid extends LitElement {
   static override styles = [
