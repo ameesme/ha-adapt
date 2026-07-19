@@ -51,17 +51,19 @@ export class SundialPanel extends LitElement {
           overflow: hidden;
           overscroll-behavior: none;
         }
+        /* Edge to edge: the timeline's scroll indicator should sit at the
+           screen edge, so the gutter lives on the inner content instead. */
         .wrap {
           height: 100%;
           display: flex;
           flex-direction: column;
-          padding: 0 12px;
+          padding: 0;
           overflow: hidden;
           overscroll-behavior: none;
         }
         .wrap > .card {
           flex: none;
-          margin-top: 8px;
+          margin: 8px 12px 0;
         }
         sundial-schema-editor {
           flex: 1 1 auto;

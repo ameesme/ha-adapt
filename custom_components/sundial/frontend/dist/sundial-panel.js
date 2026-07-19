@@ -1682,7 +1682,7 @@ _.styles = [
         }
         .scrub-bar {
           display: block;
-          padding: 10px 2px 6px;
+          padding: 10px 14px 6px;
           flex: none;
         }
         .scrubrow {
@@ -1695,8 +1695,13 @@ _.styles = [
           overflow-x: hidden;
           overscroll-behavior: contain;
           -webkit-overflow-scrolling: touch;
-          /* Let the last row scroll clear of the legend below. */
-          padding-bottom: 12px;
+          /* The content scrolls clear of the iOS home indicator. */
+          padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        }
+        /* The scrollview is edge to edge (indicator at the screen edge);
+           the content re-applies the gutter. */
+        .rows {
+          padding: 0 12px;
         }
         .scroll.locked {
           overflow: hidden;
@@ -1750,7 +1755,7 @@ _.styles = [
         }
         /* Scrolls with the content as its last item. */
         .legend {
-          padding: 6px 0 0;
+          padding: 6px 12px 0;
         }
       }
     `
@@ -2871,8 +2876,7 @@ v.styles = [
           height: 100%;
           min-height: 0;
         }
-        /* Fixed-height single-row sticky bar on a soft surface, full-bleed
-           across the wrap's side padding. */
+        /* Fixed-height single-row sticky bar on a soft surface. */
         .head {
           flex: none;
           position: sticky;
@@ -2884,7 +2888,7 @@ v.styles = [
           gap: 6px;
           /* Matches the Home Assistant app header height. */
           height: 56px;
-          margin: 0 -12px 8px;
+          margin: 0 0 8px;
           padding: 0 12px;
         }
         input.name {
@@ -3034,17 +3038,19 @@ w.styles = [
           overflow: hidden;
           overscroll-behavior: none;
         }
+        /* Edge to edge: the timeline's scroll indicator should sit at the
+           screen edge, so the gutter lives on the inner content instead. */
         .wrap {
           height: 100%;
           display: flex;
           flex-direction: column;
-          padding: 0 12px;
+          padding: 0;
           overflow: hidden;
           overscroll-behavior: none;
         }
         .wrap > .card {
           flex: none;
-          margin-top: 8px;
+          margin: 8px 12px 0;
         }
         sundial-schema-editor {
           flex: 1 1 auto;

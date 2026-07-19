@@ -337,8 +337,7 @@ export class SchemaEditor extends LitElement {
           height: 100%;
           min-height: 0;
         }
-        /* Fixed-height single-row sticky bar on a soft surface, full-bleed
-           across the wrap's side padding. */
+        /* Fixed-height single-row sticky bar on a soft surface. */
         .head {
           flex: none;
           position: sticky;
@@ -350,7 +349,7 @@ export class SchemaEditor extends LitElement {
           gap: 6px;
           /* Matches the Home Assistant app header height. */
           height: 56px;
-          margin: 0 -12px 8px;
+          margin: 0 0 8px;
           padding: 0 12px;
         }
         input.name {

@@ -245,7 +245,7 @@ export class TimelineGrid extends LitElement {
         }
         .scrub-bar {
           display: block;
-          padding: 10px 2px 6px;
+          padding: 10px 14px 6px;
           flex: none;
         }
         .scrubrow {
@@ -258,8 +258,13 @@ export class TimelineGrid extends LitElement {
           overflow-x: hidden;
           overscroll-behavior: contain;
           -webkit-overflow-scrolling: touch;
-          /* Let the last row scroll clear of the legend below. */
-          padding-bottom: 12px;
+          /* The content scrolls clear of the iOS home indicator. */
+          padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+        }
+        /* The scrollview is edge to edge (indicator at the screen edge);
+           the content re-applies the gutter. */
+        .rows {
+          padding: 0 12px;
         }
         .scroll.locked {
           overflow: hidden;
@@ -313,7 +318,7 @@ export class TimelineGrid extends LitElement {
         }
         /* Scrolls with the content as its last item. */
         .legend {
-          padding: 6px 0 0;
+          padding: 6px 12px 0;
         }
       }
     `,
