@@ -198,15 +198,9 @@ export class TimelineGrid extends LitElement {
           margin-bottom: 8px;
         }
         .scrub-bar {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 8px 2px;
+          display: block;
+          padding: 10px 2px 6px;
           flex: none;
-        }
-        .scrub-bar input[type="range"] {
-          flex: 1;
-          min-width: 0;
         }
         .scrubrow {
           display: none;
@@ -223,13 +217,23 @@ export class TimelineGrid extends LitElement {
           overflow: hidden;
           touch-action: none;
         }
-        /* Narrower label column; minmax(0, 1fr) lets the 24 cells shrink
-           below their content so the grid truly fits the width. */
+        /* Stacked rows: the name spans the full width and the 24 cells
+           auto-flow underneath, edge to edge. minmax(0, 1fr) so the cells
+           can shrink below the hour digits' width. */
         .gridrow {
-          grid-template-columns: 72px repeat(24, minmax(0, 1fr));
+          grid-template-columns: repeat(24, minmax(0, 1fr));
+          margin-bottom: 6px;
         }
-        .label {
-          font-size: 0.72rem;
+        .gridrow .label {
+          grid-column: 1 / -1;
+          font-size: 0.8rem;
+          padding: 4px 0 2px;
+        }
+        .headrow .label {
+          display: none;
+        }
+        .headrow {
+          margin-bottom: 0;
         }
         .hourhead {
           font-size: 0.55rem;
@@ -320,12 +324,26 @@ export class TimelineGrid extends LitElement {
     </div>`;
   }
 
-  // Small screens: a viewport-wide bar above the grid instead.
+  // Small screens: a full-width custom slider above the grid instead — no
+  // time readout, full-hour steps (the highlighted hour column shows the
+  // selection). Reuses the min–max slider's track/thumb styling.
   private _scrubBar(): TemplateResult {
+    const hour = Math.round(this.previewHour);
     return html`<div class="scrub-bar">
-      <span class="clock">${this._clockLabel}</span>
-      ${this._slider()}
-      <button class="now-btn" @click=${this._jumpToNow} title="Jump to now">now</button>
+      <div class="minmax">
+        <div class="minmax-track">
+          <div class="minmax-fill" style="left:0;width:${(hour / 23) * 100}%"></div>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="23"
+          step="1"
+          .value=${String(hour)}
+          @input=${(e: Event) =>
+            this._emit("scrub", Number((e.target as HTMLInputElement).value))}
+        />
+      </div>
     </div>`;
   }
 

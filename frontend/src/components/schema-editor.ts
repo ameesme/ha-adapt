@@ -207,6 +207,26 @@ export class SchemaEditor extends LitElement {
         outline: 2px solid var(--accent);
       }
 
+      /* "Following the sun" state of the hour-cell editor. */
+      .sun-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 18px 0 4px;
+        text-align: center;
+        color: var(--text-soft);
+        font-size: 0.9rem;
+      }
+      .sun-indicator .sun-emoji {
+        font-size: 1.8rem;
+      }
+      .center-cta {
+        display: flex;
+        justify-content: center;
+        margin-top: 14px;
+      }
+
       /* --- bottom drawer (native <dialog>, small screens only) ----------- */
       dialog.drawer {
         position: fixed;
@@ -786,12 +806,20 @@ export class SchemaEditor extends LitElement {
         rgb_color: rgb,
         ...patch,
       });
+    if (!explicit) {
+      // Following the sun: just say so — the value controls appear only
+      // once the user explicitly overrides this hour.
+      return html`
+        <div class="sun-indicator">
+          <span class="sun-emoji">☀️</span>
+          Following the sun — set a value to override.
+        </div>
+        <div class="center-cta">
+          <button class="btn" @click=${() => setCell({})}>Override</button>
+        </div>
+      `;
+    }
     return html`
-      <p class="muted">
-        ${explicit
-          ? "Explicit override for this hour."
-          : "Following the sun — set a value to override."}
-      </p>
       ${rangeField("Brightness", brightness, 0, 100, 1, "%", (v) =>
         setCell({ brightness: v })
       )}
@@ -829,13 +857,11 @@ export class SchemaEditor extends LitElement {
                 />`
               : nothing}`
         : nothing}
-      ${explicit
-        ? html`<div class="actions">
-            <button class="btn ghost" @click=${() => this._setCell(ref, null)}>
-              Use sun (clear)
-            </button>
-          </div>`
-        : nothing}
+      <div class="actions">
+        <button class="btn ghost" @click=${() => this._setCell(ref, null)}>
+          Use sun (clear)
+        </button>
+      </div>
     `;
   }
 

@@ -22,7 +22,7 @@ let Te = class {
     return this.cssText;
   }
 };
-const je = (t) => new Te(typeof t == "string" ? t : t + "", void 0, le), L = (t, ...e) => {
+const je = (t) => new Te(typeof t == "string" ? t : t + "", void 0, le), R = (t, ...e) => {
   const i = t.length === 1 ? t[0] : e.reduce((s, r, n) => s + ((o) => {
     if (o._$cssResult$ === !0) return o.cssText;
     if (typeof o == "number") return o;
@@ -264,8 +264,8 @@ P.elementStyles = [], P.shadowRootOptions = { mode: "open" }, P[D("elementProper
  */
 const de = globalThis, _e = (t) => t, X = de.trustedTypes, ve = X ? X.createPolicy("lit-html", { createHTML: (t) => t }) : void 0, He = "$lit$", A = `lit$${Math.random().toFixed(9).slice(2)}$`, Oe = "?" + A, Ye = `<${Oe}>`, C = document, B = () => C.createComment(""), F = (t) => t === null || typeof t != "object" && typeof t != "function", he = Array.isArray, Xe = (t) => he(t) || typeof t?.[Symbol.iterator] == "function", ne = `[ 	
 \f\r]`, N = /<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g, be = /-->/g, $e = />/g, S = RegExp(`>|${ne}(?:([^\\s"'>=/]+)(${ne}*=${ne}*(?:[^ 	
-\f\r"'\`<>=]|("|')|))|$)`, "g"), we = /'/g, xe = /"/g, Le = /^(?:script|style|textarea|title)$/i, Qe = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = Qe(1), T = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), ye = /* @__PURE__ */ new WeakMap(), k = C.createTreeWalker(C, 129);
-function Re(t, e) {
+\f\r"'\`<>=]|("|')|))|$)`, "g"), we = /'/g, xe = /"/g, Re = /^(?:script|style|textarea|title)$/i, Qe = (t) => (e, ...i) => ({ _$litType$: t, strings: e, values: i }), l = Qe(1), T = Symbol.for("lit-noChange"), d = Symbol.for("lit-nothing"), ye = /* @__PURE__ */ new WeakMap(), k = C.createTreeWalker(C, 129);
+function Le(t, e) {
   if (!he(t) || !t.hasOwnProperty("raw")) throw Error("invalid template strings array");
   return ve !== void 0 ? ve.createHTML(e) : e;
 }
@@ -275,11 +275,11 @@ const et = (t, e) => {
   for (let c = 0; c < i; c++) {
     const a = t[c];
     let p, u, h = -1, m = 0;
-    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === N ? u[1] === "!--" ? o = be : u[1] !== void 0 ? o = $e : u[2] !== void 0 ? (Le.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = S) : u[3] !== void 0 && (o = S) : o === S ? u[0] === ">" ? (o = r ?? N, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? S : u[3] === '"' ? xe : we) : o === xe || o === we ? o = S : o === be || o === $e ? o = N : (o = S, r = void 0);
+    for (; m < a.length && (o.lastIndex = m, u = o.exec(a), u !== null); ) m = o.lastIndex, o === N ? u[1] === "!--" ? o = be : u[1] !== void 0 ? o = $e : u[2] !== void 0 ? (Re.test(u[2]) && (r = RegExp("</" + u[2], "g")), o = S) : u[3] !== void 0 && (o = S) : o === S ? u[0] === ">" ? (o = r ?? N, h = -1) : u[1] === void 0 ? h = -2 : (h = o.lastIndex - u[2].length, p = u[1], o = u[3] === void 0 ? S : u[3] === '"' ? xe : we) : o === xe || o === we ? o = S : o === be || o === $e ? o = N : (o = S, r = void 0);
     const y = o === S && t[c + 1].startsWith("/>") ? " " : "";
     n += o === N ? a + Ye : h >= 0 ? (s.push(p), a.slice(0, h) + He + a.slice(h) + A + y) : a + A + (h === -2 ? c : y);
   }
-  return [Re(t, n + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), s];
+  return [Le(t, n + (t[i] || "<?>") + (e === 2 ? "</svg>" : e === 3 ? "</math>" : "")), s];
 };
 class V {
   constructor({ strings: e, _$litType$: i }, s) {
@@ -297,7 +297,7 @@ class V {
           const m = u[o++], y = r.getAttribute(h).split(A), G = /([.?@])?(.*)/.exec(m);
           a.push({ type: 1, index: n, name: G[2], strings: y, ctor: G[1] === "." ? it : G[1] === "?" ? st : G[1] === "@" ? rt : se }), r.removeAttribute(h);
         } else h.startsWith(A) && (a.push({ type: 6, index: n }), r.removeAttribute(h));
-        if (Le.test(r.tagName)) {
+        if (Re.test(r.tagName)) {
           const h = r.textContent.split(A), m = h.length - 1;
           if (m > 0) {
             r.textContent = X ? X.emptyScript : "";
@@ -383,7 +383,7 @@ class q {
     this._$AH !== d && F(this._$AH) ? this._$AA.nextSibling.data = e : this.T(C.createTextNode(e)), this._$AH = e;
   }
   $(e) {
-    const { values: i, _$litType$: s } = e, r = typeof s == "number" ? this._$AC(e) : (s.el === void 0 && (s.el = V.createElement(Re(s.h, s.h[0]), this.options)), s);
+    const { values: i, _$litType$: s } = e, r = typeof s == "number" ? this._$AC(e) : (s.el === void 0 && (s.el = V.createElement(Le(s.h, s.h[0]), this.options)), s);
     if (this._$AH?._$AD === r) this._$AH.p(i);
     else {
       const n = new tt(r, this), o = n.u(this.options);
@@ -632,7 +632,7 @@ class ut {
     return this.hass.connection.sendMessagePromise({ type: e, ...i });
   }
 }
-const gt = L`
+const gt = R`
   :host {
     --bg: #fbf3e9;
     --surface: #fffaf2;
@@ -653,7 +653,7 @@ const gt = L`
     color: var(--text);
     font-family: "Inter", "Segoe UI", Roboto, system-ui, sans-serif;
   }
-`, W = L`
+`, W = R`
   * {
     box-sizing: border-box;
   }
@@ -990,7 +990,7 @@ const gt = L`
     color: var(--text-soft);
     padding: 28px;
   }
-`, oe = Array.from({ length: 24 }, (t, e) => e), U = 1500, z = 6500;
+`, oe = Array.from({ length: 24 }, (t, e) => e), z = 1500, U = 6500;
 function mt() {
   return {
     min_brightness: 5,
@@ -1058,17 +1058,17 @@ function De() {
   const t = /* @__PURE__ */ new Date(), e = t.getHours() + t.getMinutes() / 60;
   return Math.min(23.5, Math.round(e * 2) / 2);
 }
-const R = (t) => l`<svg viewBox="0 0 24 24" aria-hidden="true">
+const L = (t) => l`<svg viewBox="0 0 24 24" aria-hidden="true">
     <path fill="currentColor" d=${t} />
-  </svg>`, Ae = R("M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"), Se = R(
+  </svg>`, Ae = L("M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"), Se = L(
   "M12,9A3,3 0 0,1 15,12A3,3 0 0,1 12,15A3,3 0 0,1 9,12A3,3 0 0,1 12,9M12,4.5C17,4.5 21.27,7.61 23,12C21.27,16.39 17,19.5 12,19.5C7,19.5 2.73,16.39 1,12C2.73,7.61 7,4.5 12,4.5M3.18,12C4.83,15.36 8.24,17.5 12,17.5C15.76,17.5 19.17,15.36 20.82,12C19.17,8.64 15.76,6.5 12,6.5C8.24,6.5 4.83,8.64 3.18,12Z"
-), ke = R(
+), ke = L(
   "M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4M11,16.5L6.5,12L7.91,10.59L11,13.67L16.59,8.09L18,9.5L11,16.5Z"
-), Ce = R(
+), Ce = L(
   "M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"
-), xt = R(
+), xt = L(
   "M11,9H13V7H11M12,20C7.59,20 4,16.41 4,12C4,7.59 7.59,4 12,4C16.41,4 20,7.59 20,12C20,16.41 16.41,20 12,20M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M11,17H13V11H11V17Z"
-), Q = R(
+), Q = L(
   "M19.14 12.94c.04-.31.06-.63.06-.94s-.02-.63-.06-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54a.5.5 0 0 0-.5-.42h-3.84a.5.5 0 0 0-.5.42l-.36 2.54a7 7 0 0 0-1.62.94l-2.39-.96a.5.5 0 0 0-.6.22L2.31 8.84a.5.5 0 0 0 .12.64l2.03 1.58c-.04.31-.06.63-.06.94s.02.63.06.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96a7 7 0 0 0 1.62.94l.36 2.54a.5.5 0 0 0 .5.42h3.84a.5.5 0 0 0 .5-.42l.36-2.54a7 7 0 0 0 1.62-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64zM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7z"
 );
 function f(t, e) {
@@ -1184,7 +1184,7 @@ function Me(t, e, i) {
     />
   </label>`;
 }
-function Ue(t, e, i) {
+function ze(t, e, i) {
   return l`<label class="toggle">
     <input
       type="checkbox"
@@ -1269,12 +1269,25 @@ let $ = class extends b {
       <div class="track">${this._slider()}</div>
     </div>`;
   }
-  // Small screens: a viewport-wide bar above the grid instead.
+  // Small screens: a full-width custom slider above the grid instead — no
+  // time readout, full-hour steps (the highlighted hour column shows the
+  // selection). Reuses the min–max slider's track/thumb styling.
   _scrubBar() {
+    const t = Math.round(this.previewHour);
     return l`<div class="scrub-bar">
-      <span class="clock">${this._clockLabel}</span>
-      ${this._slider()}
-      <button class="now-btn" @click=${this._jumpToNow} title="Jump to now">now</button>
+      <div class="minmax">
+        <div class="minmax-track">
+          <div class="minmax-fill" style="left:0;width:${t / 23 * 100}%"></div>
+        </div>
+        <input
+          type="range"
+          min="0"
+          max="23"
+          step="1"
+          .value=${String(t)}
+          @input=${(e) => this._emit("scrub", Number(e.target.value))}
+        />
+      </div>
     </div>`;
   }
   _jumpToNow() {
@@ -1364,7 +1377,7 @@ let $ = class extends b {
 };
 $.styles = [
   W,
-  L`
+  R`
       :host {
         display: block;
         height: 100%;
@@ -1541,15 +1554,9 @@ $.styles = [
           margin-bottom: 8px;
         }
         .scrub-bar {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          padding: 8px 2px;
+          display: block;
+          padding: 10px 2px 6px;
           flex: none;
-        }
-        .scrub-bar input[type="range"] {
-          flex: 1;
-          min-width: 0;
         }
         .scrubrow {
           display: none;
@@ -1566,13 +1573,23 @@ $.styles = [
           overflow: hidden;
           touch-action: none;
         }
-        /* Narrower label column; minmax(0, 1fr) lets the 24 cells shrink
-           below their content so the grid truly fits the width. */
+        /* Stacked rows: the name spans the full width and the 24 cells
+           auto-flow underneath, edge to edge. minmax(0, 1fr) so the cells
+           can shrink below the hour digits' width. */
         .gridrow {
-          grid-template-columns: 72px repeat(24, minmax(0, 1fr));
+          grid-template-columns: repeat(24, minmax(0, 1fr));
+          margin-bottom: 6px;
         }
-        .label {
-          font-size: 0.72rem;
+        .gridrow .label {
+          grid-column: 1 / -1;
+          font-size: 0.8rem;
+          padding: 4px 0 2px;
+        }
+        .headrow .label {
+          display: none;
+        }
+        .headrow {
+          margin-bottom: 0;
         }
         .hourhead {
           font-size: 0.55rem;
@@ -1614,7 +1631,7 @@ E([
 $ = E([
   K("ha-adapt-timeline-grid")
 ], $);
-var Ct = Object.defineProperty, Et = Object.getOwnPropertyDescriptor, ze = (t, e, i, s) => {
+var Ct = Object.defineProperty, Et = Object.getOwnPropertyDescriptor, Ue = (t, e, i, s) => {
   for (var r = s > 1 ? void 0 : s ? Et(e, i) : e, n = t.length - 1, o; n >= 0; n--)
     (o = t[n]) && (r = (s ? o(e, i, r) : o(r)) || r);
   return s && r && Ct(e, i, r), r;
@@ -1648,11 +1665,11 @@ let te = class extends b {
       " K",
       t.min_color_temp,
       t.max_color_temp,
-      U,
       z,
+      U,
       50,
       (e, i) => this._patch({ min_color_temp: e, max_color_temp: i }),
-      Ie(U, z)
+      Ie(z, U)
     )}
       ${f(
       "Sunrise & sunset",
@@ -1719,10 +1736,10 @@ let te = class extends b {
   }
 };
 te.styles = W;
-ze([
+Ue([
   g({ attribute: !1 })
 ], te.prototype, "sun", 2);
-te = ze([
+te = Ue([
   K("ha-adapt-sun-config")
 ], te);
 var Mt = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, re = (t, e, i, s) => {
@@ -1813,7 +1830,7 @@ let O = class extends b {
       "When a light is changed by hand, adaptation pauses for it. Auto-reset hands control back after this many seconds (0 = never)."
     )}
       <div class="actions">
-        ${Ue(
+        ${ze(
       "Pause when controlled manually",
       t.take_over_control,
       (i) => e({ take_over_control: i })
@@ -1882,7 +1899,7 @@ let O = class extends b {
 };
 O.styles = [
   W,
-  L`
+  R`
       .about {
         margin: 28px 0 2px;
         text-align: center;
@@ -2212,10 +2229,7 @@ let _ = class extends b {
       rgb_color: o,
       ...a
     });
-    return l`
-      <p class="muted">
-        ${i ? "Explicit override for this hour." : "Following the sun — set a value to override."}
-      </p>
+    return i ? l`
       ${j(
       "Brightness",
       r,
@@ -2232,8 +2246,8 @@ let _ = class extends b {
       ${j(
       "Color temp",
       n,
-      U,
       z,
+      U,
       50,
       "K",
       (a) => c({ color_temp: a })
@@ -2255,12 +2269,20 @@ let _ = class extends b {
       rgb_color: wt(a.target.value)
     })}
                 />` : d}` : d}
-      ${i ? l`<div class="actions">
-            <button class="btn ghost" @click=${() => this._setCell(t, null)}>
-              Use sun (clear)
-            </button>
-          </div>` : d}
-    `;
+      <div class="actions">
+        <button class="btn ghost" @click=${() => this._setCell(t, null)}>
+          Use sun (clear)
+        </button>
+      </div>
+    ` : l`
+        <div class="sun-indicator">
+          <span class="sun-emoji">☀️</span>
+          Following the sun — set a value to override.
+        </div>
+        <div class="center-cta">
+          <button class="btn" @click=${() => c({})}>Override</button>
+        </div>
+      `;
   }
   _renderLightEditor(t) {
     const e = this._lightCfg(t);
@@ -2286,11 +2308,11 @@ let _ = class extends b {
       " K",
       e.min_color_temp,
       e.max_color_temp,
-      U,
       z,
+      U,
       50,
       (i, s) => this._patchLight(t, { min_color_temp: i, max_color_temp: s }),
-      Ie(U, z)
+      Ie(z, U)
     )}
       ${f(
       "Behaviour",
@@ -2306,7 +2328,7 @@ let _ = class extends b {
       (i) => this._patchLight(t, { limit_mode: i })
     )}
       <div class="actions">
-        ${Ue(
+        ${ze(
       "Send brightness and colour separately",
       e.separate_turn_on_commands,
       (i) => this._patchLight(t, { separate_turn_on_commands: i })
@@ -2335,7 +2357,7 @@ let _ = class extends b {
 };
 _.styles = [
   W,
-  L`
+  R`
       .head {
         display: flex;
         align-items: center;
@@ -2481,6 +2503,26 @@ _.styles = [
       }
       .close:focus-visible {
         outline: 2px solid var(--accent);
+      }
+
+      /* "Following the sun" state of the hour-cell editor. */
+      .sun-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        padding: 18px 0 4px;
+        text-align: center;
+        color: var(--text-soft);
+        font-size: 0.9rem;
+      }
+      .sun-indicator .sun-emoji {
+        font-size: 1.8rem;
+      }
+      .center-cta {
+        display: flex;
+        justify-content: center;
+        margin-top: 14px;
       }
 
       /* --- bottom drawer (native <dialog>, small screens only) ----------- */
@@ -2658,10 +2700,10 @@ v([
 _ = v([
   K("ha-adapt-schema-editor")
 ], _);
-var Lt = Object.defineProperty, Rt = Object.getOwnPropertyDescriptor, M = (t, e, i, s) => {
-  for (var r = s > 1 ? void 0 : s ? Rt(e, i) : e, n = t.length - 1, o; n >= 0; n--)
+var Rt = Object.defineProperty, Lt = Object.getOwnPropertyDescriptor, M = (t, e, i, s) => {
+  for (var r = s > 1 ? void 0 : s ? Lt(e, i) : e, n = t.length - 1, o; n >= 0; n--)
     (o = t[n]) && (r = (s ? o(e, i, r) : o(r)) || r);
-  return s && r && Lt(e, i, r), r;
+  return s && r && Rt(e, i, r), r;
 };
 let w = class extends b {
   constructor() {
@@ -2730,7 +2772,7 @@ let w = class extends b {
 w.styles = [
   gt,
   W,
-  L`
+  R`
       .wrap {
         width: 100%;
         padding: 18px 20px 64px;
