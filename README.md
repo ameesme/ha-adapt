@@ -1,9 +1,5 @@
 <img src="assets/github-banner-slim.png" alt="Sundial" />
 
-[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
-[![GitHub release](https://img.shields.io/github/release/ameesme/sundial.svg)](https://github.com/ameesme/sundial/releases)
-[![License](https://img.shields.io/github/license/ameesme/sundial.svg)](LICENSE)
-
 > The easiest way to apply circadian lighting to your home with Home Assistant.
 
 Sundial adapts the brightness and colour temperature of your lights across the
@@ -12,7 +8,10 @@ can easily pin your lights to specific values using the 24-hour **timeline**.
 Everything can be configured in a purpose-built panel that works just as well on
 a phone as on a desktop.
 
-![The Sundial panel](assets/screenshot.png)
+[![hacs_badge](https://img.shields.io/badge/HACS-Custom-41BDF5.svg)](https://github.com/hacs/integration)
+[![GitHub release](https://img.shields.io/github/release/ameesme/sundial.svg)](https://github.com/ameesme/sundial/releases)
+[![License](https://img.shields.io/github/license/ameesme/sundial.svg)](LICENSE)
+
 
 ## How it works
 ### Schemas
@@ -20,6 +19,9 @@ A schema covers all your lights and your sun configuration. In it, you can defin
 how your lights behave over a 24-hour window. Multiple schemas can be set up and be
 switched through using an automation, for example to have softer lighting during the
 weekend.
+
+![The Sundial panel](assets/screenshot.png)
+
 
 ### Sun
 The sun drives all lights by default: lights get brighter towards noon and
